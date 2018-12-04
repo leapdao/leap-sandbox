@@ -24,7 +24,7 @@ cleanup() {
 
 start_ganache() {
   echo "Starting ganache netowrk..."
-  node_modules/.bin/ganache-cli -p $ganache_port &> $out_dir"/ganache.out" &
+  node_modules/.bin/ganache-cli -p $ganache_port -m "${mnemonic[@]}" &> $out_dir"/ganache.out" &
   ganache_pid=$!
 }
 
@@ -100,4 +100,6 @@ start_ganache
 deploy_contracts
 start_nodes
 
-read varname
+node setup.js
+
+read exit

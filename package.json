@@ -10,8 +10,10 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.18.0",
+    "bip39": "^2.5.0",
+    "ethereumjs-wallet": "^0.6.2",
     "ganache-cli": "^6.2.3",
-    "web3": "1.0.0-beta.34",
-    "leap-core": "leapdao/leap-core#refactor"
+    "leap-core": "leapdao/leap-core#refactor",
+    "web3": "1.0.0-beta.34"
   }
 }
