@@ -1,5 +1,5 @@
-contracts_repo="/Users/jankremser/Documents/Projects/ParsecLabsRepos/parsec-contracts"
-node_repo="/Users/jankremser/Documents/Projects/ParsecLabsRepos/parsec-node"
+contracts_repo="https://github.com/leapdao/leap-contracts.git"
+node_repo=" --single-branch -b integ-tests https://github.com/leapdao/leap-node.git"
 ganache_port=8545
 num_nodes=3
 base_port=7000

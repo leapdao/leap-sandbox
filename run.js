@@ -1,16 +1,20 @@
-const { Node, formatHostname, unspentForAddress } = require('./client');
 const fs = require('fs');
 const Web3 = require('web3');
+
 const bridgeAbi = require('./build/node/src/abis/bridgeAbi');
 const exitHandlerAbi = require('./build/node/src/abis/exitHandler');
 const operatorAbi = require('./build/node/src/abis/operator');
-const erc20abi = require('./erc20abi');
+const erc20abi = require('./src/erc20abi');
 
 const bip39 = require('bip39');
 const hdkey = require('ethereumjs-wallet/hdkey');
 const wallet = require('ethereumjs-wallet');
 
-const { helpers, Tx, Outpoint, Output } = require('leap-core');
+const Node = require('./src/nodeClient');
+const setup = require('./src/setup');
+const { formatHostname } = require('./src/helpers');
+
+const sleep = ms => new Promise(res => setTimeout(res, ms));
 
 function getAccounts(mnemonic, num) {
   const accounts = [];
@@ -43,35 +47,6 @@ function parseConfig() {
   return config;
 }
 
-async function setup(contracts, nodes, accounts, web3) {
-  const alice = accounts[0].addr;
-  console.log(alice);
-  web3.eth.getBalance(alice).then(console.log);
-  await contracts.token.methods.approve(contracts.exitHandler.options.address, 500000000000).send({from: alice});
-  await contracts.token.methods.approve(contracts.operator.options.address, 500000000000).send({from: alice});
-
-  let slotId = 0;
-  for (let i = 0; i < nodes.length; i++) { 
-    let node = nodes[i];
-    const info = await node.web3.getValidatorInfo();
-    await contracts.operator.methods.bet(slotId, 1, info.ethAddress, '0x' + info.tendermintAddress).send({
-      from: alice,
-      gas: 2000000
-    });
-    slotId++;
-    await web3.eth.sendTransaction({
-      from: alice,
-      to: info.ethAddress, 
-      value: web3.utils.toWei('1', "ether")
-    });
-  }
-
-  await contracts.exitHandler.methods.deposit(alice, 200000000000, 0).send({
-    from: alice,
-    gas: 2000000
-  });
-}
-
 async function run() {
   const config = parseConfig();
   const web3 = new Web3(formatHostname('localhost', config.ganache_port));
@@ -102,6 +77,8 @@ async function run() {
   const accounts = getAccounts(config.mnemonic, 5);
 
   await setup(contracts, nodes, accounts, web3);
+  // Wait for setup to propagate to all the nodes
+  await sleep(15000);
 
   var testPath = require("path").join(__dirname, "tests");
   fs.readdirSync(testPath).forEach(async function(test) {

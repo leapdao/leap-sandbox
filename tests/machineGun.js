@@ -1,5 +1,5 @@
-const { unspentForAddress } = require('../client');
-const { helpers, Tx, Outpoint, Output } = require('leap-core');
+const { helpers, Output, Outpoint, Tx } = require('leap-core');
+const { unspentForAddress, makeTransfer } = require('../src/helpers');
 
 module.exports = async function machineGun(contracts, nodes, accounts, web3) {
   const node = nodes[0];
@@ -8,7 +8,7 @@ module.exports = async function machineGun(contracts, nodes, accounts, web3) {
   const bob = accounts[1].addr;
   const charlie = accounts[2].addr;
 
-  for (let i = 0; i < 100; i += 1) {
+  for (let i = 0; i < 10; i += 1) {
     console.log('------');
     console.log((await node.getState()).balances);
     console.log('------');
@@ -24,7 +24,9 @@ module.exports = async function machineGun(contracts, nodes, accounts, web3) {
     console.log(
       `Latest block by number: ${JSON.stringify(latestBlockData, null, 2)}`
     );
-    const transfer1 = await node.makeTransfer(
+    let state = await node.getState();
+    const transfer1 = makeTransfer(
+      state,
       alice,
       bob,
       1000 + Math.round(100 * Math.random()),
@@ -42,7 +44,9 @@ module.exports = async function machineGun(contracts, nodes, accounts, web3) {
     console.log((await node.getState()).balances);
     console.log('------');
 
-    const transfer2 = await node.makeTransfer(
+    state = await node.getState();
+    const transfer2 = makeTransfer(
+      state,
       alice,
       bob,
       1000,
@@ -78,7 +82,7 @@ module.exports = async function machineGun(contracts, nodes, accounts, web3) {
       console.log(await node.getState());
     };
 
-    await consolidateAddress(charlie);
+    await consolidateAddress(bob);
 
     latestBlockData = await node.web3.eth.getBlock('latest');
     console.log(latestBlockData.number);

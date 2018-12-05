@@ -5,9 +5,6 @@ set -o errexit
 # Executes cleanup function at script exit.
 trap cleanup EXIT
 
-out_dir=$(pwd)"/build/out"
-node_count=0
-declare -a node_pids
 # ------------------------------- FUNCTIONS -------------------------------
 cleanup() {
   echo "Node PIDs: "${node_pids[*]}
@@ -30,7 +27,12 @@ start_ganache() {
 
 deploy_contracts() {
   echo "Fetching contracts repo..."
-  cp -R $contracts_repo ./build/contracts
+  if [[ $contracts_repo == *".git"* ]]
+  then
+    git clone $contracts_repo --quiet ./build/contracts > /dev/null
+  else
+    cp -R $contracts_repo ./build/contracts
+  fi
   cd build/contracts
   echo "Running yarn in contracts..."
   yarn &> $out_dir"/contracts_yarn.out"
@@ -40,8 +42,14 @@ deploy_contracts() {
 }
 
 start_nodes() {
+  mkdir $out_dir"/nodes"
   echo "Fetching node repo..."
-  cp -R $node_repo ./build/node
+  if [[ $node_repo == *".git"* ]]
+  then
+    git clone --quiet $node_repo ./build/node > /dev/null
+  else
+    cp -R $node_repo ./build/node
+  fi
   cp build/contracts/build/nodeFiles/generatedConfig.json build/node/generatedConfig.json
   cd build/node
   echo "Running yarn in node..."
@@ -89,10 +97,17 @@ launch_node() {
 }
 # ----------------------------- END FUNCTIONS -----------------------------
 
+out_folder=$(date "+%Y-%m-%d|%H:%M:%S")
+out_dir=$(pwd)"/out/"$out_folder
+echo "Out folder: "$out_folder
+mkdir out &> /dev/null &
+mkdir $out_dir
+
+node_count=0
+declare -a node_pids
+
 rm -rf build
 mkdir build
-mkdir build/out
-mkdir build/out/nodes
 
 source config
 
@@ -100,6 +115,8 @@ start_ganache
 deploy_contracts
 start_nodes
 
-node setup.js
+echo "Starting setup..."
+node run.js
 
+echo "Press enter to finish..."
 read exit
