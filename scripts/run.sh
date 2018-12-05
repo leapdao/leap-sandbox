@@ -46,8 +46,7 @@ start_nodes() {
   # Sleep a little to allow the node to start up
   sleep 5
 
-  let num_nodes=$num_nodes-2
-  for i in $( seq 0 $num_nodes )
+  for i in $( seq 0 $(( $num_nodes-2 )) )
   do
     echo "Launching next node..."
     launch_node
