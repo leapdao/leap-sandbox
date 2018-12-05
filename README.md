@@ -10,4 +10,4 @@ yarn
 cd -
 ./run.sh
 ```
-The porcesses will write logs to a folder in ./out/, where you can look for informations about the test run.
+The processes will write logs to a folder ./out/{current date}, where you can look for informations about the test run (such as yarn outputs, deployment log, ganache network log and a log for each of the nodes).
