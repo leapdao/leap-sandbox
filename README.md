@@ -36,3 +36,4 @@ This will:
 5. run all the tests in the tests directory 
 
 The tests will write logs to a folder ./out/{current time}, where you can look for information about the test run (deployment log, ganache network log and a log for each of the nodes).
+When all the tests are completed you are prompted to press enter to end the tests (kill ganache and all the nodes). This is so that you can do some additinal debugging with the netwrok after the tests are finished.
