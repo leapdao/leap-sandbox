@@ -1,4 +1,4 @@
-module.exports = async function(contracts, nodes, accounts, web3) {
+module.exports = async function({contracts, nodes, accounts, web3}) {
   const alice = accounts[0].addr;
 
   await contracts.token.methods.approve(contracts.exitHandler.options.address, 500000000000).send({from: alice});

@@ -1,18 +1,22 @@
+const NodeEnvironment = require('jest-environment-node');
+
 const fs = require('fs');
 const Web3 = require('web3');
+const shell = require('shelljs');
+const dateFormat = require('dateformat');
 
-const bridgeAbi = require('./build/node/src/abis/bridgeAbi');
-const exitHandlerAbi = require('./build/node/src/abis/exitHandler');
-const operatorAbi = require('./build/node/src/abis/operator');
-const erc20abi = require('./src/erc20abi');
+const bridgeAbi = require('../build/node/src/abis/bridgeAbi');
+const exitHandlerAbi = require('../build/node/src/abis/exitHandler');
+const operatorAbi = require('../build/node/src/abis/operator');
+const erc20abi = require('../src/erc20abi');
 
 const bip39 = require('bip39');
 const hdkey = require('ethereumjs-wallet/hdkey');
 const wallet = require('ethereumjs-wallet');
 
-const Node = require('./src/nodeClient');
-const setup = require('./src/setup');
-const { formatHostname } = require('./src/helpers');
+const Node = require('../src/nodeClient');
+const setup = require('../src/setup');
+const { formatHostname } = require('../src/helpers');
 
 const sleep = ms => new Promise(res => setTimeout(res, ms));
 
@@ -39,7 +43,7 @@ function getAccount(mnemonic, id) {
 
 function parseConfig() {
   const config = {};
-  fs.readFileSync('configs/run', {encoding: 'utf8'}).toString().split('\n').forEach(line => {
+  fs.readFileSync('../configs/run', {encoding: 'utf8'}).toString().split('\n').forEach(line => {
     [key, value] = line.split('=');
     value = value.replace(/['"]+/g, '');
     config[key] = value;
@@ -47,7 +51,7 @@ function parseConfig() {
   return config;
 }
 
-async function run() {
+async function getGlobals() {
   const config = parseConfig();
   const web3 = new Web3(formatHostname('localhost', config.ganache_port));
 
@@ -76,14 +80,39 @@ async function run() {
 
   const accounts = getAccounts(config.mnemonic, 5);
 
-  await setup(contracts, nodes, accounts, web3);
-  // Wait for setup to propagate to all the nodes
-  await sleep(10000);
-
-  var testPath = require("path").join(__dirname, "tests");
-  fs.readdirSync(testPath).forEach(async function(test) {
-    console.log("Running: ", test);
-    await require("./tests/" + test)(contracts, nodes, accounts, web3);
-  });
+  return {
+    accounts,
+    contracts,
+    nodes,
+    web3
+  }
 }
-run();
+
+class LeapEnvironment extends NodeEnvironment {
+  constructor(config) {
+    super(config);
+    this.time = dateFormat(new Date(), "dd.mm.yyyy|h:MM:ss");;
+    this.testId = 0;
+  }
+
+  async setup() {
+    this.testId++;
+    await super.setup();
+    shell.exec(`../scripts/setup.sh ${this.time} ${this.testId}`);
+    this.global = await getGlobals();
+    await setup(this.global);
+    // Wait for setup to propagate to all the nodes
+    await sleep(10000);
+  }
+
+  async teardown() {
+    shell.exec('../scripts/teardown.sh');
+    await super.teardown();
+  }
+
+  runScript(script) {
+    return super.runScript(script);
+  }
+}
+
+module.exports = LeapEnvironment;

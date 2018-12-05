@@ -1,24 +1,5 @@
 #!/bin/bash
 
-# Exit script as soon as a command fails.
-set -o errexit
-# Executes cleanup function at script exit.
-trap cleanup EXIT
-
-# ------------------------------- FUNCTIONS -------------------------------
-cleanup() {
-  echo "Node PIDs: "${node_pids[*]}
-  # Kill the nodes
-  for pid in "${node_pids[@]}"
-  do
-    echo  "Killing node at PID: "$pid
-    kill -9 $pid
-  done
-  # Kill the ganache instance that we started
-  echo "Killing ganache"
-  kill -9 $ganache_pid
-}
-
 start_ganache() {
   echo "Starting ganache netowrk..."
   node_modules/.bin/ganache-cli -p $ganache_port -m "${mnemonic[@]}" &> $out_dir"/ganache.out" &
@@ -77,12 +58,10 @@ launch_node() {
   (( node_count++ ))
   (( base_port += 5 ))
 }
-# ----------------------------- END FUNCTIONS -----------------------------
 
-out_folder=$(date "+%Y-%m-%d|%H:%M:%S")
-out_dir=$(pwd)/out/$out_folder
+
+out_dir=$(pwd)/out/$1/$2
 mkdir -p $out_dir &> /dev/null
-echo "Out folder: "$out_folder
 
 source configs/run
 
@@ -92,9 +71,3 @@ declare -a node_pids
 start_ganache
 deploy_contracts
 start_nodes
-
-echo "Starting setup..."
-node run.js
-
-echo "Press enter to finish..."
-read exit
