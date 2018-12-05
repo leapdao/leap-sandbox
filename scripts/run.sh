@@ -5,9 +5,6 @@ set -o errexit
 # Executes cleanup function at script exit.
 trap cleanup EXIT
 
-out_dir=$(pwd)"/build/out"
-node_count=0
-declare -a node_pids
 # ------------------------------- FUNCTIONS -------------------------------
 cleanup() {
   echo "Node PIDs: "${node_pids[*]}
@@ -24,28 +21,21 @@ cleanup() {
 
 start_ganache() {
   echo "Starting ganache netowrk..."
-  node_modules/.bin/ganache-cli -p $ganache_port &> $out_dir"/ganache.out" &
+  node_modules/.bin/ganache-cli -p $ganache_port -m "${mnemonic[@]}" &> $out_dir"/ganache.out" &
   ganache_pid=$!
 }
 
 deploy_contracts() {
-  echo "Fetching contracts repo..."
-  cp -R $contracts_repo ./build/contracts
   cd build/contracts
-  echo "Running yarn in contracts..."
-  yarn &> $out_dir"/contracts_yarn.out"
   echo "Deploying contracts..."
-  truffle migrate --reset --network development &> $out_dir"/contracts_migrate.out"
+  truffle migrate --reset --network development &> $out_dir/contracts_migrate.out
   cd - > /dev/null
 }
 
 start_nodes() {
-  echo "Fetching node repo..."
-  cp -R $node_repo ./build/node
+  mkdir $out_dir"/nodes"
   cp build/contracts/build/nodeFiles/generatedConfig.json build/node/generatedConfig.json
   cd build/node
-  echo "Running yarn in node..."
-  yarn &> $out_dir"/node_yarn.out"
 
   let first_rpc_port=$base_port+1
   first_rpc_addr="http://localhost:"
@@ -63,7 +53,7 @@ start_nodes() {
     launch_node
   done
 
-  sleep 10
+  sleep 5
   cd - > /dev/null
 }
 
@@ -89,15 +79,22 @@ launch_node() {
 }
 # ----------------------------- END FUNCTIONS -----------------------------
 
-rm -rf build
-mkdir build
-mkdir build/out
-mkdir build/out/nodes
+out_folder=$(date "+%Y-%m-%d|%H:%M:%S")
+out_dir=$(pwd)/out/$out_folder
+mkdir -p $out_dir &> /dev/null
+echo "Out folder: "$out_folder
 
-source config
+source configs/run
+
+node_count=0
+declare -a node_pids
 
 start_ganache
 deploy_contracts
 start_nodes
 
-read varname
+echo "Starting setup..."
+node run.js
+
+echo "Press enter to finish..."
+read exit

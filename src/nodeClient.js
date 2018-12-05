@@ -2,11 +2,9 @@ const Web3 = require('web3');
 const axios = require('axios');
 const { helpers } = require('leap-core');
 
-let idCounter = 0;
+const { formatHostname } = require('./helpers');
 
-function formatHostname(hostname, port) {
-  return 'http://'+hostname+':'+port;
-}
+let idCounter = 0;
 
 class Node {
   constructor(hostname, port, jsonrpcPort) {
@@ -19,6 +17,10 @@ class Node {
     const { data } = await axios.get(this.httpUrl+'/state');
     return data;
   }
+
+  async sendTx(rawTx) {
+    return axios.post(this.httpUrl+'/txs', { encoded: rawTx });
+  };
 }
 
 module.exports = Node;
