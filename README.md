@@ -28,4 +28,11 @@ After you have built the projects, you can start the tests. Some parameters can 
 ```
 yarn run test
 ```
-This will launch a ganache network, deploy the contracts, start the configured number of nodes and run all the tests in the tests directory. The tests will write logs to a folder ./out/{current time}, where you can look for information about the test run (deployment log, ganache network log and a log for each of the nodes).
+This will:
+1. launch a ganache network
+2. deploy the contracts
+3. start the configured number of nodes
+4. perform setup tasks 
+5. run all the tests in the tests directory 
+
+The tests will write logs to a folder ./out/{current time}, where you can look for information about the test run (deployment log, ganache network log and a log for each of the nodes).
