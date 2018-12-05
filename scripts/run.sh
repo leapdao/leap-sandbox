@@ -26,34 +26,16 @@ start_ganache() {
 }
 
 deploy_contracts() {
-  echo "Fetching contracts repo..."
-  if [[ $contracts_repo == *".git"* ]]
-  then
-    git clone $contracts_repo --quiet ./build/contracts > /dev/null
-  else
-    cp -R $contracts_repo ./build/contracts
-  fi
   cd build/contracts
-  echo "Running yarn in contracts..."
-  yarn &> $out_dir"/contracts_yarn.out"
   echo "Deploying contracts..."
-  truffle migrate --reset --network development &> $out_dir"/contracts_migrate.out"
+  truffle migrate --reset --network development &> $out_dir/contracts_migrate.out
   cd - > /dev/null
 }
 
 start_nodes() {
   mkdir $out_dir"/nodes"
-  echo "Fetching node repo..."
-  if [[ $node_repo == *".git"* ]]
-  then
-    git clone --quiet $node_repo ./build/node > /dev/null
-  else
-    cp -R $node_repo ./build/node
-  fi
   cp build/contracts/build/nodeFiles/generatedConfig.json build/node/generatedConfig.json
   cd build/node
-  echo "Running yarn in node..."
-  yarn &> $out_dir"/node_yarn.out"
 
   let first_rpc_port=$base_port+1
   first_rpc_addr="http://localhost:"
@@ -71,7 +53,7 @@ start_nodes() {
     launch_node
   done
 
-  sleep 10
+  sleep 5
   cd - > /dev/null
 }
 
@@ -98,18 +80,14 @@ launch_node() {
 # ----------------------------- END FUNCTIONS -----------------------------
 
 out_folder=$(date "+%Y-%m-%d|%H:%M:%S")
-out_dir=$(pwd)"/out/"$out_folder
+out_dir=$(pwd)/out/$out_folder
+mkdir -p $out_dir &> /dev/null
 echo "Out folder: "$out_folder
-mkdir -p out &> /dev/null
-mkdir $out_dir
+
+source configs/run
 
 node_count=0
 declare -a node_pids
-
-rm -rf build
-mkdir build
-
-source config
 
 start_ganache
 deploy_contracts

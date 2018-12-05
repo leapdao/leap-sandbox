@@ -39,7 +39,7 @@ function getAccount(mnemonic, id) {
 
 function parseConfig() {
   const config = {};
-  fs.readFileSync('config', {encoding: 'utf8'}).toString().split('\n').forEach(line => {
+  fs.readFileSync('configs/run', {encoding: 'utf8'}).toString().split('\n').forEach(line => {
     [key, value] = line.split('=');
     value = value.replace(/['"]+/g, '');
     config[key] = value;
@@ -78,7 +78,7 @@ async function run() {
 
   await setup(contracts, nodes, accounts, web3);
   // Wait for setup to propagate to all the nodes
-  await sleep(15000);
+  await sleep(5000);
 
   var testPath = require("path").join(__dirname, "tests");
   fs.readdirSync(testPath).forEach(async function(test) {

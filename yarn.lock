@@ -2748,9 +2748,9 @@ lcid@^1.0.0:
   dependencies:
     invert-kv "^1.0.0"
 
-leap-core@leapdao/leap-core#refactor:
-  version "0.19.2"
-  resolved "https://codeload.github.com/leapdao/leap-core/tar.gz/72245537ca143bc1e0b479d4a213aaccb3be128b"
+leap-core@leapdao/leap-core#three_contract_config_type:
+  version "0.19.3"
+  resolved "https://codeload.github.com/leapdao/leap-core/tar.gz/8e9ba009c6bf049d351732b6b7f04fae41b7b698"
   dependencies:
     "@types/web3" "^1.0.12"
     babel-polyfill "^6.26.0"
