@@ -100,7 +100,7 @@ launch_node() {
 out_folder=$(date "+%Y-%m-%d|%H:%M:%S")
 out_dir=$(pwd)"/out/"$out_folder
 echo "Out folder: "$out_folder
-mkdir out &> /dev/null &
+mkdir -p out &> /dev/null
 mkdir $out_dir
 
 node_count=0
