@@ -1,5 +1,7 @@
 # leapdao-integ-tests
 
+![image](https://user-images.githubusercontent.com/163447/49596266-3c6e7b80-f97a-11e8-8c63-7cb5108a3ea9.png)
+
 ## 1. Setup
 ```
 git clone https://github.com/leapdao/leapdao-integ-tests.git
