@@ -17,6 +17,7 @@ cleanup() {
   # Kill the ganache instance that we started
   echo "Killing ganache"
   kill -9 $ganache_pid
+  pkill -9 -f ganache
 }
 
 start_ganache() {
