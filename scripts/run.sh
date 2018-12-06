@@ -50,9 +50,9 @@ start_nodes() {
   do
     echo "Launching next node..."
     launch_node
+    sleep 5
   done
 
-  sleep 5
   cd - > /dev/null
 }
 

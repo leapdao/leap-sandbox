@@ -37,6 +37,9 @@ module.exports = async function machineGun(contracts, nodes, accounts, web3) {
     console.log('Transfer:', transfer1.hex());
     console.log(transfer1.hash());
     const txData = await node.web3.eth.getTransaction(transfer1.hash());
+    if (!txData) {
+      continue;
+    }
     const blockData = await node.web3.eth.getBlock(txData.blockHash);
     console.log(`getTransaction: ${JSON.stringify(txData, null, 2)}`);
     console.log(`Block data: ${JSON.stringify(blockData, null, 2)}`);
@@ -58,31 +61,6 @@ module.exports = async function machineGun(contracts, nodes, accounts, web3) {
     console.log('------');
     console.log((await node.getState()).balances);
     console.log('------');
-
-    const consolidateAddress = async address => {
-      console.log(await node.getState());
-      const balance = await node.web3.eth.getBalance(address);
-      const unspent = unspentForAddress(
-        (await node.getState()).unspent,
-        address,
-        0
-      ).map(u => ({
-        output: u.output,
-        outpoint: Outpoint.fromRaw(u.outpoint),
-      }));
-      const consolidateInputs = helpers.calcInputs(
-        unspent,
-        address,
-        balance,
-        0
-      );
-      const consolidateOutput = new Output(balance, address, 0);
-      const consolidate = Tx.consolidate(consolidateInputs, consolidateOutput);
-      await node.sendTx(consolidate.hex());
-      console.log(await node.getState());
-    };
-
-    await consolidateAddress(bob);
 
     latestBlockData = await node.web3.eth.getBlock('latest');
     console.log(latestBlockData.number);
