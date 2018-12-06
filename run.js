@@ -64,7 +64,7 @@ async function run() {
   const operatorContract = new web3.eth.Contract(operatorAbi, nodeConfig.operatorAddr);
   const bridgeContract = new web3.eth.Contract(bridgeAbi, nodeConfig.bridgeAddr);
 
-  const tokenAddress = await bridgeContract.methods.nativeToken().call(); 
+  const tokenAddress = await exitHandlerContract.methods.getTokenAddr(0).call();
   const tokenContract = new web3.eth.Contract(erc20abi, tokenAddress);
 
   const contracts = {

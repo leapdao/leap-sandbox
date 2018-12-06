@@ -16,7 +16,8 @@ cleanup() {
   done
   # Kill the ganache instance that we started
   echo "Killing ganache"
-  kill -9 $ganache_pid
+  pkill -f ganache
+  #kill -9 $ganache_pid
 }
 
 start_ganache() {
@@ -35,6 +36,7 @@ deploy_contracts() {
 start_nodes() {
   mkdir $out_dir"/nodes"
   cp build/contracts/build/nodeFiles/generatedConfig.json build/node/generatedConfig.json
+  cp -R build/contracts/build/nodeFiles/ build/node/src/abis/
   cd build/node
 
   let first_rpc_port=$base_port+1
@@ -44,13 +46,13 @@ start_nodes() {
   echo "Starting first node..."
   launch_first_node
   # Sleep a little to allow the node to start up
-  sleep 5
+  sleep 7
 
   for i in $( seq 0 $(( $num_nodes-2 )) )
   do
     echo "Launching next node..."
     launch_node
-    sleep 5
+    sleep 7
   done
 
   cd - > /dev/null
