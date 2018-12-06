@@ -28,7 +28,7 @@ start_ganache() {
 deploy_contracts() {
   cd build/contracts
   echo "Deploying contracts..."
-  truffle migrate --reset --network development &> $out_dir/contracts_migrate.out
+  ./node_modules/.bin/truffle migrate --reset --network development &> $out_dir/contracts_migrate.out
   cd - > /dev/null
 }
 
