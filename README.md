@@ -51,10 +51,13 @@ The function parameters are objects you will receive to perform you test. Here i
 ```
 // contracts are web3.eth.Contract objects 
 contracts = {token, bridge, operator, exitHandler}
+
 // nodes are Node objects (defined in src/nodeClient) representing the running nodes
 nodes = [node0, node1...]
+
 // accounts are simple objects containing the address and private key
 accounts = [{addr, privKey}, {addr, privKey}...]
+
 // web3 is just Web3 contected to the ganache network
 web3 = Web3
 ```
