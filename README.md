@@ -39,3 +39,22 @@ This will:
 
 The tests will write logs to a folder ./out/{current time}, where you can look for information about the test run (deployment log, ganache network log and a log for each of the nodes).
 When all the tests are completed you are prompted to press enter to end the tests (kill ganache and all the nodes). This is so that you can do some additinal debugging with the netwrok after the tests are finished.
+
+## Writing your own tests
+To add a test, create a file in the tests directory that looks like this:
+```
+module.exports = async function(contracts, nodes, accounts, web3) {
+  // Your tests go here
+}
+```
+The function parameters are objects you will receive to perform you test. Here is the describtion:
+```
+// contracts are web3.eth.Contract objects 
+contracts = {token, bridge, operator, exitHandler}
+// nodes are Node objects (defined in src/nodeClient) representing the running nodes
+nodes = [node0, node1...]
+// accounts are simple objects containing the address and private key
+accounts = [{addr, privKey}, {addr, privKey}...]
+// web3 is just Web3 contected to the ganache network
+web3 = Web3
+```
