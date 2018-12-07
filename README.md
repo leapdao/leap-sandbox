@@ -57,6 +57,7 @@ nodes = [node0, node1...]
 
 // accounts are simple objects containing the address and private key
 accounts = [{addr, privKey}, {addr, privKey}...]
+// also note: accounts[1] is the admin of all the proxys
 
 // web3 is just Web3 contected to the ganache network
 web3 = Web3
