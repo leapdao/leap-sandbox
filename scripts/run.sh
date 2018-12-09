@@ -36,7 +36,7 @@ deploy_contracts() {
 start_nodes() {
   mkdir $out_dir"/nodes"
   cp build/contracts/build/nodeFiles/generatedConfig.json build/node/generatedConfig.json
-  cp -R build/contracts/build/nodeFiles/ build/node/src/abis/
+  cp -R build/contracts/build/nodeFiles/* build/node/src/abis/
   cd build/node
 
   let first_rpc_port=$base_port+1
@@ -65,7 +65,7 @@ launch_first_node() {
     &> $out_dir"/nodes/node"$((node_count++))".out" &
   node_pids+=($!)
   # Bash is super wierd...
-  (( node_count++ ))
+  (( node_count+=1 ))
   (( base_port += 5 ))
 }
 
@@ -75,7 +75,7 @@ launch_node() {
     --abciPort $((base_port++)) --tendermintPort $((base_port++)) --devMode true \
     &> $out_dir"/nodes/node"$((node_count++))".out" &
   node_pids+=($!)
-  (( node_count++ ))
+  (( node_count+=1 ))
   (( base_port += 5 ))
 }
 # ----------------------------- END FUNCTIONS -----------------------------
