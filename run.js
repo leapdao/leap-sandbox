@@ -81,9 +81,11 @@ async function run() {
   await sleep(10000);
 
   var testPath = require("path").join(__dirname, "tests");
-  fs.readdirSync(testPath).forEach(async function(test) {
+  const tests = fs.readdirSync(testPath);
+  for (let i=0; i<tests.length; i++) {
+    const test = tests[i];
     console.log("Running: ", test);
     await require("./tests/" + test)(contracts, nodes, accounts, web3);
-  });
+  }
 }
 run();
