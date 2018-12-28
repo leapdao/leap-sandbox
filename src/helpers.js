@@ -1,4 +1,7 @@
-const { helpers, Tx, Outpoint } = require('leap-core');
+const { helpers, Tx, Outpoint, Period, Block } = require('leap-core');
+
+const range = (s, e) =>
+  Array.from(new Array(e - s + 1), (_, i) => i + s);
 
 function formatHostname(hostname, port) {
   return 'http://'+hostname+':'+port;
@@ -57,4 +60,26 @@ function makeTransfer(
   return Tx.transfer(inputs, outputs).signAll(privKey);
 }
 
-module.exports = { formatHostname, unspentForAddress, makeTransfer };
+function periodOfTheBlock(web3, blockNumber) {
+  // ToDo: fix typing in lib
+  const periodNumber = Math.floor(blockNumber / 32);
+  const startBlock = periodNumber * 32;
+  const endBlock = periodNumber * 32 + 32;
+  return Promise.all(
+    range(startBlock, endBlock - 1).map(n => web3.eth.getBlock(n, true))
+  ).then(blocks => {
+    return new Period(
+      null,
+      blocks.filter(a => !!a).map(({ number, timestamp, transactions }) => {
+        const block = new Block(number, {
+          timestamp,
+          txs: transactions.map(tx => Tx.fromRaw(tx.raw)),
+        });
+
+        return block;
+      })
+    );
+  });
+}
+
+module.exports = { formatHostname, unspentForAddress, makeTransfer, periodOfTheBlock };
