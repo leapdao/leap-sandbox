@@ -5,6 +5,9 @@ const { bufferToHex } = require('ethereumjs-util');
 module.exports = async function(contracts, nodes, accounts, web3) {
     const alice = accounts[0].addr;
     const bob = accounts[2].addr;
+    let unspentIndex = -1;
+    let txHash;
+    let txData;
 
     let unspents = [];
     console.log("------Unspents Alice------");
@@ -13,13 +16,21 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("------Unspents Bob------");
     unspents.push(await nodes[0].web3.getUnspent(bob));
     console.log(unspents[1]);
-    console.log("------Will attepmp to exit unspent 1 of Bob------");
-    console.log("------Transaction hash for Bob's unspent 1------");
-    console.log("Unspent amount: ", unspents[1][0].output.value);
-    const txHash = unspents[1][0].outpoint.hash;
+    console.log("------Looking for unspent from submitted period------");
+    const latestBlockNumber = (await nodes[0].web3.eth.getBlock('latest')).number;
+    console.log("Latest Block number: ", latestBlockNumber);
+    const latestSubmittedBlock = latestBlockNumber - latestBlockNumber % 32;
+    console.log("Latest submitted block number: ", latestSubmittedBlock);
+    do {
+        unspentIndex++;
+        txHash = unspents[1][unspentIndex].outpoint.hash;
+        txData = await nodes[0].web3.eth.getTransaction(bufferToHex(txHash));
+    } while (txData.blockNumber > latestSubmittedBlock);
+    console.log(`------Will attepmp to exit unspent ${unspentIndex} of Bob------`);
+    console.log(`------Transaction hash for Bob's unspent ${unspentIndex}------`);
+    console.log("Unspent amount: ", unspents[1][unspentIndex].output.value);
     console.log(txHash);
     console.log("------Transaction data------");
-    const txData = await nodes[0].web3.eth.getTransaction(bufferToHex(txHash));
     console.log(txData);
     console.log("------Period------");
     const period = await periodOfTheBlock(nodes[0].web3, txData.blockNumber);
@@ -36,6 +47,8 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("------Youngest Input Proof------");
     const youngestInputProof = youngestInputPeriod.proof(Tx.fromRaw(youngestInput.tx.raw));
     console.log(youngestInputProof);
+    console.log("------Period from the contract by merkle root------");
+    console.log(await contracts.bridge.methods.periods(proof[0]).call());
     console.log("------Balance before exit------");
     const balanceBefore = await contracts.token.methods.balanceOf(bob).call();
     console.log("Bob mainnet balance: ", balanceBefore);
