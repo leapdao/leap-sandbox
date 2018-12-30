@@ -1,5 +1,5 @@
 const { helpers, Output, Outpoint, Tx } = require('leap-core');
-const { unspentForAddress, makeTransfer, periodOfTheBlock, getYoungestInputTx } = require('../src/helpers');
+const { sleep, unspentForAddress, makeTransfer, periodOfTheBlock, getYoungestInputTx } = require('../src/helpers');
 const { bufferToHex } = require('ethereumjs-util');
 
 module.exports = async function(contracts, nodes, accounts, web3) {
@@ -52,16 +52,19 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("------Balance before exit------");
     const balanceBefore = await contracts.token.methods.balanceOf(bob).call();
     console.log("Bob mainnet balance: ", balanceBefore);
+    console.log("Bob plasma balance: ", await nodes[0].web3.eth.getBalance(bob));
     console.log("Attempting exit...");
     await contracts.exitHandler.methods.startExit(
         youngestInputProof,
         proof,
         unspents[1][0].outpoint.index,
         youngestInput.index
-    ).send({from: bob, value: 0});
+    ).send({from: bob, value: 0, gas: 2000000});
     console.log("Finilizing exit...");
-    await contracts.exitHandler.methods.finalizeTopExit(0).send({from: bob});
+    await contracts.exitHandler.methods.finalizeTopExit(0).send({from: bob, gas: 2000000});
     console.log("------Balance after exit------");
     const balanceAfter = await contracts.token.methods.balanceOf(bob).call();
     console.log("Bob mainnet balance: ", balanceAfter);
+    await sleep(5000);
+    console.log("Bob plasma balance: ", await nodes[0].web3.eth.getBalance(bob));
 }

@@ -4,6 +4,12 @@ const { bufferToHex } = require('ethereumjs-util');
 const range = (s, e) =>
   Array.from(new Array(e - s + 1), (_, i) => i + s);
 
+function sleep(ms){
+  return new Promise(resolve => {
+      setTimeout(resolve,ms);
+  })
+}
+
 function formatHostname(hostname, port) {
   return 'http://'+hostname+':'+port;
 }
@@ -101,4 +107,4 @@ function getYoungestInputTx(web3, tx) {
   )).then(getTxWithYoungestBlock);
 }
 
-module.exports = { formatHostname, unspentForAddress, makeTransfer, periodOfTheBlock, getYoungestInputTx };
+module.exports = { sleep, formatHostname, unspentForAddress, makeTransfer, periodOfTheBlock, getYoungestInputTx };
