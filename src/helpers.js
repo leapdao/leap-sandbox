@@ -1,4 +1,5 @@
 const { helpers, Tx, Outpoint, Period, Block } = require('leap-core');
+const { bufferToHex } = require('ethereumjs-util');
 
 const range = (s, e) =>
   Array.from(new Array(e - s + 1), (_, i) => i + s);
@@ -82,4 +83,22 @@ function periodOfTheBlock(web3, blockNumber) {
   });
 }
 
-module.exports = { formatHostname, unspentForAddress, makeTransfer, periodOfTheBlock };
+function getTxWithYoungestBlock(txs) {
+  let youngestIndex = 0;
+  let youngestInput = txs[0];
+  txs.forEach((tx, i) => {
+    if (tx.blockNumber > youngestInput.blockNumber) {
+      youngestIndex = i;
+      youngestInput = tx;
+    }
+  });
+  return { index: youngestIndex, tx: youngestInput };
+}
+
+function getYoungestInputTx(web3, tx) {
+  return Promise.all(tx.inputs.map(i =>
+    web3.eth.getTransaction(bufferToHex(i.prevout.hash)),
+  )).then(getTxWithYoungestBlock);
+}
+
+module.exports = { formatHostname, unspentForAddress, makeTransfer, periodOfTheBlock, getYoungestInputTx };

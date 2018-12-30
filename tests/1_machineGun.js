@@ -5,10 +5,10 @@ module.exports = async function machineGun(contracts, nodes, accounts, web3) {
   const node = nodes[0];
   const alice = accounts[0].addr;
   const alicePriv = accounts[0].privKey;
-  const bob = accounts[1].addr;
-  const charlie = accounts[2].addr;
+  const bob = accounts[2].addr;
+  const charlie = accounts[3].addr;
 
-  for (let i = 0; i < 10; i += 1) {
+  for (let i = 0; i < 20; i += 1) {
     console.log('------');
     console.log((await node.getState()).balances);
     console.log('------');
