@@ -25,7 +25,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
         unspentIndex++;
         txHash = unspents[1][unspentIndex].outpoint.hash;
         txData = await nodes[0].web3.eth.getTransaction(bufferToHex(txHash));
-    } while (txData.blockNumber > latestSubmittedBlock);
+    } while (txData.blockNumber >= latestSubmittedBlock);
     console.log(`------Will attepmp to exit unspent ${unspentIndex} of Bob------`);
     console.log(`------Transaction hash for Bob's unspent ${unspentIndex}------`);
     console.log("Unspent amount: ", unspents[1][unspentIndex].output.value);
