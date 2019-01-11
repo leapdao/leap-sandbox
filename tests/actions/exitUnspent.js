@@ -50,8 +50,8 @@ module.exports = async function(contracts, node, bob) {
     debug(await contracts.bridge.methods.periods(proof[0]).call());
     console.log("------Balance before exit------");
     const balanceBefore = await contracts.token.methods.balanceOf(bob).call();
-    console.log("Bob mainnet balance: ", balanceBefore);
-    console.log("Bob plasma balance: ", await node.web3.eth.getBalance(bob));
+    console.log("Account mainnet balance: ", balanceBefore);
+    console.log("Account plasma balance: ", await node.web3.eth.getBalance(bob));
     console.log("Attempting exit...");
     await contracts.exitHandler.methods.startExit(
         youngestInputProof,
@@ -63,7 +63,7 @@ module.exports = async function(contracts, node, bob) {
     await contracts.exitHandler.methods.finalizeTopExit(0).send({from: bob, gas: 2000000});
     console.log("------Balance after exit------");
     const balanceAfter = await contracts.token.methods.balanceOf(bob).call();
-    console.log("Bob mainnet balance: ", balanceAfter);
+    console.log("Account mainnet balance: ", balanceAfter);
     await sleep(5000);
-    console.log("Bob plasma balance: ", await node.web3.eth.getBalance(bob));
+    console.log("Account plasma balance: ", await node.web3.eth.getBalance(bob));
 }

@@ -13,7 +13,7 @@ module.exports = async function(node, account) {
         console.log("------Consolidating unspents------");
         console.log("Address: ", address);
         console.log("------Unspents before consolidate------");
-        let unspentsAll = await node.web3.getUnspent(bob);
+        let unspentsAll = await node.web3.getUnspent(address);
         let unspents = unspentsAll.filter(unspent => unspent.output.color === 0);
         console.log("Number of UTXOs: ", unspents.length);
         console.log(unspents);
@@ -40,7 +40,7 @@ module.exports = async function(node, account) {
             await node.sendTx(consolidate.hex());
         }
         console.log("------Unspents after consolidate------");
-        unspentsAll = await node.web3.getUnspent(bob);
+        unspentsAll = await node.web3.getUnspent(address);
         unspents = unspentsAll.filter(unspent => unspent.output.color === 0);
         console.log(unspents);
         balance = await node.web3.eth.getBalance(address);

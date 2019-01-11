@@ -74,7 +74,7 @@ async function run() {
     token: tokenContract
   }
 
-  const accounts = getAccounts(config.mnemonic, 5);
+  const accounts = getAccounts(config.mnemonic, 10);
 
   await setup(contracts, nodes, accounts, web3);
   // Wait for setup to propagate to all the nodes
