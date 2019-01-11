@@ -1,7 +1,7 @@
 const { helpers, Output, Outpoint, Tx } = require('leap-core');
-const { unspentForAddress, makeTransfer } = require('../src/helpers');
+const { unspentForAddress, makeTransfer } = require('../../src/helpers');
 
-module.exports = async function machineGun(contracts, nodes, accounts, web3) {
+module.exports = async function(nodes, accounts) {
   const node = nodes[0];
   const alice = accounts[0].addr;
   const alicePriv = accounts[0].privKey;

@@ -81,7 +81,9 @@ async function run() {
   await sleep(10000);
 
   var testPath = require("path").join(__dirname, "tests");
-  const tests = fs.readdirSync(testPath);
+  const tests = fs.readdirSync(testPath).filter((fileName => {
+    return fs.lstatSync("./tests/" + fileName).isFile();
+  }));
   for (let i=0; i<tests.length; i++) {
     const test = tests[i];
     console.log("Running: ", test);
