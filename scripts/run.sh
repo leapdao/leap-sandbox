@@ -21,7 +21,7 @@ cleanup() {
 }
 
 start_ganache() {
-  echo "Starting ganache netowrk..."
+  echo "Starting ganache network..."
   node_modules/.bin/ganache-cli -p $ganache_port -m "${mnemonic[@]}" &> $out_dir"/ganache.out" &
   ganache_pid=$!
 }
@@ -29,7 +29,8 @@ start_ganache() {
 deploy_contracts() {
   cd build/contracts
   echo "Deploying contracts..."
-  ./node_modules/.bin/truffle migrate --reset --network development &> $out_dir/contracts_migrate.out
+  export PROPOSAL_TIME=0
+  yarn deploy --reset &> $out_dir/contracts_migrate.out
   cd - > /dev/null
 }
 

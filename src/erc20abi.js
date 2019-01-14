@@ -171,6 +171,29 @@ module.exports = [
         "type": "function"
     },
     {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "mint",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
         "payable": true,
         "stateMutability": "payable",
         "type": "fallback"
