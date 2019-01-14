@@ -1,2 +1,2 @@
 contracts_repo=" --single-branch -b feature/deploy-contracts https://github.com/leapdao/leap-contracts.git"
-node_repo="/Users/johann/dev/leap-node"
+node_repo="https://github.com/leapdao/leap-node.git"
