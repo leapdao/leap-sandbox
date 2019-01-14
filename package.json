@@ -13,6 +13,7 @@
     "axios": "^0.18.0",
     "bip39": "^2.5.0",
     "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
     "ethereumjs-wallet": "^0.6.2",
     "ganache-cli": "^6.2.3",
     "leap-core": "^0.20.2",

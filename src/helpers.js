@@ -67,6 +67,20 @@ function makeTransfer(
   return Tx.transfer(inputs, outputs).signAll(privKey);
 }
 
+function makeTransferUxto(
+  utxos,
+  to,
+  privKey
+) {
+
+  let from = utxos[0].output.address.toLowerCase();
+  to = to.toLowerCase();
+  const value = utxos.reduce((sum, unspent) => sum + unspent.output.value, 0);
+  const color = utxos[0].output.color;
+
+  return Tx.transferFromUtxos(utxos, from, to, value, color).signAll(privKey);
+}
+
 function periodOfTheBlock(web3, blockNumber) {
   // ToDo: fix typing in lib
   const periodNumber = Math.floor(blockNumber / 32);
@@ -107,4 +121,4 @@ function getYoungestInputTx(web3, tx) {
   )).then(getTxWithYoungestBlock);
 }
 
-module.exports = { sleep, formatHostname, unspentForAddress, makeTransfer, periodOfTheBlock, getYoungestInputTx };
+module.exports = { sleep, formatHostname, unspentForAddress, makeTransfer, makeTransferUxto, periodOfTheBlock, getYoungestInputTx };
