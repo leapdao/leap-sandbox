@@ -1,6 +1,7 @@
 const debug = require('debug')('consolidate');
 const { helpers, Output, Outpoint, Tx } = require('leap-core');
 const { sleep, unspentForAddress, makeTransfer, } = require('../../src/helpers');
+const should = require('chai').should();
 
 module.exports = async function(node, account) {
 
@@ -14,11 +15,11 @@ module.exports = async function(node, account) {
         console.log("Address: ", address);
         console.log("------Unspents before consolidate------");
         let unspentsAll = await node.web3.getUnspent(address);
-        let unspents = unspentsAll.filter(unspent => unspent.output.color === 0);
+        const unspents = unspentsAll.filter(unspent => unspent.output.color === 0);
         console.log("Number of UTXOs: ", unspents.length);
         console.log(unspents);
-        let balance = await node.web3.eth.getBalance(address);
-        console.log("Balance: ", balance);
+        const balanceBefore = await node.web3.eth.getBalance(address);
+        console.log("Balance: ", balanceBefore);
         debug("Will split unspents to chunks of 15"); //15 is maximum number of inputs in one transaction
         const chunkedUnspents = chunk(unspents, 15);
         for (let i = 0; i < chunkedUnspents.length; i++) {
@@ -41,10 +42,15 @@ module.exports = async function(node, account) {
         }
         console.log("------Unspents after consolidate------");
         unspentsAll = await node.web3.getUnspent(address);
-        unspents = unspentsAll.filter(unspent => unspent.output.color === 0);
-        console.log(unspents);
-        balance = await node.web3.eth.getBalance(address);
-        console.log("Balance: ", balance);
+        const unspentsAfter = unspentsAll.filter(unspent => unspent.output.color === 0);
+        console.log(unspentsAfter);
+        const balanceAfter = await node.web3.eth.getBalance(address);
+        console.log("Balance: ", balanceAfter);
+
+        balanceAfter.should.be.equal(balanceBefore);
+        unspentsAfter.reduce((sum, unspent) => sum + unspent.output.value, 0).should.be.equal(
+            unspents.reduce((sum, unspent) => sum + unspent.output.value, 0)
+        );
     };
   
     await consolidateAddress(account);

@@ -2,6 +2,7 @@ const debug = require('debug')('exitUnspent');
 const { helpers, Output, Outpoint, Tx } = require('leap-core');
 const { sleep, unspentForAddress, makeTransfer, periodOfTheBlock, getYoungestInputTx } = require('../../src/helpers');
 const { bufferToHex } = require('ethereumjs-util');
+const should = require('chai').should();
 
 module.exports = async function(contracts, node, bob) {
     let unspentIndex = -1;
@@ -50,8 +51,9 @@ module.exports = async function(contracts, node, bob) {
     debug(await contracts.bridge.methods.periods(proof[0]).call());
     console.log("------Balance before exit------");
     const balanceBefore = await contracts.token.methods.balanceOf(bob).call();
+    const plasmaBalanceBefore = await node.web3.eth.getBalance(bob);
     console.log("Account mainnet balance: ", balanceBefore);
-    console.log("Account plasma balance: ", await node.web3.eth.getBalance(bob));
+    console.log("Account plasma balance: ", plasmaBalanceBefore);
     console.log("Attempting exit...");
     await contracts.exitHandler.methods.startExit(
         youngestInputProof,
@@ -65,5 +67,15 @@ module.exports = async function(contracts, node, bob) {
     const balanceAfter = await contracts.token.methods.balanceOf(bob).call();
     console.log("Account mainnet balance: ", balanceAfter);
     await sleep(5000);
-    console.log("Account plasma balance: ", await node.web3.eth.getBalance(bob));
+    const plasmaBalanceAfter = (await node.web3.eth.getBalance(bob)) * 1;
+    console.log("Account plasma balance: ", plasmaBalanceAfter);
+
+    const unspentsAfter = await node.web3.getUnspent(bob);
+    const unspentsValue = unspentsAfter.reduce((sum, unspent) => sum + unspent.output.value, 0);
+    unspentsAfter.length.should.be.equal(unspents.length - 1);
+    unspentsValue.should.be.equal(plasmaBalanceAfter);
+    plasmaBalanceAfter.should.be.equal(plasmaBalanceBefore - amount);
+    (+ balanceAfter).should.be.equal(+ balanceBefore + amount);
+
+    return unspents[unspentIndex];
 }

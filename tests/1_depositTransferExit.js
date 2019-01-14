@@ -2,6 +2,7 @@ const { sleep } = require('../src/helpers');
 const mintAndDeposit = require('./actions/mintAndDeposit');
 const transfer = require('./actions/transfer');
 const exitUnspent = require('./actions/exitUnspent');
+const should = require('chai').should();
 
 module.exports = async function(contracts, nodes, accounts, web3) {
     const minter = accounts[0].addr;
@@ -18,17 +19,27 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("║2. Trasfer from Alice to Bob              ║");
     console.log("║3. Exit Alice and Bob                     ║");
     console.log("╚══════════════════════════════════════════╝");
+    let plasmaBalanceBefore = (await nodes[0].web3.eth.getBalance(alice)) * 1;
     await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler);
     await sleep(5000);
-    console.log(`${alice} balance after deposit: ${await nodes[0].web3.eth.getBalance(alice)}`);
+    let plasmaBalanceAfter = (await nodes[0].web3.eth.getBalance(alice)) * 1;
+    console.log(`${alice} balance after deposit: ${plasmaBalanceAfter}`);
+    plasmaBalanceAfter.should.be.equal(plasmaBalanceBefore + amount);
     console.log("------Will make some transactions to fill a block------");
     for (let i = 0; i < 20; i++) {
+        let txAmount = Math.round(amount/(2000))+ Math.round(100 * Math.random());
+        let balanceAlice = (await nodes[0].web3.eth.getBalance(alice)) * 1;
+        let balanceBob = (await nodes[0].web3.eth.getBalance(bob)) * 1;
+
         await transfer(
             alice, 
             alicePriv, 
             bob, 
-            Math.round(amount/(2000))+ Math.round(100 * Math.random()), 
+            txAmount, 
             nodes[0]);
+        
+        ((await nodes[0].web3.eth.getBalance(alice)) * 1).should.be.equal(balanceAlice - txAmount);
+        ((await nodes[0].web3.eth.getBalance(bob)) * 1).should.be.equal(balanceBob + txAmount);
     }
     console.log("Make some more deposits to make sure the block is submitted (with log is off)...")
     for (let i = 0; i < 20; i++) {
