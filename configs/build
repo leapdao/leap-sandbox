@@ -1,2 +1,2 @@
-contracts_repo="https://github.com/leapdao/leap-contracts.git"
+contracts_repo="/Users/troggy/projects/acebusters/parsec-contracts"
 node_repo="https://github.com/leapdao/leap-node.git"

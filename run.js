@@ -4,6 +4,8 @@ const Web3 = require('web3');
 const bridgeAbi = require('./build/node/src/abis/bridgeAbi');
 const exitHandlerAbi = require('./build/node/src/abis/exitHandler');
 const operatorAbi = require('./build/node/src/abis/operator');
+const adminableProxyAbi = require('./build/contracts/build/contracts/AdminableProxy').abi;
+const minGovAbi = require('./build/contracts/build/contracts/MinGov').abi;
 const erc20abi = require('./src/erc20abi');
 
 const bip39 = require('bip39');
@@ -63,6 +65,10 @@ async function run() {
   const exitHandlerContract = new web3.eth.Contract(exitHandlerAbi, nodeConfig.exitHandlerAddr);
   const operatorContract = new web3.eth.Contract(operatorAbi, nodeConfig.operatorAddr);
   const bridgeContract = new web3.eth.Contract(bridgeAbi, nodeConfig.bridgeAddr);
+  const governanceAddr = await (
+    new web3.eth.Contract(adminableProxyAbi, nodeConfig.operatorAddr)
+  ).methods.admin().call();
+  const governanceContract = new web3.eth.Contract(minGovAbi, governanceAddr);
 
   const tokenAddress = await exitHandlerContract.methods.getTokenAddr(0).call();
   const tokenContract = new web3.eth.Contract(erc20abi, tokenAddress);
@@ -71,7 +77,8 @@ async function run() {
     exitHandler: exitHandlerContract,
     operator: operatorContract,
     bridge: bridgeContract,
-    token: tokenContract
+    token: tokenContract,
+    governance: governanceContract,
   }
 
   const accounts = getAccounts(config.mnemonic, 5);

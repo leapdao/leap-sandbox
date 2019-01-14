@@ -8,15 +8,17 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   for (let i = 0; i < nodes.length; i++) { 
     let node = nodes[i];
     const validatorInfo = await node.web3.getValidatorInfo();
-    await contracts.operator.methods.bet(
-        slotId, 
-        1, 
-        validatorInfo.ethAddress, 
-        '0x' + validatorInfo.tendermintAddress
-      ).send({
+    const payload = await contracts.operator.methods.setSlot(
+      slotId, validatorInfo.ethAddress, '0x' + validatorInfo.tendermintAddress
+    ).encodeABI();
+
+    await contracts.governance.methods
+      .propose(contracts.operator.options.address, payload)
+      .send({
         from: alice,
         gas: 2000000
-    });
+      });
+
     slotId++;
     await web3.eth.sendTransaction({
       from: alice,
@@ -25,7 +27,13 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     });
   }
 
-  await contracts.exitHandler.methods.deposit(alice, 200000000000, 0).send({
+  await contracts.governance.methods.finalize()
+    .send({
+      from: alice,
+      gas: 2000000
+    });
+
+    await contracts.exitHandler.methods.deposit(alice, 200000000000, 0).send({
     from: alice,
     gas: 2000000
   });
