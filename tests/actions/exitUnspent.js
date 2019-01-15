@@ -4,14 +4,21 @@ const { sleep, unspentForAddress, makeTransfer, periodOfTheBlock, getYoungestInp
 const { bufferToHex } = require('ethereumjs-util');
 const should = require('chai').should();
 
-module.exports = async function(contracts, node, bob, sleepTime = 5000) {
+module.exports = async function(contracts, node, bob, sleepTime = 5000, noLog = false) {
+    let log;
+    if (noLog) {
+        log = function(){};
+    } else {
+        log = console.log;
+    }
+    
     let unspentIndex = -1;
     let txHash;
     let txData;
 
-    console.log(`------Unspents of ${bob}------`);
+    log(`------Unspents of ${bob}------`);
     const unspents = await node.web3.getUnspent(bob);
-    console.log(unspents);
+    log(unspents);
     debug("------Looking for unspent from submitted period------");
     const latestBlockNumber = (await node.web3.eth.getBlock('latest')).number;
     debug("Latest Block number: ", latestBlockNumber);
@@ -25,9 +32,9 @@ module.exports = async function(contracts, node, bob, sleepTime = 5000) {
         txHash = unspents[unspentIndex].outpoint.hash;
         txData = await node.web3.eth.getTransaction(bufferToHex(txHash));
     } while (txData.blockNumber >= latestSubmittedBlock);
-    console.log(`------Will attept to exit unspent ${unspentIndex} of ${bob}------`);
+    log(`------Will attept to exit unspent ${unspentIndex} of ${bob}------`);
     const amount = unspents[unspentIndex].output.value;
-    console.log("Unspent amount: ", amount);
+    log("Unspent amount: ", amount);
     debug(`------Transaction hash for Bob's unspent ${unspentIndex}------`);
     debug(txHash);
     debug("------Transaction data------");
@@ -55,26 +62,26 @@ module.exports = async function(contracts, node, bob, sleepTime = 5000) {
     }
     debug("------Period from the contract by merkle root------");
     debug(await contracts.bridge.methods.periods(proof[0]).call());
-    console.log("------Balance before exit------");
+    log("------Balance before exit------");
     const balanceBefore = await contracts.token.methods.balanceOf(bob).call();
     const plasmaBalanceBefore = await node.web3.eth.getBalance(bob);
-    console.log("Account mainnet balance: ", balanceBefore);
-    console.log("Account plasma balance: ", plasmaBalanceBefore);
-    console.log("Attempting exit...");
+    log("Account mainnet balance: ", balanceBefore);
+    log("Account plasma balance: ", plasmaBalanceBefore);
+    log("Attempting exit...");
     await contracts.exitHandler.methods.startExit(
         youngestInputProof,
         proof,
         unspents[unspentIndex].outpoint.index,
         youngestInput.index
     ).send({from: bob, value: 0, gas: 2000000});
-    console.log("Finilizing exit...");
+    log("Finilizing exit...");
     await contracts.exitHandler.methods.finalizeTopExit(0).send({from: bob, gas: 2000000});
-    console.log("------Balance after exit------");
+    log("------Balance after exit------");
     const balanceAfter = await contracts.token.methods.balanceOf(bob).call();
-    console.log("Account mainnet balance: ", balanceAfter);
+    log("Account mainnet balance: ", balanceAfter);
     await sleep(sleepTime);
     const plasmaBalanceAfter = (await node.web3.eth.getBalance(bob)) * 1;
-    console.log("Account plasma balance: ", plasmaBalanceAfter);
+    log("Account plasma balance: ", plasmaBalanceAfter);
 
     const unspentsAfter = await node.web3.getUnspent(bob);
     const unspentsValue = unspentsAfter.reduce((sum, unspent) => sum + unspent.output.value, 0);
