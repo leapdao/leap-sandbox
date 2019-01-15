@@ -1,4 +1,3 @@
-const adminableProxyAbi = require('../build/contracts/build/contracts/AdminableProxy').abi;
 const { sleep } = require('../src/helpers');
 const mintAndDeposit = require('./actions/mintAndDeposit');
 const { transfer, transferUtxo } = require('./actions/transfer');
@@ -14,7 +13,6 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     const alice = accounts[7].addr;
     const zzz = accounts[9].addr;
     const amount = 10000000;
-    const proxy = new web3.eth.Contract(adminableProxyAbi, contracts.operator._address);
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║   Test: Exit after epochLength change    ║");
@@ -29,7 +27,16 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log(`${alice} balance after deposit: ${plasmaBalanceAfter}`);
     console.log("Changing epochLength...");
     const data = await contracts.operator.methods.setEpochLength(2).encodeABI();
-    await proxy.methods.applyProposal(data).send({from: admin});
+    await contracts.governance.methods.propose(contracts.operator.options.address, data).send({
+        from: minter,
+        gas: 2000000
+    });
+    // 2 weeks waiting period ;)
+    await contracts.governance.methods.finalize().send({
+      from: minter,
+      gas: 2000000
+    });
+
     console.log("Make some more deposits to make sure the block is submitted (with log is off)...")
     for (let i = 0; i < 32; i++) {
         await mintAndDeposit(zzz, i + 1, minter, contracts.token, contracts.exitHandler, true);
