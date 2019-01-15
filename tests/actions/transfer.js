@@ -19,7 +19,13 @@ async function transfer(alice, alicePriv, bob, amount, node) {
     debug(transfer);
     expect(transfer).not.to.be.undefined;
     const response = await node.sendTx(transfer.hex());
-    const errCode = response.data.result.check_tx.code;
+    let errCode
+    if(response.data.result) {
+        errCode = response.data.result.check_tx.code;  
+    } else {
+        errCode = 9;
+        console.log(response);
+    }
     if(errCode) {
         throw new Error(`Non zero error code returned: ${errCode}`);
     }
