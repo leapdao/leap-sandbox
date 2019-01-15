@@ -5,23 +5,27 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   await contracts.token.methods.approve(contracts.exitHandler.options.address, 500000000000).send({from: alice});
   await contracts.token.methods.approve(contracts.operator.options.address, 500000000000).send({from: alice});
 
-  for (let i = 0; i < nodes.length; i++) { 
-    let node = nodes[i];
-    const validatorInfo = await node.web3.getValidatorInfo();
-    const overloadedSlotId = contracts.operator.options.address + '00000000000000000000000' + i;
-    await contracts.governance.methods.setSlot(
-      overloadedSlotId, validatorInfo.ethAddress, '0x' + validatorInfo.tendermintAddress
-    ).send({ from: alice, gas: 2000000 });
+  let i = 0;
+  let node = nodes[i];
+  const validatorInfo = await node.web3.getValidatorInfo();
+  const overloadedSlotId = contracts.operator.options.address + '00000000000000000000000' + i;
+  await contracts.governance.methods.setSlot(
+    overloadedSlotId, validatorInfo.ethAddress, '0x' + validatorInfo.tendermintAddress
+  ).send({ from: alice, gas: 2000000 });
 
-    await web3.eth.sendTransaction({
-      from: alice,
-      to: validatorInfo.ethAddress, 
-      value: web3.utils.toWei('1', "ether")
-    });
-  }
+  await web3.eth.sendTransaction({
+    from: alice,
+    to: validatorInfo.ethAddress, 
+    value: web3.utils.toWei('1', "ether")
+  });
 
-  const data = contracts.operator.methods.setEpochLength(nodes.length).encodeABI();
+  let data = contracts.operator.methods.setEpochLength(nodes.length).encodeABI();
   await contracts.governance.methods.propose(contracts.operator.options.address, data).send({
+    from: alice,
+    gas: 2000000
+  });
+  data = contracts.exitHandler.methods.setExitDuration(0).encodeABI();
+  await contracts.governance.methods.propose(contracts.exitHandler.options.address, data).send({
     from: alice,
     gas: 2000000
   });

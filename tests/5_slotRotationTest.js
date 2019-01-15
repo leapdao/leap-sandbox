@@ -42,12 +42,6 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   console.log("have some epochs pass by...");
   await machineGun(nodes, accounts, true);
 
-  console.log('log-out from slot 1');
-  const overSlot1 = contracts.operator.options.address + '000000000000000000000001';
-  await contracts.governance.methods.setSlot(
-    overSlot1, 0, '0x00'
-  ).send({ from: accounts[0].addr, gas: 2000000 });  
-
   console.log("set slot 0 again");
   await contracts.governance.methods.setSlot(
     overSlot0, 
@@ -57,6 +51,12 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     from: accounts[0].addr,
     gas: 2000000
   });
+
+  console.log('log-out from slot 1');
+  const overSlot1 = contracts.operator.options.address + '000000000000000000000001';
+  await contracts.governance.methods.setSlot(
+    overSlot1, 0, '0x00'
+  ).send({ from: accounts[0].addr, gas: 2000000 });    
 
   console.log("have some epochs pass by...");
   await machineGun(nodes, accounts, true);  
