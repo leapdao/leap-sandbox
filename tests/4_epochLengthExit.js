@@ -20,9 +20,8 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("║   Test: Exit after epochLength change    ║");
     console.log("║Steps:                                    ║");
     console.log("║1. Deposit to Alice                       ║");
-    console.log("║2. Trasfer from Alice to Bob              ║");
-    console.log("║3. Change epochLength                     ║");
-    console.log("║4. Exit Alice                             ║");
+    console.log("║2. Change epochLength                     ║");
+    console.log("║3. Exit Alice                             ║");
     console.log("╚══════════════════════════════════════════╝");
     await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler);
     await sleep(5000);
@@ -33,7 +32,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     await proxy.methods.applyProposal(data).send({from: admin});
     console.log("Make some more deposits to make sure the block is submitted (with log is off)...")
     for (let i = 0; i < 32; i++) {
-        await mintAndDeposit(zzz, 1, minter, contracts.token, contracts.exitHandler, true);
+        await mintAndDeposit(zzz, i + 1, minter, contracts.token, contracts.exitHandler, true);
         await sleep(1000);
     }
     await sleep(3000);
