@@ -43,7 +43,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     }
     console.log("Make some more deposits to make sure the block is submitted (with log is off)...")
     for (let i = 0; i < 20; i++) {
-        await mintAndDeposit(zzz, 1, minter, contracts.token, contracts.exitHandler, true);
+        await mintAndDeposit(zzz, i + 1, minter, contracts.token, contracts.exitHandler, true);
         await sleep(1000);
     }
     await sleep(3000);
