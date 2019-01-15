@@ -4,7 +4,7 @@ const { sleep, unspentForAddress, makeTransfer, periodOfTheBlock, getYoungestInp
 const { bufferToHex } = require('ethereumjs-util');
 const should = require('chai').should();
 
-module.exports = async function(contracts, node, bob) {
+module.exports = async function(contracts, node, bob, sleepTime = 5000) {
     let unspentIndex = -1;
     let txHash;
     let txData;
@@ -66,7 +66,7 @@ module.exports = async function(contracts, node, bob) {
     console.log("------Balance after exit------");
     const balanceAfter = await contracts.token.methods.balanceOf(bob).call();
     console.log("Account mainnet balance: ", balanceAfter);
-    await sleep(5000);
+    await sleep(sleepTime);
     const plasmaBalanceAfter = (await node.web3.eth.getBalance(bob)) * 1;
     console.log("Account plasma balance: ", plasmaBalanceAfter);
 
