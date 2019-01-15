@@ -41,12 +41,18 @@ module.exports = async function(contracts, node, bob, sleepTime = 5000) {
     debug("------Youngest Input------");
     const youngestInput = await getYoungestInputTx(node.web3, Tx.fromRaw(txData.raw));
     debug(youngestInput);
-    debug("------Youngest Input Period------");
-    const youngestInputPeriod = await periodOfTheBlock(node.web3, youngestInput.tx.blockNumber);
-    debug(youngestInputPeriod);
-    debug("------Youngest Input Proof------");
-    const youngestInputProof = youngestInputPeriod.proof(Tx.fromRaw(youngestInput.tx.raw));
-    debug(youngestInputProof);
+    let youngestInputProof;
+    if(youngestInput.tx){
+        debug("------Youngest Input Period------");
+        const youngestInputPeriod = await periodOfTheBlock(node.web3, youngestInput.tx.blockNumber);
+        debug(youngestInputPeriod);
+        debug("------Youngest Input Proof------");
+        youngestInputProof = youngestInputPeriod.proof(Tx.fromRaw(youngestInput.tx.raw));
+        debug(youngestInputProof);
+    } else {
+        debug("No youngest input found. Will try to exit deposit");
+        youngestInputProof = [];
+    }
     debug("------Period from the contract by merkle root------");
     debug(await contracts.bridge.methods.periods(proof[0]).call());
     console.log("------Balance before exit------");
