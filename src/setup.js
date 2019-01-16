@@ -13,11 +13,14 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     overloadedSlotId, validatorInfo.ethAddress, '0x' + validatorInfo.tendermintAddress
   ).send({ from: alice, gas: 2000000 });
 
-  await web3.eth.sendTransaction({
-    from: alice,
-    to: validatorInfo.ethAddress, 
-    value: web3.utils.toWei('1', "ether")
-  });
+  for (i = 0; i < nodes.length; i += 1) {
+    const validatorInfo = await nodes[i].web3.getValidatorInfo();
+    await web3.eth.sendTransaction({
+      from: alice,
+      to: validatorInfo.ethAddress,
+      value: web3.utils.toWei('1', "ether")
+    });
+  }
 
   let data = contracts.operator.methods.setEpochLength(nodes.length).encodeABI();
   await contracts.governance.methods.propose(contracts.operator.options.address, data).send({

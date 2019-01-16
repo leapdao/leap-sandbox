@@ -23,8 +23,19 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   // const config0 = await nodes[0].web3.getConfig();
   // console.log(config0);
 
-  console.log("log-out from slot 0");
-  const validatorInfo = await nodes[0].web3.getValidatorInfo();
+  console.log("set slot 1");
+  const validatorInfo1 = await nodes[1].web3.getValidatorInfo();
+  const overSlot1 = contracts.operator.options.address + '000000000000000000000001';
+  await contracts.governance.methods.setSlot(
+    overSlot1,
+    validatorInfo1.ethAddress, 
+    '0x' + validatorInfo1.tendermintAddress
+  ).send({
+    from: accounts[0].addr,
+    gas: 2000000
+  });
+
+  console.log('log-out from slot 0');
   const overSlot0 = contracts.operator.options.address + '000000000000000000000000';
   await contracts.governance.methods.setSlot(
     overSlot0, 0, '0x00'
@@ -41,35 +52,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
 
   console.log("have some epochs pass by...");
   await machineGun(nodes, accounts, true);
-
-  console.log("set slot 0 again");
-  await contracts.governance.methods.setSlot(
-    overSlot0, 
-    validatorInfo.ethAddress, 
-    '0x' + validatorInfo.tendermintAddress
-  ).send({
-    from: accounts[0].addr,
-    gas: 2000000
-  });
-
-  console.log('log-out from slot 1');
-  const overSlot1 = contracts.operator.options.address + '000000000000000000000001';
-  await contracts.governance.methods.setSlot(
-    overSlot1, 0, '0x00'
-  ).send({ from: accounts[0].addr, gas: 2000000 });    
-
-  console.log("have some epochs pass by...");
-  await machineGun(nodes, accounts, true);  
-  await machineGun(nodes, accounts, true);  
-
-  console.log("clean up slot 1");
-  await contracts.operator.methods.activate(1).send({
-    from: accounts[0].addr,
-    gas: 2000000
-  });
-
-  console.log("have some epochs pass by...");
-  await machineGun(nodes, accounts, true);  
+  await machineGun(nodes, accounts, true);
 
   console.log("------Exit Alice------");
   await exitUnspent(contracts, nodes[0], alice);

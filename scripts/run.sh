@@ -95,6 +95,8 @@ start_ganache
 deploy_contracts
 start_nodes
 
+sleep 5
+
 echo "Starting setup..."
 node run.js
 
