@@ -1,13 +1,8 @@
 const { helpers, Output, Outpoint, Tx } = require('leap-core');
-const { unspentForAddress, makeTransfer } = require('../../src/helpers');
+const { unspentForAddress, makeTransfer, getLog } = require('../../src/helpers');
 
 module.exports = async function(nodes, accounts, noLog = false) {
-  let log;
-  if (noLog) {
-    log = function(){};
-  } else {
-    log = console.log;
-  }
+  const log = getLog(noLog);
 
   const node = nodes[0];
   const alice = accounts[0].addr;

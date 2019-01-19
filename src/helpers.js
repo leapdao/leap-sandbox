@@ -10,6 +10,17 @@ function sleep(ms){
   })
 }
 
+function getLog(noLog) {
+  let log;
+  if (noLog) {
+    log = function(){};
+  } else {
+      log = console.log;
+  }
+
+  return log;
+}
+
 function formatHostname(hostname, port) {
   return 'http://'+hostname+':'+port;
 }
@@ -121,4 +132,4 @@ function getYoungestInputTx(web3, tx) {
   )).then(getTxWithYoungestBlock);
 }
 
-module.exports = { sleep, formatHostname, unspentForAddress, makeTransfer, makeTransferUxto, periodOfTheBlock, getYoungestInputTx };
+module.exports = { sleep, formatHostname, unspentForAddress, makeTransfer, makeTransferUxto, periodOfTheBlock, getYoungestInputTx, getLog };

@@ -11,6 +11,8 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     const minter = accounts[0].addr;
     const admin = accounts[1].addr;
     const alice = accounts[7].addr;
+    const alicePriv = accounts[7].privKey;
+    const bob = accounts[6].addr;
     const zzz = accounts[9].addr;
     const amount = 10000000;
 
@@ -18,13 +20,22 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("║   Test: Exit after epochLength change    ║");
     console.log("║Steps:                                    ║");
     console.log("║1. Deposit to Alice                       ║");
-    console.log("║2. Change epochLength                     ║");
-    console.log("║3. Exit Alice                             ║");
+    console.log("║2. Trasfer from Alice to Bob              ║");
+    console.log("║3. Change epochLength                     ║");
+    console.log("║4. Exit Bob                               ║");
     console.log("╚══════════════════════════════════════════╝");
     await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler);
     await sleep(5000);
     let plasmaBalanceAfter = (await nodes[0].web3.eth.getBalance(alice)) * 1;
     console.log(`${alice} balance after deposit: ${plasmaBalanceAfter}`);
+    console.log("------Transfer from Alice to Bob------");
+    let txAmount = Math.round(amount/(2000))+ Math.round(100 * Math.random());
+    await transfer(
+        alice, 
+        alicePriv, 
+        bob, 
+        txAmount, 
+        nodes[0]);
     console.log("Changing epochLength...");
     const data = await contracts.operator.methods.setEpochLength(2).encodeABI();
     await contracts.governance.methods.propose(contracts.operator.options.address, data).send({
@@ -43,8 +54,8 @@ module.exports = async function(contracts, nodes, accounts, web3) {
         await sleep(1000);
     }
     await sleep(3000);
-    console.log("------Exit Alice------");
-    const utxo = await exitUnspent(contracts, nodes[0], alice);
+    console.log("------Exit Bob------");
+    const utxo = await exitUnspent(contracts, nodes[0], bob);
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║   Test: Exit after epochLength change    ║");

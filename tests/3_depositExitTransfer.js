@@ -37,11 +37,14 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     const utxo = await exitUnspent(contracts, nodes[0], alice);
     console.log("------Attemp to transfer exited utxo from Alice to Bob (should fail)------");
     let plasmaBalanceBefore = (await nodes[0].web3.eth.getBalance(alice)) * 1;
+    const bobBalanceBefore = (await nodes[0].web3.eth.getBalance(bob)) * 1;
     await expect(transferUtxo(utxo, bob, alicePriv, nodes[0])).to.eventually.be.rejectedWith("Non zero error code returned: 2");
     //log: 'TypeError: Cannot read property \'address\' of undefined'
     plasmaBalanceAfter = (await nodes[0].web3.eth.getBalance(alice)) * 1;
-    console.log("Bob balance after: ", plasmaBalanceAfter);
+    const bobBalanceAfter = (await nodes[0].web3.eth.getBalance(bob)) * 1;
+    console.log("Alice balance after: ", plasmaBalanceAfter);
     expect(plasmaBalanceAfter).to.be.equal(plasmaBalanceBefore);
+    expect(bobBalanceAfter).to.be.equal(bobBalanceBefore);
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║Test: Transfer utxo after exit (negative) ║");

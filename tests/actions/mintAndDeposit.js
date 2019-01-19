@@ -1,12 +1,8 @@
+const { getLog } = require('../../src/helpers');
 const should = require('chai').should();
 
 module.exports = async function(alice, amount, minter, token, exitHandler, noLog = false) {
-  let log;
-  if (noLog) {
-    log = function(){};
-  } else {
-    log = console.log;    
-  }
+  const log = getLog(noLog);
   
   log(`------Will mint and deposit ${amount} tokens for ${alice}------`);
   log(`Minting token to account ${alice}...`);

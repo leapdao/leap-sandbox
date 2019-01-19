@@ -1,18 +1,13 @@
 const debug = require('debug')('exitUnspent');
 const { helpers, Output, Outpoint, Tx } = require('leap-core');
-const { sleep, unspentForAddress, makeTransfer, periodOfTheBlock, getYoungestInputTx } = require('../../src/helpers');
+const { sleep, unspentForAddress, makeTransfer, periodOfTheBlock, getYoungestInputTx, getLog } = require('../../src/helpers');
 const { bufferToHex } = require('ethereumjs-util');
 const should = require('chai').should();
 
 module.exports = async function(contracts, node, bob, sleepTime = 5000, noLog = false) {
-    let log;
-    if (noLog) {
-        log = function(){};
-    } else {
-        log = console.log;
-    }
+    const log = getLog(noLog);
     
-    let unspentIndex = -1;
+    //let unspentIndex = -1;
     let txHash;
     let txData;
 
@@ -27,11 +22,18 @@ module.exports = async function(contracts, node, bob, sleepTime = 5000, noLog = 
     if (latestSubmittedBlock === 0) {
         throw new Error("Can't exit, no periods were submitted yet");
     };
-    do {
+    const unspentIndex = unspents.findIndex(async (unspent) => {
+        txHash = unspent.outpoint.hash;
+        txData = await node.web3.eth.getTransaction(bufferToHex(txHash));
+        return txData.blockNumber < latestSubmittedBlock;
+    });
+    txHash = unspents[unspentIndex].outpoint.hash;
+    txData = await node.web3.eth.getTransaction(bufferToHex(txHash));
+    /*do {
         unspentIndex++;
         txHash = unspents[unspentIndex].outpoint.hash;
         txData = await node.web3.eth.getTransaction(bufferToHex(txHash));
-    } while (txData.blockNumber >= latestSubmittedBlock);
+    } while (txData.blockNumber >= latestSubmittedBlock);*/
     log(`------Will attept to exit unspent ${unspentIndex} of ${bob}------`);
     const amount = unspents[unspentIndex].output.value;
     log("Unspent amount: ", amount);
@@ -74,7 +76,7 @@ module.exports = async function(contracts, node, bob, sleepTime = 5000, noLog = 
         unspents[unspentIndex].outpoint.index,
         youngestInput.index
     ).send({from: bob, value: 0, gas: 2000000});
-    log("Finilizing exit...");
+    log("Finalizing exit...");
     await contracts.exitHandler.methods.finalizeTopExit(0).send({from: bob, gas: 2000000});
     log("------Balance after exit------");
     const balanceAfter = await contracts.token.methods.balanceOf(bob).call();
