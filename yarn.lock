@@ -2730,10 +2730,10 @@ lcid@^1.0.0:
   dependencies:
     invert-kv "^1.0.0"
 
-leap-core@^0.20.3:
-  version "0.20.3"
-  resolved "https://registry.yarnpkg.com/leap-core/-/leap-core-0.20.3.tgz#05c22ccaf07a42ae27d69d0577f82256d3d555f7"
-  integrity sha512-tkPlS6QblyXl9OIc5vLg6/n9va33nGo0xuBSu+ZkuE0t5OwMQoocRKcNJ6jn5QbBqYUxLLQdWGjyAXjh27+TEw==
+leap-core@^0.20.4:
+  version "0.20.4"
+  resolved "https://registry.yarnpkg.com/leap-core/-/leap-core-0.20.4.tgz#0e23e26e586843b9e5ca1799c4a1226aa7da42b2"
+  integrity sha512-ImB+n91i+WIzfc+nsfqtsJZ9ujqaZMblj1ZIztHd1zFCUSEEUFWmLvFKhjQ4rWggjZlvd/LF7hHfwbt/qFejWg==
   dependencies:
     "@types/web3" "^1.0.12"
     babel-polyfill "^6.26.0"

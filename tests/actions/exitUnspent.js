@@ -1,6 +1,6 @@
 const debug = require('debug')('exitUnspent');
-const { helpers, Output, Outpoint, Tx } = require('leap-core');
-const { sleep, unspentForAddress, makeTransfer, periodOfTheBlock, getYoungestInputTx, getLog } = require('../../src/helpers');
+const { helpers, Output, Outpoint, Tx, Period } = require('leap-core');
+const { sleep, unspentForAddress, makeTransfer, getLog } = require('../../src/helpers');
 const { bufferToHex } = require('ethereumjs-util');
 const should = require('chai').should();
 
@@ -36,18 +36,18 @@ module.exports = async function(contracts, node, bob, sleepTime = 5000, noLog = 
     debug("------Transaction data------");
     debug(txData);
     debug("------Period------");
-    const period = await periodOfTheBlock(node.web3, txData.blockNumber);
+    const period = await Period.periodForTx(node.web3, txData);
     debug(period);
     debug("------Proof------");
     const proof = period.proof(Tx.fromRaw(txData.raw));
     debug(proof);
     debug("------Youngest Input------");
-    const youngestInput = await getYoungestInputTx(node.web3, Tx.fromRaw(txData.raw));
+    const youngestInput = await helpers.getYoungestInputTx(node.web3, Tx.fromRaw(txData.raw));
     debug(youngestInput);
     let youngestInputProof;
     if(youngestInput.tx){
         debug("------Youngest Input Period------");
-        const youngestInputPeriod = await periodOfTheBlock(node.web3, youngestInput.tx.blockNumber);
+        const youngestInputPeriod = await Period.periodForTx(node.web3, youngestInput.tx);
         debug(youngestInputPeriod);
         debug("------Youngest Input Proof------");
         youngestInputProof = youngestInputPeriod.proof(Tx.fromRaw(youngestInput.tx.raw));

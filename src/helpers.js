@@ -92,44 +92,4 @@ function makeTransferUxto(
   return Tx.transferFromUtxos(utxos, from, to, value, color).signAll(privKey);
 }
 
-function periodOfTheBlock(web3, blockNumber) {
-  // ToDo: fix typing in lib
-  const periodNumber = Math.floor(blockNumber / 32);
-  const startBlock = periodNumber * 32;
-  const endBlock = periodNumber * 32 + 32;
-  return Promise.all(
-    range(startBlock, endBlock - 1).map(n => web3.eth.getBlock(n, true))
-  ).then(blocks => {
-    return new Period(
-      null,
-      blocks.filter(a => !!a).map(({ number, timestamp, transactions }) => {
-        const block = new Block(number, {
-          timestamp,
-          txs: transactions.map(tx => Tx.fromRaw(tx.raw)),
-        });
-
-        return block;
-      })
-    );
-  });
-}
-
-function getTxWithYoungestBlock(txs) {
-  let youngestIndex = 0;
-  let youngestInput = txs[0];
-  txs.forEach((tx, i) => {
-    if (tx.blockNumber > youngestInput.blockNumber) {
-      youngestIndex = i;
-      youngestInput = tx;
-    }
-  });
-  return { index: youngestIndex, tx: youngestInput };
-}
-
-function getYoungestInputTx(web3, tx) {
-  return Promise.all(tx.inputs.map(i =>
-    web3.eth.getTransaction(bufferToHex(i.prevout.hash)),
-  )).then(getTxWithYoungestBlock);
-}
-
-module.exports = { sleep, formatHostname, unspentForAddress, makeTransfer, makeTransferUxto, periodOfTheBlock, getYoungestInputTx, getLog };
+module.exports = { sleep, formatHostname, unspentForAddress, makeTransfer, makeTransferUxto, getLog };
