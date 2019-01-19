@@ -7,7 +7,6 @@ const should = require('chai').should();
 module.exports = async function(contracts, node, bob, sleepTime = 5000, noLog = false) {
     const log = getLog(noLog);
     
-    //let unspentIndex = -1;
     let txHash;
     let txData;
 
@@ -29,11 +28,6 @@ module.exports = async function(contracts, node, bob, sleepTime = 5000, noLog = 
     });
     txHash = unspents[unspentIndex].outpoint.hash;
     txData = await node.web3.eth.getTransaction(bufferToHex(txHash));
-    /*do {
-        unspentIndex++;
-        txHash = unspents[unspentIndex].outpoint.hash;
-        txData = await node.web3.eth.getTransaction(bufferToHex(txHash));
-    } while (txData.blockNumber >= latestSubmittedBlock);*/
     log(`------Will attept to exit unspent ${unspentIndex} of ${bob}------`);
     const amount = unspents[unspentIndex].output.value;
     log("Unspent amount: ", amount);
