@@ -1,7 +1,8 @@
 const debug = require('debug')('consolidate');
 const { helpers, Output, Outpoint, Tx } = require('leap-core');
 const { sleep, unspentForAddress, makeTransfer, } = require('../../src/helpers');
-const should = require('chai').should();
+const { bi, equal, add } = require('jsbi-utils');
+const { should, assert } = require('chai');
 
 module.exports = async function(node, account) {
 
@@ -25,7 +26,7 @@ module.exports = async function(node, account) {
         for (let i = 0; i < chunkedUnspents.length; i++) {
             debug(`------Consolidatating chunk ${i+1}------`);
             debug(chunkedUnspents[i]);
-            const chunkBalance = chunkedUnspents[i].reduce((sum, unspent) => sum + unspent.output.value, 0);
+            const chunkBalance = chunkedUnspents[i].reduce((sum, unspent) => add(bi(sum), bi(unspent.output.value)), 0);
             debug(`Balance of chunk ${i+1}: ${chunkBalance}`);
             const consolidateInputs = helpers.calcInputs(
                 chunkedUnspents[i],
@@ -48,9 +49,9 @@ module.exports = async function(node, account) {
         console.log("Balance: ", balanceAfter);
 
         balanceAfter.should.be.equal(balanceBefore);
-        unspentsAfter.reduce((sum, unspent) => sum + unspent.output.value, 0).should.be.equal(
-            unspents.reduce((sum, unspent) => sum + unspent.output.value, 0)
-        );
+        const some = unspentsAfter.reduce((sum, unspent) => add(bi(sum), bi(unspent.output.value)), 0);
+        const other = unspents.reduce((sum, unspent) => add(bi(sum), bi(unspent.output.value)), 0);
+        assert(equal(some, other));
     };
   
     await consolidateAddress(account);

@@ -2,7 +2,8 @@ const debug = require('debug')('exitUnspent');
 const { helpers, Output, Outpoint, Tx, Period } = require('leap-core');
 const { sleep, unspentForAddress, makeTransfer, getLog } = require('../../src/helpers');
 const { bufferToHex } = require('ethereumjs-util');
-const should = require('chai').should();
+const { bi, equal, add } = require('jsbi-utils');
+const { should, assert } = require('chai');
 
 module.exports = async function(contracts, node, bob, validator, sleepTime = 5000, noLog = false) {
     const log = getLog(noLog);
@@ -72,7 +73,7 @@ module.exports = async function(contracts, node, bob, validator, sleepTime = 500
         proof,
         unspents[unspentIndex].outpoint.index,
         youngestInput.index
-    ).send({from: bob, value: 0, gas: 2000000});
+    ).send({from: bob, value: 100000000000000000, gas: 2000000});
     log("Finalizing exit...");
     await contracts.exitHandler.methods.finalizeTopExit(0).send({from: bob, gas: 2000000});
     log("------Balance after exit------");
@@ -83,11 +84,13 @@ module.exports = async function(contracts, node, bob, validator, sleepTime = 500
     log("Account plasma balance: ", plasmaBalanceAfter);
 
     const unspentsAfter = await node.web3.getUnspent(bob);
-    const unspentsValue = unspentsAfter.reduce((sum, unspent) => sum + unspent.output.value, 0);
+    //const unspentsValue = unspentsAfter.reduce((sum, unspent) => sum + unspent.output.value, 0);
+    const unspentsValue = unspentsAfter.reduce((sum, unspent) => add(bi(sum), bi(unspent.output.value)), 0);
     unspentsAfter.length.should.be.equal(unspents.length - 1);
-    unspentsValue.should.be.equal(plasmaBalanceAfter);
+    assert(equal(bi(unspentsValue), bi(plasmaBalanceAfter)));
     plasmaBalanceAfter.should.be.equal(plasmaBalanceBefore - amount);
-    (+ balanceAfter).should.be.equal(+ balanceBefore + amount);
+    assert(equal(bi(balanceAfter), add(bi(balanceBefore), bi(amount))));
+
 
     return unspents[unspentIndex];
 }
