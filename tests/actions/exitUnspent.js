@@ -4,7 +4,7 @@ const { sleep, unspentForAddress, makeTransfer, getLog } = require('../../src/he
 const { bufferToHex } = require('ethereumjs-util');
 const should = require('chai').should();
 
-module.exports = async function(contracts, node, bob, sleepTime = 5000, noLog = false) {
+module.exports = async function(contracts, node, bob, validator, sleepTime = 5000, noLog = false) {
     const log = getLog(noLog);
     
     let txHash;
@@ -39,6 +39,8 @@ module.exports = async function(contracts, node, bob, sleepTime = 5000, noLog = 
     const period = await Period.periodForTx(node.web3, txData);
     debug(period);
     debug("------Proof------");
+    const validatorInfo = await node.web3.getValidatorInfo();
+    period.setValidatorData(0, validatorInfo.ethAddress);
     const proof = period.proof(Tx.fromRaw(txData.raw));
     debug(proof);
     debug("------Youngest Input------");
@@ -50,6 +52,7 @@ module.exports = async function(contracts, node, bob, sleepTime = 5000, noLog = 
         const youngestInputPeriod = await Period.periodForTx(node.web3, youngestInput.tx);
         debug(youngestInputPeriod);
         debug("------Youngest Input Proof------");
+        youngestInputPeriod.setValidatorData(0, validatorInfo.ethAddress);
         youngestInputProof = youngestInputPeriod.proof(Tx.fromRaw(youngestInput.tx.raw));
         debug(youngestInputProof);
     } else {
@@ -75,7 +78,7 @@ module.exports = async function(contracts, node, bob, sleepTime = 5000, noLog = 
     log("------Balance after exit------");
     const balanceAfter = await contracts.token.methods.balanceOf(bob).call();
     log("Account mainnet balance: ", balanceAfter);
-    await sleep(sleepTime);
+    await sleep(sleepTime * 2);
     const plasmaBalanceAfter = (await node.web3.eth.getBalance(bob)) * 1;
     log("Account plasma balance: ", plasmaBalanceAfter);
 

@@ -24,6 +24,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     await sleep(5000);
     let plasmaBalanceAfter = (await nodes[0].web3.eth.getBalance(alice)) * 1;
     console.log(`${alice} balance after deposit: ${plasmaBalanceAfter}`);
+    console.log(plasmaBalanceBefore, plasmaBalanceAfter);
     plasmaBalanceAfter.should.be.equal(plasmaBalanceBefore + amount);
     console.log("------Will make some transactions to fill a block------");
     for (let i = 0; i < 20; i++) {
@@ -48,9 +49,9 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     }
     await sleep(3000);
     console.log("------Exit Alice------");
-    await exitUnspent(contracts, nodes[0], alice);
+    await exitUnspent(contracts, nodes[0], alice, accounts[0].addr);
     console.log("------Exit Bob------");
-    await exitUnspent(contracts, nodes[0], bob);
+    await exitUnspent(contracts, nodes[0], bob, accounts[0].addr);
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║    Test: Deposit, trasfer, then exit     ║");

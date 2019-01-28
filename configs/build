@@ -1,2 +1,2 @@
-contracts_repo=" --single-branch -b master https://github.com/leapdao/leap-contracts.git"
-node_repo=" --single-branch -b fix/depositConsensus https://github.com/leapdao/leap-node.git"
+contracts_repo=" --single-branch -b fix/tokenAndHandler https://github.com/leapdao/leap-contracts.git"
+node_repo=" --single-branch -b fix/jsbi-2 https://github.com/leapdao/leap-node.git"
