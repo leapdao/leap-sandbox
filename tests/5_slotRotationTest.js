@@ -1,20 +1,20 @@
 const { sleep } = require('../src/helpers');
+const { transfer } = require('./actions/transfer');
 const mintAndDeposit = require('./actions/mintAndDeposit');
 const machineGun = require('./actions/machineGun');
-const consolidate = require('./actions/consolidate');
 const exitUnspent = require('./actions/exitUnspent');
 
 module.exports = async function(contracts, nodes, accounts, web3) {
-  const minter = accounts[0].addr;
-  const alice = accounts[2].addr;
-  const zzz = accounts[9].addr;
   const amount = 10000000;
+  const alice = accounts[0].addr;
+  const alicePriv = accounts[0].privKey;
+  const bob = accounts[5].addr;
 
   console.log("╔══════════════════════════════════════════╗");
   console.log("║   Test: Rotate through slots             ║");
   console.log("║Steps:                                    ║");
   console.log("║1. run on slot 0, set slot 1              ║");
-  console.log("║2. logout slot 0, run on both             ║");
+  console.log("║2. logout slot 0, run both  (super slow!) ║");
   console.log("║3. Empty slot 0, run only on slot 1       ║");
   console.log("║4. Exit Alice                             ║");
   console.log("╚══════════════════════════════════════════╝");
@@ -44,6 +44,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   console.log("have some epochs pass by...");
   await machineGun(nodes, accounts, true);
   await machineGun(nodes, accounts, true);
+  await machineGun(nodes, accounts, true);
 
   console.log("clean up slot 0");
   await contracts.operator.methods.activate(0).send({
@@ -51,13 +52,21 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     gas: 2000000
   });
 
+  await transfer(
+    alice, 
+    alicePriv, 
+    bob, 
+    amount, 
+    nodes[1]);
+
   console.log("have some epochs pass by...");
   await machineGun(nodes, accounts, true);
   await machineGun(nodes, accounts, true);
 
+  await sleep(3000);
   console.log("------Exit Alice------");
   const validatorInfo = await nodes[1].web3.getValidatorInfo();
-  await exitUnspent(contracts, nodes[1], alice, {slotId: 1, addr: validatorInfo.ethAddress});
+  const utxo = await exitUnspent(contracts, nodes[1], bob, {slotId: 1, addr: validatorInfo.ethAddress});
 
   console.log("╔══════════════════════════════════════════╗");
   console.log("║   Test: Rotate through slots Completed   ║");

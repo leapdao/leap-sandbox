@@ -21,10 +21,9 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("║3. Exit Alice                             ║");
     console.log("╚══════════════════════════════════════════╝");
     await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler);
-    await sleep(5000);
     console.log(`${alice} balance after deposit: ${await nodes[0].web3.eth.getBalance(alice)}`);
     await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler); //second deposit so there will be 2 utxo to consolidate
-    await sleep(5000);
+    await sleep(10000);
     console.log(`${alice} balance after deposit: ${await nodes[0].web3.eth.getBalance(alice)}`);
     await consolidate(nodes[0], alice);
     console.log(`${alice} balance after consolidate: ${await nodes[0].web3.eth.getBalance(alice)}`);

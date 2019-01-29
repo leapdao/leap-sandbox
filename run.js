@@ -65,9 +65,8 @@ async function run() {
   const exitHandlerContract = new web3.eth.Contract(exitHandlerAbi, nodeConfig.exitHandlerAddr);
   const operatorContract = new web3.eth.Contract(operatorAbi, nodeConfig.operatorAddr);
   const bridgeContract = new web3.eth.Contract(bridgeAbi, nodeConfig.bridgeAddr);
-  const governanceAddr = await (
-    new web3.eth.Contract(adminableProxyAbi, nodeConfig.operatorAddr)
-  ).methods.admin().call();
+  const proxyContract = new web3.eth.Contract(adminableProxyAbi, nodeConfig.operatorAddr);
+  const governanceAddr = await proxyContract.methods.admin().call();
   const governanceContract = new web3.eth.Contract(minGovAbi, governanceAddr);
 
   const tokenAddress = await exitHandlerContract.methods.getTokenAddr(0).call();
@@ -79,6 +78,7 @@ async function run() {
     bridge: bridgeContract,
     token: tokenContract,
     governance: governanceContract,
+    proxy: proxyContract,
   }
 
   const accounts = getAccounts(config.mnemonic, 10);
