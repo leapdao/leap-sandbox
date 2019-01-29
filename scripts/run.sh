@@ -7,27 +7,26 @@ trap cleanup EXIT
 
 # ------------------------------- FUNCTIONS -------------------------------
 cleanup() {
-  echo "Node PIDs: "${node_pids[*]}
-  # Kill the nodes
-  for pid in "${node_pids[@]}"
-  do
-    echo  "Killing node at PID: "$pid
-    kill -9 $pid
-  done
-  # Kill the ganache instance that we started
-  echo "Killing ganache"
-  pkill -f ganache
-  #kill -9 $ganache_pid
+  # get a comma-separated list of used ports
+  port_list="${used_ports[*]}"
+  port_list="${port_list//${IFS:0:1}/,}"
+
+  # find all the processed listening on used ports and SOFT kill them
+  echo "Killing ganache/node processes on ports: $port_list"
+  lsof -i :$port_list | awk '{l=$2} NR>1{print l}' | uniq | xargs kill
 }
 
 start_ganache() {
   echo "Starting ganache network..."
   node_modules/.bin/ganache-cli -p $ganache_port -m "${mnemonic[@]}" &> $out_dir"/ganache.out" &
-  ganache_pid=$!
+  used_ports+=($ganache_port)
 }
 
 deploy_contracts() {
   cd build/contracts
+  echo "Replacing ganache port in truffle-config.js.."
+  sed 's/port: 8545/port: '$ganache_port'/' truffle-config.js > truffle-config.js.tmp && rm truffle-config.js && mv truffle-config.js.tmp truffle-config.js
+
   echo "Deploying contracts..."
   export PROPOSAL_TIME=0
   export PARENT_BLOCK_INTERVAL=0
@@ -46,39 +45,28 @@ start_nodes() {
   config_loc="$first_rpc_addr$first_rpc_port"
 
   echo "Starting first node..."
-  launch_first_node
+  launch_node ./generatedConfig.json
   # Sleep a little to allow the node to start up
   sleep 7
 
   for i in $( seq 0 $(( $num_nodes-2 )) )
   do
     echo "Launching next node..."
-    launch_node
+    launch_node $config_loc
     sleep 7
   done
 
   cd - > /dev/null
 }
 
-launch_first_node() {
-  DEBUG=tendermint,leap-node* node index.js --config=./generatedConfig.json      \
-    --port $((base_port++)) --rpcport $((base_port++)) --wsport $((base_port++)) \
-    --abciPort $((base_port++)) --tendermintPort $((base_port++)) --devMode true \
-    &> $out_dir"/nodes/node"$((node_count++))".out" &
-  node_pids+=($!)
-  # Bash is super wierd...
-  (( node_count+=1 ))
-  (( base_port += 5 ))
-}
-
 launch_node() {
-  DEBUG=tendermint,leap-node* node index.js --config=$config_loc                 \
+  DEBUG=tendermint,leap-node* node index.js --config=$1                 \
     --port $((base_port++)) --rpcport $((base_port++)) --wsport $((base_port++)) \
     --abciPort $((base_port++)) --tendermintPort $((base_port++)) --devMode true \
     &> $out_dir"/nodes/node"$((node_count++))".out" &
-  node_pids+=($!)
+  used_ports+=($base_port)
   (( node_count+=1 ))
-  (( base_port += 5 ))
+  (( base_port+=5 ))
 }
 # ----------------------------- END FUNCTIONS -----------------------------
 
@@ -90,7 +78,7 @@ echo "Out folder: "$out_folder
 source configs/run
 
 node_count=0
-declare -a node_pids
+declare -a used_ports
 
 start_ganache
 deploy_contracts
