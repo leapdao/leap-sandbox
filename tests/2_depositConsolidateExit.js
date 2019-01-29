@@ -40,7 +40,8 @@ module.exports = async function(contracts, nodes, accounts, web3) {
             nodes[0]);
     }
     console.log("------Exit Alice------");
-    await exitUnspent(contracts, nodes[0], alice, accounts[0].addr, sleepTime);
+    const validatorInfo = await nodes[0].web3.getValidatorInfo();
+    await exitUnspent(contracts, nodes[0], alice, {slotId: 0, addr: validatorInfo.ethAddress}, sleepTime);
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║   Test: Deposit, consolidate, then exit  ║");

@@ -13,9 +13,9 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   console.log("╔══════════════════════════════════════════╗");
   console.log("║   Test: Rotate through slots             ║");
   console.log("║Steps:                                    ║");
-  console.log("║1. run on slot 0 and 1                    ║");
-  console.log("║2. Empty slot 0, run only on slot 1       ║");
-  console.log("║3. Empty slot 1, run only on slot 0       ║");
+  console.log("║1. run on slot 0, set slot 1              ║");
+  console.log("║2. logout slot 0, run on both             ║");
+  console.log("║3. Empty slot 0, run only on slot 1       ║");
   console.log("║4. Exit Alice                             ║");
   console.log("╚══════════════════════════════════════════╝");
 
@@ -43,6 +43,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
 
   console.log("have some epochs pass by...");
   await machineGun(nodes, accounts, true);
+  await machineGun(nodes, accounts, true);
 
   console.log("clean up slot 0");
   await contracts.operator.methods.activate(0).send({
@@ -55,7 +56,8 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   await machineGun(nodes, accounts, true);
 
   console.log("------Exit Alice------");
-  await exitUnspent(contracts, nodes[0], alice);
+  const validatorInfo = await nodes[1].web3.getValidatorInfo();
+  await exitUnspent(contracts, nodes[1], alice, {slotId: 1, addr: validatorInfo.ethAddress});
 
   console.log("╔══════════════════════════════════════════╗");
   console.log("║   Test: Rotate through slots Completed   ║");

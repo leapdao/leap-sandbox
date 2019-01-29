@@ -40,8 +40,7 @@ module.exports = async function(contracts, node, bob, validator, sleepTime = 500
     const period = await Period.periodForTx(node.web3, txData);
     debug(period);
     debug("------Proof------");
-    const validatorInfo = await node.web3.getValidatorInfo();
-    period.setValidatorData(0, validatorInfo.ethAddress);
+    period.setValidatorData(validator.slotId, validator.addr);
     const proof = period.proof(Tx.fromRaw(txData.raw));
     debug(proof);
     debug("------Youngest Input------");
@@ -53,7 +52,7 @@ module.exports = async function(contracts, node, bob, validator, sleepTime = 500
         const youngestInputPeriod = await Period.periodForTx(node.web3, youngestInput.tx);
         debug(youngestInputPeriod);
         debug("------Youngest Input Proof------");
-        youngestInputPeriod.setValidatorData(0, validatorInfo.ethAddress);
+        youngestInputPeriod.setValidatorData(validator.slotId, validator.addr);
         youngestInputProof = youngestInputPeriod.proof(Tx.fromRaw(youngestInput.tx.raw));
         debug(youngestInputProof);
     } else {

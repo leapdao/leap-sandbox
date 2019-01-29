@@ -21,7 +21,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("╚══════════════════════════════════════════╝");
     let plasmaBalanceBefore = (await nodes[0].web3.eth.getBalance(alice)) * 1;
     await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler);
-    await sleep(5000);
+    await sleep(8000);
     let plasmaBalanceAfter = (await nodes[0].web3.eth.getBalance(alice)) * 1;
     console.log(`${alice} balance after deposit: ${plasmaBalanceAfter}`);
     console.log(plasmaBalanceBefore, plasmaBalanceAfter);
@@ -49,9 +49,10 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     }
     await sleep(3000);
     console.log("------Exit Alice------");
-    await exitUnspent(contracts, nodes[0], alice, accounts[0].addr);
+    const validatorInfo = await nodes[0].web3.getValidatorInfo();
+    await exitUnspent(contracts, nodes[0], alice, {slotId: 0, addr: validatorInfo.ethAddress});
     console.log("------Exit Bob------");
-    await exitUnspent(contracts, nodes[0], bob, accounts[0].addr);
+    await exitUnspent(contracts, nodes[0], bob, {slotId: 0, addr: validatorInfo.ethAddress});
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║    Test: Deposit, trasfer, then exit     ║");

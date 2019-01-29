@@ -55,7 +55,8 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     }
     await sleep(3000);
     console.log("------Exit Bob------");
-    const utxo = await exitUnspent(contracts, nodes[0], bob, accounts[0].addr);
+    const validatorInfo = await nodes[0].web3.getValidatorInfo();
+    const utxo = await exitUnspent(contracts, nodes[0], bob, {slotId: 0, addr: validatorInfo.ethAddress});
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║   Test: Exit after epochLength change    ║");

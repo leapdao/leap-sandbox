@@ -34,7 +34,8 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     }
     await sleep(3000);
     console.log("------Exit Alice------");
-    const utxo = await exitUnspent(contracts, nodes[0], alice, accounts[0].addr);
+    const validatorInfo = await nodes[0].web3.getValidatorInfo();
+    const utxo = await exitUnspent(contracts, nodes[0], alice, {slotId: 0, addr: validatorInfo.ethAddress});
     console.log("------Attemp to transfer exited utxo from Alice to Bob (should fail)------");
     let plasmaBalanceBefore = (await nodes[0].web3.eth.getBalance(alice)) * 1;
     const bobBalanceBefore = (await nodes[0].web3.eth.getBalance(bob)) * 1;
