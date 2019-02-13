@@ -16,7 +16,7 @@
     "chai-as-promised": "^7.1.1",
     "ethereumjs-wallet": "^0.6.2",
     "ganache-cli": "^6.2.3",
-    "leap-core": "^0.22.0-1",
+    "leap-core": "^0.27.1",
     "jsbi-utils": "^1.0.0",
     "web3": "1.0.0-beta.34"
   }
