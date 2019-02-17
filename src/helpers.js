@@ -1,5 +1,7 @@
 const { helpers, Tx, Outpoint, Period, Block } = require('leap-core');
 const { bufferToHex } = require('ethereumjs-util');
+const time = require('./time');
+
 
 const range = (s, e) =>
   Array.from(new Array(e - s + 1), (_, i) => i + s);

@@ -25,7 +25,7 @@ start_ganache() {
 deploy_contracts() {
   cd build/contracts
   echo "Replacing ganache port in truffle-config.js.."
-  sed -i '' -E 's/port: [0-9]+/port: '$ganache_port'/g' truffle-config.js
+  sed -i -E 's/port: [0-9]+/port: '$ganache_port'/g' truffle-config.js
 
   echo "Deploying contracts..."
   export PROPOSAL_TIME=0
