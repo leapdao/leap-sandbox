@@ -1,7 +1,5 @@
 const { helpers, Tx, Outpoint, Period, Block } = require('leap-core');
 const { bufferToHex } = require('ethereumjs-util');
-const time = require('./time');
-
 
 const range = (s, e) =>
   Array.from(new Array(e - s + 1), (_, i) => i + s);
@@ -94,4 +92,16 @@ function makeTransferUxto(
   return Tx.transferFromUtxos(utxos, from, to, value, color).signAll(privKey);
 }
 
-module.exports = { sleep, formatHostname, unspentForAddress, makeTransfer, makeTransferUxto, getLog };
+function sendRawTx(web3, tx) {
+  return new Promise((fulfill, reject) => {
+    web3.eth.sendSignedTransaction(tx, (err, txHash) => {
+      if (err) {
+        reject(`Error: ${err.toString()}`);
+        return;
+      }
+      fulfill(txHash);
+    });
+  });
+};
+
+module.exports = { sleep, formatHostname, unspentForAddress, makeTransfer, makeTransferUxto, getLog, sendRawTx };

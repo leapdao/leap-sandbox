@@ -38,6 +38,7 @@ async function transfer(alice, alicePriv, bob, amount, node) {
     debug(`Block data: ${JSON.stringify(blockData, null, 2)}`);
     console.log("------Balances after------");
     console.log((await node.getState()).balances);
+    return transfer;
 }
 
 async function transferUtxo(utxo, bob, alicePriv, node) {
