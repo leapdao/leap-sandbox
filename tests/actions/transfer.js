@@ -3,10 +3,7 @@ const { makeTransfer, makeTransferUxto } = require('../../src/helpers');
 const expect = require('chai').expect;
 
 async function transfer(alice, alicePriv, bob, amount, node) {
-    console.log(`------Transfering ${amount} tokens from ${alice} to ${bob}------`);
-    console.log("------Balances before------");
     let state = await node.getState();
-    console.log(state.balances);
     debug("------Transfer data------");
     const transfer = makeTransfer(
       state,
@@ -36,8 +33,6 @@ async function transfer(alice, alicePriv, bob, amount, node) {
     debug(`getTransaction: ${JSON.stringify(txData, null, 2)}`);
     const blockData = await node.web3.eth.getBlock(txData.blockHash);
     debug(`Block data: ${JSON.stringify(blockData, null, 2)}`);
-    console.log("------Balances after------");
-    console.log((await node.getState()).balances);
     return transfer;
 }
 
