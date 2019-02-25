@@ -4,7 +4,7 @@ const { bufferToHex } = require('ethereumjs-util');
 
 const exitHandlerAbi = require('./exitHandler');
 
-module.exports = async function(exitTxHash, spendTxHash, nodeUrl, providerUrl, privKey) {
+module.exports = async function(exitTxHash, spendTxHash, nodeUrl, providerUrl, privKey, validatorAddr) {
 
   const web3 = new Web3(providerUrl);
   const plasmaWeb3 = helpers.extendWeb3(new Web3(nodeUrl));
@@ -30,9 +30,8 @@ module.exports = async function(exitTxHash, spendTxHash, nodeUrl, providerUrl, p
     }
   }
 
-  const validatorInfo = await plasmaWeb3.getValidatorInfo();
-  const exitProof = await helpers.getProof(plasmaWeb3, exitTx, 0, validatorInfo.ethAddress);
-  const spendProof = await helpers.getProof(plasmaWeb3, spendingTx, 0, validatorInfo.ethAddress);
+  const exitProof = await helpers.getProof(plasmaWeb3, exitTx, 0, validatorAddr);
+  const spendProof = await helpers.getProof(plasmaWeb3, spendingTx, 0, validatorAddr);
 
   await exitHandler.methods.challengeExit(
       spendProof,

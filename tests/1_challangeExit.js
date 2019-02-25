@@ -90,7 +90,15 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     secondTransfer.hash(), 
     node.web3.currentProvider.host, 
     web3.currentProvider.host, 
-    challengerPriv);
+    challengerPriv,
+    validatorInfo.ethAddress);
+
+  console.log(firstTransfer.hash(), 
+    secondTransfer.hash(), 
+    node.web3.currentProvider.host, 
+    web3.currentProvider.host, 
+    challengerPriv,
+    validatorInfo.ethAddress);
 
   exit = await contracts.exitHandler.methods.exits(utxoId).call();
   console.log(exit);
