@@ -5,6 +5,8 @@ const { bufferToHex } = require('ethereumjs-util');
 const { bi, equal, add } = require('jsbi-utils');
 const { should, assert } = require('chai');
 
+
+
 module.exports = async function(contracts, node, bob, validator, sleepTime = 5000, noLog = false) {
     const log = getLog(noLog);
     
@@ -22,14 +24,26 @@ module.exports = async function(contracts, node, bob, validator, sleepTime = 500
     if (latestSubmittedBlock === 0) {
         throw new Error("Can't exit, no periods were submitted yet");
     };
-    const unspentIndex = unspents.findIndex(async (unspent) => {
-        txHash = unspent.outpoint.hash;
-        txData = await node.web3.eth.getTransaction(bufferToHex(txHash));
-        return txData.blockNumber < latestSubmittedBlock;
-    });
+    
+    const getIndex = async (unspents, lastBlock) =>{
+        for(let i=0; i<unspents.length; i++) {
+            txHash = unspents[i].outpoint.hash;
+            txData = await node.web3.eth.getTransaction(bufferToHex(txHash));
+            debug("Unspent", i, "blocknumber:", txData.blockNumber);
+            debug("Is submitted?", txData.blockNumber < lastBlock);
+            if (txData.blockNumber < lastBlock) return i;
+        }
+    
+        return -1;
+    };
+
+    const unspentIndex = await getIndex(unspents, latestSubmittedBlock);
+    if (unspentIndex === -1) {
+        throw new Error("Can't exit, no unspents are in submitted periods found");
+    };
+    log(`------Will attept to exit unspent ${unspentIndex} of ${bob}------`);
     txHash = unspents[unspentIndex].outpoint.hash;
     txData = await node.web3.eth.getTransaction(bufferToHex(txHash));
-    log(`------Will attept to exit unspent ${unspentIndex} of ${bob}------`);
     const amount = unspents[unspentIndex].output.value;
     log("Unspent amount: ", amount);
     debug(`------Transaction hash for Bob's unspent ${unspentIndex}------`);
