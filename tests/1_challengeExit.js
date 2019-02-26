@@ -1,4 +1,5 @@
 const { Tx, Input, Output, Outpoint, Period, helpers } = require('leap-core');
+const assert = require("assert");
 
 const challenge = require('../scripts/challenge');
 
@@ -20,8 +21,8 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler);
   await sleep(8000);
 
+  // Make first transfer
   let state = await node.getState();
-  console.log(state);
   let aliceUnspent = unspentForAddress(state.unspent, alice, color).map(u => ({
     output: u.output,
     outpoint: Outpoint.fromRaw(u.outpoint),
@@ -33,8 +34,8 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   await node.sendTx(firstTransfer.hex());
   await sleep(3000);
 
+  // Make second transfer
   state = await node.getState();
-  console.log(state);
   aliceUnspent = unspentForAddress(state.unspent, alice, color).map(u => ({
     output: u.output,
     outpoint: Outpoint.fromRaw(u.outpoint),
@@ -47,7 +48,6 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   await sleep(3000);
 
   state = await node.getState();
-  console.log(state);
 
   console.log("Make some more deposits to make sure the block is submitted (with log is off)...")
   for (let i = 0; i < 20; i++) {
@@ -56,10 +56,9 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   }
   await sleep(3000);
 
+  // Make sure the period was submitted
   const latestBlockNumber = (await node.web3.eth.getBlock('latest')).number;
-  console.log("Latest Block number: ", latestBlockNumber);
   const latestSubmittedBlock = latestBlockNumber - latestBlockNumber % 32;
-  console.log("Latest submitted block number: ", latestSubmittedBlock);
   if (latestSubmittedBlock === 0) {
     throw new Error("Can't exit, no periods were submitted yet");
   };
@@ -71,10 +70,6 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   const youngestInputTx = await helpers.getYoungestInputTx(node.web3, Tx.fromRaw(txData.raw));
   const inputProof = await helpers.getProof(node.web3, youngestInputTx.tx, 0, validatorInfo.ethAddress);
 
-  const balanceBefore = await contracts.token.methods.balanceOf(alice).call();
-  const plasmaBalanceBefore = await node.web3.eth.getBalance(alice);
-  console.log("Account mainnet balance: ", balanceBefore);
-  console.log("Account plasma balance: ", plasmaBalanceBefore);
   console.log("Attempting exit...");
   const exitTx = await contracts.exitHandler.methods.startExit(
       inputProof,
@@ -84,7 +79,8 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   ).send({from: alice, value: 100000000000000000, gas: 2000000});
   const utxoId = new Outpoint(firstTransfer.hash(), 0).getUtxoId();
   let exit = await contracts.exitHandler.methods.exits(utxoId).call();
-  console.log(exit);
+  
+  assert(exit.owner.toLowerCase() === alice.toLowerCase());
 
   await challenge(firstTransfer.hash(), 
     secondTransfer.hash(), 
@@ -93,14 +89,8 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     challengerPriv,
     validatorInfo.ethAddress);
 
-  console.log(firstTransfer.hash(), 
-    secondTransfer.hash(), 
-    node.web3.currentProvider.host, 
-    web3.currentProvider.host, 
-    challengerPriv,
-    validatorInfo.ethAddress);
-
   exit = await contracts.exitHandler.methods.exits(utxoId).call();
-  console.log(exit);
+
+  assert(exit.owner !== alice);
 
 }
