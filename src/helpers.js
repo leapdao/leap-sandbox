@@ -92,4 +92,27 @@ function makeTransferUxto(
   return Tx.transferFromUtxos(utxos, from, to, value, color).signAll(privKey);
 }
 
-module.exports = { sleep, formatHostname, unspentForAddress, makeTransfer, makeTransferUxto, getLog };
+function advanceBlock(web3) {
+  const id = Date.now();
+
+  return new Promise((resolve, reject) => {
+    web3.currentProvider.send(
+      {
+        jsonrpc: "2.0",
+        method: "evm_mine",
+        id: id + 1
+      },
+      (err, res) => {
+        return err ? reject(err) : resolve(res);
+      }
+    );
+  });
+};
+
+async function advanceBlocks(number, web3) {
+  for (let i = 0; i < number; i++) {
+    await advanceBlock(web3);
+  }
+};
+
+module.exports = { sleep, formatHostname, unspentForAddress, makeTransfer, makeTransferUxto, getLog, advanceBlocks };
