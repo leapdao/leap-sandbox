@@ -66,7 +66,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   await sleep(3000);
   console.log("------Exit Alice------");
   const validatorInfo = await nodes[1].web3.getValidatorInfo();
-  const utxo = await exitUnspent(contracts, nodes[1], bob, {slotId: 1, addr: validatorInfo.ethAddress});
+  const utxo = await exitUnspent(contracts, nodes[1], bob, {slotId: 1, addr: validatorInfo.ethAddress}, web3);
 
   console.log("╔══════════════════════════════════════════╗");
   console.log("║   Test: Rotate through slots Completed   ║");

@@ -1,13 +1,13 @@
 const debug = require('debug')('exitUnspent');
 const { helpers, Output, Outpoint, Tx, Period } = require('leap-core');
-const { sleep, unspentForAddress, makeTransfer, getLog } = require('../../src/helpers');
+const { sleep, advanceBlocks, unspentForAddress, makeTransfer, getLog } = require('../../src/helpers');
 const { bufferToHex } = require('ethereumjs-util');
 const { bi, equal, add } = require('jsbi-utils');
 const { should, assert } = require('chai');
 
 
 
-module.exports = async function(contracts, node, bob, validator, sleepTime = 5000, noLog = false) {
+module.exports = async function(contracts, node, bob, validator, web3, sleepTime = 5000, noLog = false) {
     const log = getLog(noLog);
     
     let txHash;
@@ -92,6 +92,7 @@ module.exports = async function(contracts, node, bob, validator, sleepTime = 500
     log("------Balance after exit------");
     const balanceAfter = await contracts.token.methods.balanceOf(bob).call();
     log("Account mainnet balance: ", balanceAfter);
+    await advanceBlocks(10,web3);
     await sleep(sleepTime * 2);
     const plasmaBalanceAfter = (await node.web3.eth.getBalance(bob)) * 1;
     log("Account plasma balance: ", plasmaBalanceAfter);

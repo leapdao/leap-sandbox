@@ -1,4 +1,4 @@
-const { sleep } = require('../src/helpers');
+const { sleep, advanceBlocks } = require('../src/helpers');
 const mintAndDeposit = require('./actions/mintAndDeposit');
 const { transfer } = require('./actions/transfer');
 const exitUnspent = require('./actions/exitUnspent');
@@ -21,7 +21,9 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("╚══════════════════════════════════════════╝");
     let plasmaBalanceBefore = (await nodes[0].web3.eth.getBalance(alice)) * 1;
     await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler);
-    await sleep(8000);
+    await advanceBlocks(10,web3);
+    await sleep(5000);
+    console.log(Date.now());
     let plasmaBalanceAfter = (await nodes[0].web3.eth.getBalance(alice)) * 1;
     console.log(`${alice} balance after deposit: ${plasmaBalanceAfter}`);
     console.log(plasmaBalanceBefore, plasmaBalanceAfter);
@@ -45,14 +47,16 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("Make some more deposits to make sure the block is submitted (with log is off)...")
     for (let i = 0; i < 20; i++) {
         await mintAndDeposit(zzz, i + 1, minter, contracts.token, contracts.exitHandler, true);
-        await sleep(1000);
+        await advanceBlocks(10,web3);
+        await sleep(4000);
     }
+    await advanceBlocks(10,web3);
     await sleep(3000);
     console.log("------Exit Alice------");
     const validatorInfo = await nodes[0].web3.getValidatorInfo();
-    await exitUnspent(contracts, nodes[0], alice, {slotId: 0, addr: validatorInfo.ethAddress});
+    await exitUnspent(contracts, nodes[0], alice, {slotId: 0, addr: validatorInfo.ethAddress}, web3);
     console.log("------Exit Bob------");
-    await exitUnspent(contracts, nodes[0], bob, {slotId: 0, addr: validatorInfo.ethAddress});
+    await exitUnspent(contracts, nodes[0], bob, {slotId: 0, addr: validatorInfo.ethAddress}, web3);
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║    Test: Deposit, trasfer, then exit     ║");

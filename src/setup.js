@@ -10,11 +10,13 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   await contracts.token.methods.approve(contracts.exitHandler.options.address, 500000000000).send({from: alice});
   await contracts.token.methods.approve(contracts.operator.options.address, 500000000000).send({from: alice});
 
-  const validatorInfo = await nodes[0].web3.getValidatorInfo();
-  const overloadedSlotId = contracts.operator.options.address + '000000000000000000000000';
-  await contracts.governance.methods.setSlot(
-    overloadedSlotId, validatorInfo.ethAddress, '0x' + validatorInfo.tendermintAddress
-  ).send({ from: alice, gas: 2000000 });
+  for (let i = 0; i < nodes.length - 1; i += 1) {
+    const validatorInfo = await nodes[i].web3.getValidatorInfo();
+    const overloadedSlotId = contracts.operator.options.address + '00000000000000000000000' + i.toString();
+    await contracts.governance.methods.setSlot(
+      overloadedSlotId, validatorInfo.ethAddress, '0x' + validatorInfo.tendermintAddress
+    ).send({ from: alice, gas: 2000000 });
+  }
 
   for (let i = 0; i < nodes.length; i += 1) {
     const validatorInfo = await nodes[i].web3.getValidatorInfo();

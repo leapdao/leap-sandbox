@@ -1,4 +1,4 @@
-const { sleep } = require('../src/helpers');
+const { sleep, advanceBlocks } = require('../src/helpers');
 const mintAndDeposit = require('./actions/mintAndDeposit');
 const { transfer, transferUtxo } = require('./actions/transfer');
 const exitUnspent = require('./actions/exitUnspent');
@@ -25,7 +25,8 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("║4. Exit Bob                               ║");
     console.log("╚══════════════════════════════════════════╝");
     await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler);
-    await sleep(5000);
+    await advanceBlocks(10,web3);
+    await sleep(4000);
     let plasmaBalanceAfter = (await nodes[0].web3.eth.getBalance(alice)) * 1;
     console.log(`${alice} balance after deposit: ${plasmaBalanceAfter}`);
     console.log("------Transfer from Alice to Bob------");
@@ -51,12 +52,14 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("Make some more deposits to make sure the block is submitted (with log is off)...")
     for (let i = 0; i < 32; i++) {
         await mintAndDeposit(zzz, i + 1, minter, contracts.token, contracts.exitHandler, true);
-        await sleep(1000);
+        await advanceBlocks(10,web3);
+        await sleep(4000);
     }
+    await advanceBlocks(10,web3);
     await sleep(3000);
     console.log("------Exit Bob------");
     const validatorInfo = await nodes[0].web3.getValidatorInfo();
-    const utxo = await exitUnspent(contracts, nodes[0], bob, {slotId: 0, addr: validatorInfo.ethAddress});
+    const utxo = await exitUnspent(contracts, nodes[0], bob, {slotId: 0, addr: validatorInfo.ethAddress}, web3);
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║   Test: Exit after epochLength change    ║");

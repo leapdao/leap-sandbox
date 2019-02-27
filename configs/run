@@ -1,4 +1,4 @@
 ganache_port=8545
-num_nodes=2
+num_nodes=3
 base_port=7000
 mnemonic="base embrace minute bone orphan spread teach finger eagle weekend outside reduce"
