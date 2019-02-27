@@ -30,6 +30,8 @@ deploy_contracts() {
   echo "Deploying contracts..."
   export PROPOSAL_TIME=0
   export PARENT_BLOCK_INTERVAL=0
+  export ADVANCE_BLOCK=0
+  export EVENTS_DELAY=1
   yarn deploy --reset &> $out_dir/contracts_migrate.out
   cd - > /dev/null
 }
