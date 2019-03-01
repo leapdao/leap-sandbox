@@ -26,7 +26,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("╚══════════════════════════════════════════╝");
     await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler);
     await advanceBlocks(10,web3);
-    await sleep(4000);
+    await sleep(8000);
     let plasmaBalanceAfter = (await nodes[0].web3.eth.getBalance(alice)) * 1;
     console.log(`${alice} balance after deposit: ${plasmaBalanceAfter}`);
     console.log("------Transfer from Alice to Bob------");
