@@ -1,16 +1,15 @@
-const { sleep, advanceBlocks } = require('../src/helpers');
 const mintAndDeposit = require('./actions/mintAndDeposit');
 const { transfer } = require('./actions/transfer');
 const exitUnspent = require('./actions/exitUnspent');
 const minePeriod = require('./actions/minePeriod');
-const should = require('chai').should();
 
-module.exports = async function(contracts, nodes, accounts, web3) {
+require('chai').should();
+
+module.exports = async function(contracts, [node], accounts, web3) {
     const minter = accounts[0].addr;
     const alice = accounts[2].addr;
     const alicePriv = accounts[2].privKey;
     const bob = accounts[3].addr;
-    const zzz = accounts[9].addr;
     const amount = 10000000;
 
     console.log("╔══════════════════════════════════════════╗");
@@ -21,30 +20,30 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("║3. Exit Alice and Bob                     ║");
     console.log("╚══════════════════════════════════════════╝");
 
-    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler, nodes[0], web3);
+    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler, node, web3);
 
     console.log("------Will make some transactions to fill a block------");
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 5; i++) {
         let txAmount = Math.round(amount/(2000))+ Math.round(100 * Math.random());
-        let balanceAlice = (await nodes[0].web3.eth.getBalance(alice)) * 1;
-        let balanceBob = (await nodes[0].web3.eth.getBalance(bob)) * 1;
+        let balanceAlice = await node.getBalance(alice);
+        let balanceBob = await node.getBalance(bob);
 
         await transfer(
             alice, 
             alicePriv, 
             bob, 
             txAmount, 
-            nodes[0]);
+            node);
         
-        ((await nodes[0].web3.eth.getBalance(alice)) * 1).should.be.equal(balanceAlice - txAmount);
-        ((await nodes[0].web3.eth.getBalance(bob)) * 1).should.be.equal(balanceBob + txAmount);
+        (await node.getBalance(alice)).should.be.equal(balanceAlice - txAmount);
+        (await node.getBalance(bob)).should.be.equal(balanceBob + txAmount);
     }
-    await minePeriod(nodes, accounts);
+    await minePeriod(node, accounts);
     console.log("------Exit Alice------");
-    const validatorInfo = await nodes[0].web3.getValidatorInfo();
-    await exitUnspent(contracts, nodes[0], alice, {slotId: 0, addr: validatorInfo.ethAddress}, web3);
+    const validatorInfo = await node.web3.getValidatorInfo();
+    await exitUnspent(contracts, node, alice, {slotId: 0, addr: validatorInfo.ethAddress}, web3);
     console.log("------Exit Bob------");
-    await exitUnspent(contracts, nodes[0], bob, {slotId: 0, addr: validatorInfo.ethAddress}, web3);
+    await exitUnspent(contracts, node, bob, {slotId: 0, addr: validatorInfo.ethAddress}, web3);
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║    Test: Deposit, trasfer, then exit     ║");

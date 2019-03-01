@@ -1,20 +1,16 @@
-const { sleep, advanceBlocks } = require('../src/helpers');
 const mintAndDeposit = require('./actions/mintAndDeposit');
-const { transfer, transferUtxo } = require('./actions/transfer');
+const { transfer } = require('./actions/transfer');
 const exitUnspent = require('./actions/exitUnspent');
 const minePeriod = require('./actions/minePeriod');
 const chai = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
-const expect = chai.expect;
 
-module.exports = async function(contracts, nodes, accounts, web3) {
+module.exports = async function(contracts, [node], accounts, web3) {
     const minter = accounts[0].addr;
-    const admin = accounts[1].addr;
     const alice = accounts[7].addr;
     const alicePriv = accounts[7].privKey;
     const bob = accounts[6].addr;
-    const zzz = accounts[9].addr;
     const amount = 10000000;
 
     console.log("╔══════════════════════════════════════════╗");
@@ -26,7 +22,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("║4. Exit Bob                               ║");
     console.log("╚══════════════════════════════════════════╝");
     
-    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler, nodes[0], web3);
+    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler, node, web3);
     
     console.log("------Transfer from Alice to Bob------");
     let txAmount = Math.round(amount/(2000))+ Math.round(100 * Math.random());
@@ -35,7 +31,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
         alicePriv, 
         bob, 
         txAmount, 
-        nodes[0]);
+        node);
     console.log("Changing epochLength...");
     const data = await contracts.operator.methods.setEpochLength(2).encodeABI();
     await contracts.governance.methods.propose(contracts.operator.options.address, data).send({
@@ -48,10 +44,10 @@ module.exports = async function(contracts, nodes, accounts, web3) {
       gas: 2000000
     });
 
-    await minePeriod(nodes, accounts);
+    await minePeriod(node, accounts);
     console.log("------Exit Bob------");
-    const validatorInfo = await nodes[0].web3.getValidatorInfo();
-    const utxo = await exitUnspent(contracts, nodes[0], bob, {slotId: 0, addr: validatorInfo.ethAddress}, web3);
+    const validatorInfo = await node.web3.getValidatorInfo();
+    await exitUnspent(contracts, node, bob, {slotId: 0, addr: validatorInfo.ethAddress}, web3);
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║   Test: Exit after epochLength change    ║");

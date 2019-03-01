@@ -21,6 +21,10 @@ class Node {
   async sendTx(rawTx) {
     return axios.post(this.httpUrl+'/txs', { encoded: rawTx });
   };
+
+  async getBalance(addr) {
+    return this.web3.eth.getBalance(addr).then(res => Number(res));
+  }
 }
 
 module.exports = Node;
