@@ -2,6 +2,7 @@ const { sleep, advanceBlocks } = require('../src/helpers');
 const mintAndDeposit = require('./actions/mintAndDeposit');
 const { transfer } = require('./actions/transfer');
 const exitUnspent = require('./actions/exitUnspent');
+const minePeriod = require('./actions/minePeriod');
 const should = require('chai').should();
 
 module.exports = async function(contracts, nodes, accounts, web3) {
@@ -44,14 +45,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
         ((await nodes[0].web3.eth.getBalance(alice)) * 1).should.be.equal(balanceAlice - txAmount);
         ((await nodes[0].web3.eth.getBalance(bob)) * 1).should.be.equal(balanceBob + txAmount);
     }
-    console.log("Make some more deposits to make sure the block is submitted (with log is off)...")
-    for (let i = 0; i < 20; i++) {
-        await mintAndDeposit(zzz, i + 1, minter, contracts.token, contracts.exitHandler, true);
-        await advanceBlocks(10,web3);
-        await sleep(4000);
-    }
-    await advanceBlocks(10,web3);
-    await sleep(3000);
+    await minePeriod(nodes, accounts);
     console.log("------Exit Alice------");
     const validatorInfo = await nodes[0].web3.getValidatorInfo();
     await exitUnspent(contracts, nodes[0], alice, {slotId: 0, addr: validatorInfo.ethAddress}, web3);

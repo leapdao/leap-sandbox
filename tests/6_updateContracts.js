@@ -1,4 +1,4 @@
-const machineGun = require('./actions/machineGun');
+const minePeriod = require('./actions/minePeriod');
 const PosOperator = require('../build/contracts/build/contracts/PosOperator');
 
 module.exports = async function(contracts, nodes, accounts, web3) {
@@ -25,7 +25,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   await contracts.governance.methods.finalize().send({ from: alice });
 
   console.log("have some epochs pass by...");
-  await machineGun(nodes, accounts, true);
+  await minePeriod(nodes, accounts);
 
   console.log("╔══════════════════════════════════════╗");
   console.log("║   Test: Upgrade contract             ║");

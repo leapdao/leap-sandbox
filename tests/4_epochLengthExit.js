@@ -2,6 +2,7 @@ const { sleep, advanceBlocks } = require('../src/helpers');
 const mintAndDeposit = require('./actions/mintAndDeposit');
 const { transfer, transferUtxo } = require('./actions/transfer');
 const exitUnspent = require('./actions/exitUnspent');
+const minePeriod = require('./actions/minePeriod');
 const chai = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
@@ -49,14 +50,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
       gas: 2000000
     });
 
-    console.log("Make some more deposits to make sure the block is submitted (with log is off)...")
-    for (let i = 0; i < 32; i++) {
-        await mintAndDeposit(zzz, i + 1, minter, contracts.token, contracts.exitHandler, true);
-        await advanceBlocks(10,web3);
-        await sleep(4000);
-    }
-    await advanceBlocks(10,web3);
-    await sleep(3000);
+    await minePeriod(nodes, accounts);
     console.log("------Exit Bob------");
     const validatorInfo = await nodes[0].web3.getValidatorInfo();
     const utxo = await exitUnspent(contracts, nodes[0], bob, {slotId: 0, addr: validatorInfo.ethAddress}, web3);
