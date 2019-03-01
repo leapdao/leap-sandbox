@@ -22,7 +22,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     let plasmaBalanceBefore = (await nodes[0].web3.eth.getBalance(alice)) * 1;
     await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler);
     await advanceBlocks(10,web3);
-    await sleep(5000);
+    await sleep(8000);
     console.log(Date.now());
     let plasmaBalanceAfter = (await nodes[0].web3.eth.getBalance(alice)) * 1;
     console.log(`${alice} balance after deposit: ${plasmaBalanceAfter}`);
