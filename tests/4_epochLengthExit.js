@@ -25,11 +25,9 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("║3. Change epochLength                     ║");
     console.log("║4. Exit Bob                               ║");
     console.log("╚══════════════════════════════════════════╝");
-    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler);
-    await advanceBlocks(10,web3);
-    await sleep(8000);
-    let plasmaBalanceAfter = (await nodes[0].web3.eth.getBalance(alice)) * 1;
-    console.log(`${alice} balance after deposit: ${plasmaBalanceAfter}`);
+    
+    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler, nodes[0], web3);
+    
     console.log("------Transfer from Alice to Bob------");
     let txAmount = Math.round(amount/(2000))+ Math.round(100 * Math.random());
     await transfer(

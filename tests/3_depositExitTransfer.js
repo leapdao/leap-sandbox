@@ -24,12 +24,11 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("║2. Exit Alice                             ║");
     console.log("║3. Try to transfer exited utxo            ║");
     console.log("╚══════════════════════════════════════════╝");
-    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler);
-    await advanceBlocks(10,web3);
-    await sleep(8000);
-    let plasmaBalanceAfter = (await nodes[0].web3.eth.getBalance(alice)) * 1;
-    console.log(`${alice} balance after deposit: ${plasmaBalanceAfter}`);
+    
+    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler, nodes[0], web3);
+    
     await minePeriod(nodes, accounts);
+    
     console.log("------Exit Alice------");
     const validatorInfo = await nodes[0].web3.getValidatorInfo();
     const utxo = await exitUnspent(contracts, nodes[0], alice, {slotId: 0, addr: validatorInfo.ethAddress}, web3);

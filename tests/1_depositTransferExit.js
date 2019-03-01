@@ -20,15 +20,9 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("║2. Trasfer from Alice to Bob              ║");
     console.log("║3. Exit Alice and Bob                     ║");
     console.log("╚══════════════════════════════════════════╝");
-    let plasmaBalanceBefore = (await nodes[0].web3.eth.getBalance(alice)) * 1;
-    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler);
-    await advanceBlocks(10,web3);
-    await sleep(8000);
-    console.log(Date.now());
-    let plasmaBalanceAfter = (await nodes[0].web3.eth.getBalance(alice)) * 1;
-    console.log(`${alice} balance after deposit: ${plasmaBalanceAfter}`);
-    console.log(plasmaBalanceBefore, plasmaBalanceAfter);
-    plasmaBalanceAfter.should.be.equal(plasmaBalanceBefore + amount);
+
+    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler, nodes[0], web3);
+
     console.log("------Will make some transactions to fill a block------");
     for (let i = 0; i < 20; i++) {
         let txAmount = Math.round(amount/(2000))+ Math.round(100 * Math.random());
