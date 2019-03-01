@@ -4,6 +4,8 @@ const Web3 = require('web3');
 const bridgeAbi = require('./build/node/src/abis/bridgeAbi');
 const exitHandlerAbi = require('./build/node/src/abis/exitHandler');
 const operatorAbi = require('./build/node/src/abis/operator');
+const adminableProxyAbi = require('./build/contracts/build/contracts/AdminableProxy').abi;
+const minGovAbi = require('./build/contracts/build/contracts/MinGov').abi;
 const erc20abi = require('./src/erc20abi');
 
 const bip39 = require('bip39');
@@ -63,6 +65,9 @@ async function run() {
   const exitHandlerContract = new web3.eth.Contract(exitHandlerAbi, nodeConfig.exitHandlerAddr);
   const operatorContract = new web3.eth.Contract(operatorAbi, nodeConfig.operatorAddr);
   const bridgeContract = new web3.eth.Contract(bridgeAbi, nodeConfig.bridgeAddr);
+  const proxyContract = new web3.eth.Contract(adminableProxyAbi, nodeConfig.operatorAddr);
+  const governanceAddr = await proxyContract.methods.admin().call();
+  const governanceContract = new web3.eth.Contract(minGovAbi, governanceAddr);
 
   const tokenAddress = await exitHandlerContract.methods.getTokenAddr(0).call();
   const tokenContract = new web3.eth.Contract(erc20abi, tokenAddress);
@@ -71,19 +76,25 @@ async function run() {
     exitHandler: exitHandlerContract,
     operator: operatorContract,
     bridge: bridgeContract,
-    token: tokenContract
+    token: tokenContract,
+    governance: governanceContract,
+    proxy: proxyContract,
   }
 
-  const accounts = getAccounts(config.mnemonic, 5);
+  const accounts = getAccounts(config.mnemonic, 10);
 
   await setup(contracts, nodes, accounts, web3);
   // Wait for setup to propagate to all the nodes
   await sleep(10000);
 
   var testPath = require("path").join(__dirname, "tests");
-  fs.readdirSync(testPath).forEach(async function(test) {
+  const tests = fs.readdirSync(testPath).filter((fileName => {
+    return fs.lstatSync("./tests/" + fileName).isFile();
+  }));
+  for (let i=0; i<tests.length; i++) {
+    const test = tests[i];
     console.log("Running: ", test);
     await require("./tests/" + test)(contracts, nodes, accounts, web3);
-  });
+  }
 }
 run();
