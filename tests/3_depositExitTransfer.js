@@ -27,8 +27,7 @@ module.exports = async function(contracts, [node], accounts, web3) {
     await minePeriod(node, accounts);
     
     console.log("------Exit Alice------");
-    const validatorInfo = await node.web3.getValidatorInfo();
-    const utxo = await exitUnspent(contracts, node, alice, {slotId: 0, addr: validatorInfo.ethAddress}, web3);
+    const utxo = await exitUnspent(contracts, node, web3, alice);
     console.log("------Attemp to transfer exited utxo from Alice to Bob (should fail)------");
     let plasmaBalanceBefore = await node.getBalance(alice);
     const bobBalanceBefore = await node.getBalance(bob);

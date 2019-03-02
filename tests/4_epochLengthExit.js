@@ -46,8 +46,7 @@ module.exports = async function(contracts, [node], accounts, web3) {
 
     await minePeriod(node, accounts);
     console.log("------Exit Bob------");
-    const validatorInfo = await node.web3.getValidatorInfo();
-    await exitUnspent(contracts, node, bob, {slotId: 0, addr: validatorInfo.ethAddress}, web3);
+    await exitUnspent(contracts, node, web3, bob);
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║   Test: Exit after epochLength change    ║");
