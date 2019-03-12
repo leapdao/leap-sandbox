@@ -1,19 +1,17 @@
-const { sleep, advanceBlocks } = require('../src/helpers');
 const mintAndDeposit = require('./actions/mintAndDeposit');
-const { transfer, transferUtxo } = require('./actions/transfer');
+const { transferUtxo } = require('./actions/transfer');
 const exitUnspent = require('./actions/exitUnspent');
+const minePeriod = require('./actions/minePeriod');
 const chai = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-module.exports = async function(contracts, nodes, accounts, web3) {
+module.exports = async function(contracts, [node], accounts, web3) {
     const minter = accounts[0].addr;
     const alice = accounts[6].addr;
     const alicePriv = accounts[6].privKey;
     const bob = accounts[3].addr;
-    const bobPriv = accounts[3].privKey;
-    const zzz = accounts[9].addr;
     const amount = 10000000;
 
     console.log("╔══════════════════════════════════════════╗");
@@ -23,28 +21,19 @@ module.exports = async function(contracts, nodes, accounts, web3) {
     console.log("║2. Exit Alice                             ║");
     console.log("║3. Try to transfer exited utxo            ║");
     console.log("╚══════════════════════════════════════════╝");
-    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler);
-    await advanceBlocks(10,web3);
-    await sleep(8000);
-    let plasmaBalanceAfter = (await nodes[0].web3.eth.getBalance(alice)) * 1;
-    console.log(`${alice} balance after deposit: ${plasmaBalanceAfter}`);
-    console.log("Make some more deposits to make sure the block is submitted (with log is off)...")
-    for (let i = 0; i < 32; i++) {
-        await mintAndDeposit(zzz, i + 1, minter, contracts.token, contracts.exitHandler, true);
-        await advanceBlocks(10,web3);
-        await sleep(4000);
-    }
-    await advanceBlocks(10,web3);
-    await sleep(3000);
+    
+    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler, node, web3);
+    
+    await minePeriod(node, accounts);
+    
     console.log("------Exit Alice------");
-    const validatorInfo = await nodes[0].web3.getValidatorInfo();
-    const utxo = await exitUnspent(contracts, nodes[0], alice, {slotId: 0, addr: validatorInfo.ethAddress}, web3);
+    const utxo = await exitUnspent(contracts, node, web3, alice);
     console.log("------Attemp to transfer exited utxo from Alice to Bob (should fail)------");
-    let plasmaBalanceBefore = (await nodes[0].web3.eth.getBalance(alice)) * 1;
-    const bobBalanceBefore = (await nodes[0].web3.eth.getBalance(bob)) * 1;
-    await expect(transferUtxo(utxo, bob, alicePriv, nodes[0])).to.eventually.be.rejectedWith("Non zero error code returned: 2");
-    plasmaBalanceAfter = (await nodes[0].web3.eth.getBalance(alice)) * 1;
-    const bobBalanceAfter = (await nodes[0].web3.eth.getBalance(bob)) * 1;
+    let plasmaBalanceBefore = await node.getBalance(alice);
+    const bobBalanceBefore = await node.getBalance(bob);
+    await expect(transferUtxo(utxo, bob, alicePriv, node)).to.eventually.be.rejectedWith("Non zero error code returned: 2");
+    plasmaBalanceAfter = await node.getBalance(alice);
+    const bobBalanceAfter = await node.getBalance(bob);
     console.log("Alice balance after: ", plasmaBalanceAfter);
     expect(plasmaBalanceAfter).to.be.equal(plasmaBalanceBefore);
     expect(bobBalanceAfter).to.be.equal(bobBalanceBefore);

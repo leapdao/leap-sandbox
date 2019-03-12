@@ -1,20 +1,21 @@
 const debug = require('debug')('exitUnspent');
-const { helpers, Output, Outpoint, Tx, Period } = require('leap-core');
-const { sleep, advanceBlocks, unspentForAddress, makeTransfer, getLog } = require('../../src/helpers');
+const { helpers, Tx, Period } = require('leap-core');
 const { bufferToHex } = require('ethereumjs-util');
 const { bi, equal, add } = require('jsbi-utils');
-const { should, assert } = require('chai');
+const { assert } = require('chai');
+const { getLog } = require('../../src/helpers');
+const waitForBalanceChange = require('./waitForBalanceChange');
 
-
-
-module.exports = async function(contracts, node, bob, validator, web3, sleepTime = 5000, noLog = false) {
-    const log = getLog(noLog);
+module.exports = async function(contracts, node, web3, addr) {
+    const log = getLog(false);
+    const slotId = 0;
+    const validatorAddr = (await node.web3.getValidatorInfo()).ethAddress;
     
     let txHash;
     let txData;
 
-    log(`------Unspents of ${bob}------`);
-    const unspents = await node.web3.getUnspent(bob);
+    log(`------Unspents of ${addr}------`);
+    const unspents = await node.web3.getUnspent(addr);
     log(unspents);
     debug("------Looking for unspent from submitted period------");
     const latestBlockNumber = (await node.web3.eth.getBlock('latest')).number;
@@ -41,7 +42,7 @@ module.exports = async function(contracts, node, bob, validator, web3, sleepTime
     if (unspentIndex === -1) {
         throw new Error("Can't exit, no unspents are in submitted periods found");
     };
-    log(`------Will attept to exit unspent ${unspentIndex} of ${bob}------`);
+    log(`------Will attept to exit unspent ${unspentIndex} of ${addr}------`);
     txHash = unspents[unspentIndex].outpoint.hash;
     txData = await node.web3.eth.getTransaction(bufferToHex(txHash));
     const amount = unspents[unspentIndex].output.value;
@@ -54,7 +55,7 @@ module.exports = async function(contracts, node, bob, validator, web3, sleepTime
     const period = await Period.periodForTx(node.web3, txData);
     debug(period);
     debug("------Proof------");
-    period.setValidatorData(validator.slotId, validator.addr);
+    period.setValidatorData(slotId, validatorAddr);
     const proof = period.proof(Tx.fromRaw(txData.raw));
     debug(proof);
     debug("------Youngest Input------");
@@ -66,7 +67,7 @@ module.exports = async function(contracts, node, bob, validator, web3, sleepTime
         const youngestInputPeriod = await Period.periodForTx(node.web3, youngestInput.tx);
         debug(youngestInputPeriod);
         debug("------Youngest Input Proof------");
-        youngestInputPeriod.setValidatorData(validator.slotId, validator.addr);
+        youngestInputPeriod.setValidatorData(slotId, validatorAddr);
         youngestInputProof = youngestInputPeriod.proof(Tx.fromRaw(youngestInput.tx.raw));
         debug(youngestInputProof);
     } else {
@@ -76,8 +77,8 @@ module.exports = async function(contracts, node, bob, validator, web3, sleepTime
     debug("------Period from the contract by merkle root------");
     debug(await contracts.bridge.methods.periods(proof[0]).call());
     log("------Balance before exit------");
-    const balanceBefore = await contracts.token.methods.balanceOf(bob).call();
-    const plasmaBalanceBefore = await node.web3.eth.getBalance(bob);
+    const balanceBefore = await contracts.token.methods.balanceOf(addr).call();
+    const plasmaBalanceBefore = await node.getBalance(addr);
     log("Account mainnet balance: ", balanceBefore);
     log("Account plasma balance: ", plasmaBalanceBefore);
     log("Attempting exit...");
@@ -86,18 +87,17 @@ module.exports = async function(contracts, node, bob, validator, web3, sleepTime
         proof,
         unspents[unspentIndex].outpoint.index,
         youngestInput.index
-    ).send({from: bob, value: 100000000000000000, gas: 2000000});
+    ).send({from: addr, value: 100000000000000000, gas: 2000000});
     log("Finalizing exit...");
-    await contracts.exitHandler.methods.finalizeTopExit(0).send({from: bob, gas: 2000000});
+    await contracts.exitHandler.methods.finalizeTopExit(0).send({from: addr, gas: 2000000});
     log("------Balance after exit------");
-    const balanceAfter = await contracts.token.methods.balanceOf(bob).call();
+    const balanceAfter = await contracts.token.methods.balanceOf(addr).call();
     log("Account mainnet balance: ", balanceAfter);
-    await advanceBlocks(10,web3);
-    await sleep(sleepTime * 2);
-    const plasmaBalanceAfter = (await node.web3.eth.getBalance(bob)) * 1;
+    
+    const plasmaBalanceAfter = await waitForBalanceChange(addr, plasmaBalanceBefore, node, web3);
     log("Account plasma balance: ", plasmaBalanceAfter);
 
-    const unspentsAfter = await node.web3.getUnspent(bob);
+    const unspentsAfter = await node.web3.getUnspent(addr);
     //const unspentsValue = unspentsAfter.reduce((sum, unspent) => sum + unspent.output.value, 0);
     const unspentsValue = unspentsAfter.reduce((sum, unspent) => add(bi(sum), bi(unspent.output.value)), 0);
     unspentsAfter.length.should.be.equal(unspents.length - 1);
