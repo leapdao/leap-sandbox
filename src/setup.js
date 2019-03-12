@@ -1,3 +1,5 @@
+const mintAndDeposit = require('../tests/actions/mintAndDeposit');
+
 module.exports = async function(contracts, nodes, accounts, web3) {
   const alice = accounts[0].addr;
 
@@ -34,7 +36,5 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   });
   await contracts.governance.methods.finalize().send({ from: alice, gas: 2000000 });
 
-  await contracts.exitHandler.methods.deposit(alice, 200000000000, 0).send({
-    from: alice, gas: 2000000
-  });
+  await mintAndDeposit(alice, 200000000000, alice, contracts.token, contracts.exitHandler, nodes[0], web3);
 }
