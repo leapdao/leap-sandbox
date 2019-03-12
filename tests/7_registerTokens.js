@@ -1,6 +1,3 @@
-const mintAndDeposit = require('./actions/mintAndDeposit');
-const { transfer } = require('./actions/transfer');
-const exitUnspent = require('./actions/exitUnspent');
 const { advanceBlocks } = require('../src/helpers');
 const erc20abi = require('../src/erc20abi');
 const SimpleToken = require('../build/contracts/build/contracts/SimpleToken');
