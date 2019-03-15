@@ -48,14 +48,12 @@ start_nodes() {
 
   echo "Starting first node..."
   launch_node ./generatedConfig.json
-  # Sleep a little to allow the node to start up
-  sleep 7
+  sleep 3
 
   for i in $( seq 0 $(( $num_nodes-2 )) )
   do
     echo "Launching next node..."
     launch_node $config_loc
-    sleep 7
   done
 
   cd - > /dev/null
