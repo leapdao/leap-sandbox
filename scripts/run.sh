@@ -13,7 +13,7 @@ cleanup() {
 
   # find all the processed listening on used ports and SOFT kill them
   echo "Killing ganache/node processes on ports: $port_list"
-  lsof -i :$port_list | awk '{l=$2} NR>1{print l}' | uniq | xargs kill
+  lsof -i :$port_list | grep ^node | awk '{l=$2} NR>1{print l}' | uniq | xargs kill
 }
 
 start_ganache() {
