@@ -25,25 +25,8 @@ function formatHostname(hostname, port) {
   return 'http://'+hostname+':'+port;
 }
 
-function unspentForAddress(unspent, address, color) {
-  return Object.keys(unspent)
-    .filter(
-      k =>
-        unspent[k] &&
-        unspent[k].address.toLowerCase() === address.toLowerCase() &&
-        (color !== undefined ? unspent[k].color === color : true)
-    )
-    .map(k => ({
-      outpoint: k,
-      output: unspent[k],
-    }))
-    .sort((a, b) => {
-      return a.output.value - b.output.value;
-    });
-};
-
-function makeTransfer(
-  { balances, unspent },
+async function makeTransfer(
+  node,
   from,
   to,
   amount,
@@ -54,21 +37,27 @@ function makeTransfer(
   let fromAddr = from.toLowerCase();
   to = to.toLowerCase();
 
-  const colorBalances = balances[color] || {};
-  const balance = colorBalances[fromAddr] || 0;
+  const utxos = await node.web3.getUnspent(from);
+  const len = utxos.length;
+  let balance = 0;
+  let unspent = [];
+  for (let i = 0; i < len; i++) {
+    const utxo = utxos[i];
+    const output = utxo.output;
+
+    if (output.color === color) {
+      balance += parseInt(output.value);
+      unspent.push(utxo);
+    }
+  }
 
   if (balance < amount) {
     throw new Error('Insufficient balance');
   }
 
-  const senderUnspent = unspentForAddress(unspent, from, color).map(u => ({
-    output: u.output,
-    outpoint: Outpoint.fromRaw(u.outpoint),
-  }));
-
-  const inputs = helpers.calcInputs(senderUnspent, from, amount, color);
+  const inputs = helpers.calcInputs(unspent, from, amount, color);
   const outputs = helpers.calcOutputs(
-    senderUnspent,
+    unspent,
     inputs,
     fromAddr,
     to,
@@ -115,4 +104,4 @@ async function advanceBlocks(number, web3) {
   }
 };
 
-module.exports = { sleep, formatHostname, unspentForAddress, makeTransfer, makeTransferUxto, getLog, advanceBlocks };
+module.exports = { sleep, formatHostname, makeTransfer, makeTransferUxto, getLog, advanceBlocks };
