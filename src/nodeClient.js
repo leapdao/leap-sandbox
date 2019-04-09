@@ -6,10 +6,9 @@ const { formatHostname } = require('./helpers');
 let idCounter = 0;
 
 class Node {
-  constructor(hostname, port, jsonrpcPort) {
+  constructor(hostname, jsonrpcPort) {
     this.id = idCounter++;
     this.web3 = helpers.extendWeb3(new Web3(formatHostname(hostname, jsonrpcPort)));
-    this.httpUrl = formatHostname(hostname, port);
   }
 
   async sendTx(tx) {

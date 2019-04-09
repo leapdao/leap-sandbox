@@ -23,6 +23,8 @@ async function transfer(alice, alicePriv, bob, amount, node) {
     debug(`getTransaction: ${JSON.stringify(txData, null, 2)}`);
     const blockData = await node.web3.eth.getBlock(txData.blockHash);
     debug(`Block data: ${JSON.stringify(blockData, null, 2)}`);
+
+    return transfer;
 }
 
 async function transferUtxo(utxo, bob, alicePriv, node) {
@@ -40,6 +42,8 @@ async function transferUtxo(utxo, bob, alicePriv, node) {
     debug(`getTransaction: ${JSON.stringify(txData, null, 2)}`);
     const blockData = await node.web3.eth.getBlock(txData.blockHash);
     debug(`Block data: ${JSON.stringify(blockData, null, 2)}`);
+
+    return transfer;
 }
 
 module.exports = { transfer, transferUtxo };
