@@ -140,11 +140,12 @@ async function run() {
   const generatedConfigPath = `${process.cwd()}/build/contracts/build/nodeFiles/generatedConfig.json`;
 
   let basePort = parseInt(process.env['base_port']) || 7000;
+  let deprecatedPort = 49000;
   const firstNodeURL = `http://localhost:${basePort}`;
 
   for (let i = 0; i < numNodes; i++) {
     const rpcPort = basePort;
-    const env = { DEBUG: 'tendermint,leap-node*' };
+    const env = { DEBUG: 'tendermint,leap-node*', TX_PORT: deprecatedPort++ };
     const configURL = i === 0 ? generatedConfigPath : firstNodeURL;
     const args = [
       'build/node/index.js',
