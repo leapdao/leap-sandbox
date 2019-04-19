@@ -148,7 +148,11 @@ async function run() {
 
   for (let i = 0; i < numNodes; i++) {
     const rpcPort = basePort;
-    const env = { DEBUG: 'tendermint,leap-node*', TX_PORT: deprecatedPort++ };
+    const env = { 
+      ...process.env,
+      DEBUG: 'tendermint,leap-node*',
+      TX_PORT: deprecatedPort++,
+    };
     const configURL = i === 0 ? generatedConfigPath : firstNodeURL;
     const args = [
       'build/node/index.js',
