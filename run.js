@@ -3,9 +3,9 @@ const spawn = require('child_process').spawn;
 const Web3 = require('web3');
 const ganache = require('ganache-cli');
 
-const bridgeAbi = require('./build/node/src/abis/bridgeAbi');
-const exitHandlerAbi = require('./build/node/src/abis/exitHandler');
-const operatorAbi = require('./build/node/src/abis/operator');
+let bridgeAbi;
+let exitHandlerAbi;
+let operatorAbi;
 let adminableProxyAbi;
 let minGovAbi;
 const erc20abi = require('./src/erc20abi');
@@ -94,7 +94,10 @@ async function deployContracts(ganachePort) {
         
         adminableProxyAbi = require('./build/contracts/build/contracts/AdminableProxy').abi;
         minGovAbi = require('./build/contracts/build/contracts/MinGov').abi;
-
+        bridgeAbi = require('./build/contracts/build/contracts/Bridge').abi;
+        exitHandlerAbi = require('./build/contracts/build/contracts/ExitHandler').abi;
+        operatorAbi = require('./build/contracts/build/contracts/PoaOperator').abi;
+        
         resolve();
       });
     }
