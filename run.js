@@ -69,7 +69,7 @@ async function deployContracts(ganachePort) {
       let truffleConfig = fs.readFileSync('./truffle-config.js').toString();
       // replace the rpc port(s)
       while (true) {
-        let tmp = truffleConfig.replace('8545', ganachePort.toString());
+        let tmp = truffleConfig.replace(/port: [0-9]+/g, `port: ${ganachePort.toString()}`);
 
         if (tmp === truffleConfig) {
           break;
