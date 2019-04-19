@@ -1,10 +1,7 @@
-const { sleep } = require('../src/helpers');
-const mintAndDeposit = require('./actions/mintAndDeposit');
 const { transfer } = require('./actions/transfer');
-const should = require('chai').should();
 const ethUtil = require('ethereumjs-util');
 const spendingConditionABI = require('../src/spendingConditionABI');
-const { helpers, Tx, Outpoint, Input, Output } = require('leap-core');
+const { Tx, Input, Output } = require('leap-core');
 
 module.exports = async function(contracts, nodes, accounts, web3) {
   const alice = accounts[0].addr;
