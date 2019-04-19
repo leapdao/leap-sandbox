@@ -205,7 +205,7 @@ async function run() {
 
   await setup(contracts, nodes, accounts, web3);
   // Wait for setup to propagate to all the nodes
-  await sleep(10000);
+  await sleep(2000);
 
   var testPath = require("path").join(__dirname, "tests");
   const tests = fs.readdirSync(testPath).filter((fileName => {
