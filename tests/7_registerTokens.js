@@ -39,7 +39,7 @@ module.exports = async function(contracts, [node], accounts, web3) {
     });
 
     // wait for event buffer
-    await advanceBlocks(8, web3);
+    await advanceBlocks(128, web3);
 
     const afterColors = await node.web3.getColors();
     console.log('Checking..');
@@ -48,7 +48,7 @@ module.exports = async function(contracts, [node], accounts, web3) {
     console.log('   ✅ Token count:', afterColors.length);
 
     assert.deepEqual(
-        beforeColors.concat([simpleToken.options.address.toLowerCase()]),
+        beforeColors.concat([simpleToken.options.address]),
         afterColors,
         "getColors()"
     );

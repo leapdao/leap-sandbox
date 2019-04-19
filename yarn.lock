@@ -1569,17 +1569,7 @@ ethereumjs-util@5.2.0, ethereumjs-util@^5.0.0, ethereumjs-util@^5.0.1, ethereumj
     safe-buffer "^5.1.1"
     secp256k1 "^3.0.1"
 
-ethereumjs-util@^4.0.1, ethereumjs-util@^4.3.0:
-  version "4.5.0"
-  resolved "https://registry.yarnpkg.com/ethereumjs-util/-/ethereumjs-util-4.5.0.tgz#3e9428b317eebda3d7260d854fddda954b1f1bc6"
-  dependencies:
-    bn.js "^4.8.0"
-    create-hash "^1.1.2"
-    keccakjs "^0.2.0"
-    rlp "^2.0.0"
-    secp256k1 "^3.0.1"
-
-ethereumjs-util@^6.0.0:
+ethereumjs-util@6.0.0, ethereumjs-util@^6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/ethereumjs-util/-/ethereumjs-util-6.0.0.tgz#f14841c182b918615afefd744207c7932c8536c0"
   dependencies:
@@ -1589,6 +1579,16 @@ ethereumjs-util@^6.0.0:
     keccak "^1.0.2"
     rlp "^2.0.0"
     safe-buffer "^5.1.1"
+    secp256k1 "^3.0.1"
+
+ethereumjs-util@^4.0.1, ethereumjs-util@^4.3.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/ethereumjs-util/-/ethereumjs-util-4.5.0.tgz#3e9428b317eebda3d7260d854fddda954b1f1bc6"
+  dependencies:
+    bn.js "^4.8.0"
+    create-hash "^1.1.2"
+    keccakjs "^0.2.0"
+    rlp "^2.0.0"
     secp256k1 "^3.0.1"
 
 ethereumjs-vm@2.3.4:
@@ -2386,14 +2386,14 @@ lcid@^1.0.0:
   dependencies:
     invert-kv "^1.0.0"
 
-leap-core@^0.27.2:
-  version "0.27.2"
-  resolved "https://registry.yarnpkg.com/leap-core/-/leap-core-0.27.2.tgz#7f54378462786efb137fa6ed66fb6a8d222f2cd1"
-  integrity sha512-fROsgjoFdkmG8PkOkcayT/iFPHb6XXFhaWX3kfmD7sEgUxSrYiNsMR/AnJQKt8N4dpJonShlqWYMx+I0b0Z3RA==
+leap-core@^0.28.3:
+  version "0.28.3"
+  resolved "https://registry.yarnpkg.com/leap-core/-/leap-core-0.28.3.tgz#6dbc8344eed119fb067b2a53a4a9aae37b861abe"
+  integrity sha512-9Rwo/5Uuo7sOCwmNTq1aksmUMjAkLg+Q/Im0NLDXGN/M53uXfJlAjJS2Xs/fL21iw4pK4wZKI4zpYy72xCdhAg==
   dependencies:
     "@types/web3" "^1.0.18"
     babel-polyfill "^6.26.0"
-    ethereumjs-util "^6.0.0"
+    ethereumjs-util "6.0.0"
     jsbi-utils "^1.0.0"
 
 level-codec@^9.0.0:

@@ -31,7 +31,7 @@ module.exports = async function(contracts, [node], accounts, web3) {
     console.log("------Attemp to transfer exited utxo from Alice to Bob (should fail)------");
     let plasmaBalanceBefore = await node.getBalance(alice);
     const bobBalanceBefore = await node.getBalance(bob);
-    await expect(transferUtxo(utxo, bob, alicePriv, node)).to.eventually.be.rejectedWith("Non zero error code returned: 2");
+    await expect(transferUtxo(utxo, bob, alicePriv, node)).to.eventually.be.rejectedWith("transaction not included in time");
     plasmaBalanceAfter = await node.getBalance(alice);
     const bobBalanceAfter = await node.getBalance(bob);
     console.log("Alice balance after: ", plasmaBalanceAfter);
