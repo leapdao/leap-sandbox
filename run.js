@@ -43,6 +43,7 @@ function getAccount(mnemonic, id) {
 async function setupGanache(port, mnemonic) {
   return new Promise(
     (resolve, reject) => {
+      console.log('Starting ganache..');
       const srv = ganache.server({ locked: false, mnemonic });
       srv.listen(port, (err) => {
         if (err) {
@@ -57,6 +58,7 @@ async function setupGanache(port, mnemonic) {
 async function deployContracts(ganachePort) {
   return new Promise(
     (resolve, reject) => {
+      console.log('Deploying contracts..');
       const env = {
         ...process.env,
         PROPOSAL_TIME: '0',
@@ -78,10 +80,11 @@ async function deployContracts(ganachePort) {
         truffleConfig = tmp;
       }
       fs.writeFileSync('./truffle-config.js', truffleConfig);
-
+      
       let proc = spawn('yarn', ['deploy', '--reset'], { env });
-      proc.stdout.pipe(process.stdout);
-      proc.stderr.pipe(process.stderr);
+      const logOutput = fs.createWriteStream(`${cwd}/out/contracts.log`);
+      proc.stdout.pipe(logOutput);
+      proc.stderr.pipe(logOutput);
       proc.on('exit', (exitCode) => {
         process.chdir(cwd);
 
@@ -157,17 +160,20 @@ async function run() {
     const args = [
       'build/node/index.js',
       '--config', configURL,
+      '--rpcaddr', '127.0.0.1',
       '--rpcport', (basePort++).toString(),
+      '--wsaddr', '127.0.0.1',
       '--wsport', (basePort++).toString(),
       '--abciPort', (basePort++).toString(),
       '--p2pPort', (basePort++).toString(),
+      '--tendermintAddr', '127.0.0.1',
       '--tendermintPort', (basePort++).toString(),
       '--devMode', 'true',
     ];
 
-    const logOutput = fs.createWriteStream(`./node-${i + 1}.log`);
+    const logOutput = fs.createWriteStream(`./out/node-${i + 1}.log`);
 
-    console.log(`Starting node ${i + 1} of ${numNodes} logfile=./node-${i + 1}.log`);
+    console.log(`Starting node ${i + 1} of ${numNodes} logfile=./out/node-${i + 1}.log`);
     nodes.push(await spawnNode(rpcPort, args, env, logOutput));
   }
 
