@@ -6,13 +6,12 @@ const ganache = require('ganache-cli');
 const bridgeAbi = require('./build/node/src/abis/bridgeAbi');
 const exitHandlerAbi = require('./build/node/src/abis/exitHandler');
 const operatorAbi = require('./build/node/src/abis/operator');
-const adminableProxyAbi = require('./build/contracts/build/contracts/AdminableProxy').abi;
-const minGovAbi = require('./build/contracts/build/contracts/MinGov').abi;
+let adminableProxyAbi;
+let minGovAbi;
 const erc20abi = require('./src/erc20abi');
 
 const bip39 = require('bip39');
 const hdkey = require('ethereumjs-wallet/hdkey');
-const wallet = require('ethereumjs-wallet');
 
 const Node = require('./src/nodeClient');
 const setup = require('./src/setup');
@@ -88,6 +87,9 @@ async function deployContracts(ganachePort) {
         if (exitCode !== 0) {
           return reject();
         }
+        
+        adminableProxyAbi = require('./build/contracts/build/contracts/AdminableProxy').abi;
+        minGovAbi = require('./build/contracts/build/contracts/MinGov').abi;
 
         resolve();
       });
