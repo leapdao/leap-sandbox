@@ -12,10 +12,13 @@ class Node {
   }
 
   async sendTx(tx) {
+    // workaround different transaction hashes (leap-core bug)
+    let txHash;
+
     try {
       // web3 hangs here on invalid txs, trying to get receipt?
       // await this.web3.eth.sendSignedTransaction(tx.hex());
-      await new Promise(
+      const resp = await new Promise(
         (resolve, reject) => {
           this.web3.currentProvider.send(
             { jsonrpc: '2.0', id: 42, method: 'eth_sendRawTransaction', 'params': [tx.hex()] },
@@ -23,13 +26,18 @@ class Node {
           );
         }
       );
+      txHash = resp.result;
     } catch(e) {
       console.log(e);
     }
 
+    if (txHash !== tx.hash()) {
+      console.warn(`txHash(${txHash}) from rpc does not match local tx.hash(${tx.hash()})`);
+    }
+
     let rounds = 50;
     while (rounds--) {
-      let res = await this.web3.eth.getTransaction(tx.hash())
+      let res = await this.web3.eth.getTransaction(txHash)
 
       if (res && res.blockHash) {
         return;

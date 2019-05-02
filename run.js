@@ -209,7 +209,7 @@ async function run() {
 
   var testPath = require("path").join(__dirname, "tests");
   const tests = fs.readdirSync(testPath).filter((fileName => {
-    return fs.lstatSync("./tests/" + fileName).isFile();
+    return fileName.endsWith('.js') && fs.lstatSync("./tests/" + fileName).isFile();
   }));
   for (let i=0; i<tests.length; i++) {
     const test = tests[i];

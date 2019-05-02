@@ -17,7 +17,7 @@
     "ethereumjs-wallet": "^0.6.2",
     "ganache-cli": "^6.2.3",
     "jsbi-utils": "^1.0.0",
-    "leap-core": "^0.28.3",
+    "leap-core": "^0.30.1",
     "web3": "1.0.0-beta.34"
   }
 }
