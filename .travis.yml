@@ -1,0 +1,12 @@
+language: node_js
+node_js:
+  - "lts/*"
+cache: yarn
+jobs:
+  include:
+    - stage: tests
+      name: "Integration tests"
+      before_script:
+        - yarn build
+      script:
+        - yarn test
