@@ -6,6 +6,9 @@ const { assert } = require('chai');
 const { getLog } = require('../../src/helpers');
 const waitForBalanceChange = require('./waitForBalanceChange');
 
+const ERC20_ERC721_TRANSFER_EVENT = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+const ERC1948_DATA_UPDATED_EVENT = '0x8ec06c2117d45dcb6bcb6ecf8918414a7ff1cb1ed07da8175e2cf638d0f4777f';
+
 module.exports = async function(contracts, node, web3, addr, uIndex) {
     const log = getLog(false);
     const slotId = 0;
@@ -83,33 +86,25 @@ module.exports = async function(contracts, node, web3, addr, uIndex) {
     log("Account mainnet balance: ", balanceBefore);
     log("Account plasma balance: ", plasmaBalanceBefore);
     log("Attempting exit...");
-    log({ youngestInputProof, proof, unspentOutpointIndex: unspent.outpoint.index, youngestInputIndex: youngestInput.index });
     const startExitResult = await contracts.exitHandler.methods.startExit(
         youngestInputProof,
         proof,
         unspent.outpoint.index,
         youngestInput.index
     ).send({from: addr, value: 100000000000000000, gas: 2000000});
-    console.log(startExitResult.events);
 
     log("Finalizing exit...");
 
     const txColor = txData.color;
     const exitResult = await contracts.exitHandler.methods.finalizeExits(txColor).send({from: addr, gas: 2000000});
 
-    console.log(exitResult, unspent, txData);
     if (Util.isNFT(txColor) || Util.isNST(txColor)) {
       let nstUpdated = false;
       let nstTransferred = false;
 
-      console.log(exitResult.events);
       Object.keys(exitResult.events).forEach(
         (i) => {
           const event = exitResult.events[i].raw;
-          console.log(event);
-
-          const ERC20_ERC721_TRANSFER_EVENT = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-          const ERC1948_DATA_UPDATED_EVENT = '0x8ec06c2117d45dcb6bcb6ecf8918414a7ff1cb1ed07da8175e2cf638d0f4777f';
 
           // update data
           if (event.topics[0] === ERC1948_DATA_UPDATED_EVENT) {
@@ -121,7 +116,6 @@ module.exports = async function(contracts, node, web3, addr, uIndex) {
 
           // nft/nst transfer
           if (event.topics[0] === ERC20_ERC721_TRANSFER_EVENT) {
-            console.log(bi(event.topics[3]), bi(unspent.output.value));
             if (equal(bi(event.topics[3]), bi(unspent.output.value))) {
               nstTransferred = true;
             }
@@ -134,7 +128,7 @@ module.exports = async function(contracts, node, web3, addr, uIndex) {
       if (Util.isNST(txColor)) {
         assert.equal(nstUpdated, true, 'nst should have data updated event');
       }
-      assert.equal(nstTransferred, true, 'nst should have been transferred');
+      assert.equal(nstTransferred, true, 'nft/nst should have been transferred');
 
       return unspent;
     }
