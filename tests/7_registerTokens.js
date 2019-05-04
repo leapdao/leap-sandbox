@@ -44,7 +44,7 @@ module.exports = async function(contracts, [node], accounts, web3) {
     const afterColors = await node.web3.getColors();
     console.log('Checking..');
 
-    assert.equal(afterColors.length, 2, 'Token count');
+    assert.equal(afterColors.length, beforeColors.length + 1, 'Token count');
     console.log('   ✅ Token count:', afterColors.length);
 
     assert.deepEqual(

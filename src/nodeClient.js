@@ -1,7 +1,7 @@
 const Web3 = require('web3');
 const { helpers } = require('leap-core');
 
-const { formatHostname } = require('./helpers');
+const { formatHostname, advanceBlocks } = require('./helpers');
 
 let idCounter = 0;
 
@@ -63,6 +63,32 @@ class Node {
 
   async getBalance(addr) {
     return this.web3.eth.getBalance(addr).then(res => Number(res));
+  }
+
+  async advanceUntilChange(web3) {
+    const currentBlock = await this.web3.eth.getBlockNumber();
+
+    let colors = (await this.send('plasma_getColors', [true, false])).result;
+    colors = colors.concat((await this.send('plasma_getColors', [false, true])).result);
+    colors = colors.concat((await this.send('plasma_getColors', [false, false])).result);
+
+    while (true) {
+      const blockNumber = await this.web3.eth.getBlockNumber();
+
+      if (blockNumber > currentBlock) {
+        break;
+      }
+
+      let c = (await this.send('plasma_getColors', [true, false])).result;
+      c = c.concat((await this.send('plasma_getColors', [false, true])).result);
+      c = c.concat((await this.send('plasma_getColors', [false, false])).result);
+
+      if (c.length !== colors.length) {
+        break;
+      }
+
+      await advanceBlocks(1, web3);
+    }
   }
 }
 

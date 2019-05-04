@@ -2,7 +2,6 @@ const assert = require('assert');
 const ethUtil = require('ethereumjs-util');
 const { Tx, Input, Output, Outpoint } = require('leap-core');
 
-const { advanceBlocks } = require('../src/helpers');
 const exitUnspent = require('./actions/exitUnspent');
 const minePeriod = require('./actions/minePeriod');
 
@@ -25,7 +24,7 @@ module.exports = async function(contracts, [node], accounts, web3) {
   console.log('Deploying ERC1949 token..');
   const contract = new web3.eth.Contract(TOKEN.abi);
   const deployedToken = await contract.deploy({ data: TOKEN.bytecode }).send({
-    from: accounts[0].addr,
+    from: minter,
     gas: 1712388,
     gasPrice: 100000000000
   });
@@ -45,7 +44,7 @@ module.exports = async function(contracts, [node], accounts, web3) {
   });
 
   // wait for event buffer
-  await advanceBlocks(128, web3);
+  await node.advanceUntilChange(web3);
 
   const afterColors = (await node.send('plasma_getColors', [false, true])).result;
   console.log('Checking..', afterColors);
@@ -85,12 +84,10 @@ module.exports = async function(contracts, [node], accounts, web3) {
       }
     );
 
-  // why does it take so long?
   console.log('    advanceBlocks');
-  await advanceBlocks(512, web3);
+  await node.advanceUntilChange(web3);
 
   let unspents = (await node.send('plasma_unspent', [minter, nstColor])).result;
-  const unspentsLEAP = (await node.send('plasma_unspent', [minter, 0])).result;
   assert.equal(unspents[0].output.data, tokenData, 'tokenData should match');
 
   const script = Buffer.from(BreedingCondition, 'hex');
@@ -115,9 +112,18 @@ module.exports = async function(contracts, [node], accounts, web3) {
   transferTx.signAll(minterPriv);
   await node.sendTx(transferTx);
 
+  const unspentsLEAP = (await node.send('plasma_unspent', [minter, 0])).result;
   const unspentsSp = (await node.send('plasma_unspent', [spAddr, nstColor])).result;
   const depositInput = new Outpoint(unspentsSp[0].outpoint.slice(0, -2), 0);
-  const gasInput = new Outpoint(unspentsLEAP[0].outpoint.slice(0, -2), 0);
+
+  let gasInput;
+  unspentsLEAP.forEach(
+    (unspent) => {
+      if (unspent.output.value > 1000000000) {
+        gasInput = new Outpoint(unspent.outpoint.slice(0, -2), parseInt(unspent.outpoint.slice(-2), 16));
+      }
+    }
+  );
   const condTx = Tx.spendCond(
     [
       new Input({
