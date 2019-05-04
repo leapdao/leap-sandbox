@@ -84,16 +84,18 @@ module.exports = async function(contracts, node, web3, addr, uIndex) {
     log("Account plasma balance: ", plasmaBalanceBefore);
     log("Attempting exit...");
     log({ youngestInputProof, proof, unspentOutpointIndex: unspent.outpoint.index, youngestInputIndex: youngestInput.index });
-    await contracts.exitHandler.methods.startExit(
+    const startExitResult = await contracts.exitHandler.methods.startExit(
         youngestInputProof,
         proof,
         unspent.outpoint.index,
         youngestInput.index
     ).send({from: addr, value: 100000000000000000, gas: 2000000});
+    console.log(startExitResult.events);
+
     log("Finalizing exit...");
 
     const txColor = txData.color;
-    const exitResult = await contracts.exitHandler.methods.finalizeTopExit(txColor).send({from: addr, gas: 2000000});
+    const exitResult = await contracts.exitHandler.methods.finalizeExits(txColor).send({from: addr, gas: 2000000});
 
     console.log(exitResult, unspent, txData);
     if (Util.isNFT(txColor) || Util.isNST(txColor)) {
