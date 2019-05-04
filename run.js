@@ -208,9 +208,10 @@ async function run() {
   await sleep(2000);
 
   var testPath = require("path").join(__dirname, "tests");
-  const tests = fs.readdirSync(testPath).filter((fileName => {
-    return fileName.endsWith('.js') && fs.lstatSync("./tests/" + fileName).isFile();
-  }));
+  //const tests = fs.readdirSync(testPath).filter((fileName => {
+  //  return fileName.endsWith('.js') && fs.lstatSync("./tests/" + fileName).isFile();
+  //}));
+  let tests = ['8_breeding.js'];
   for (let i=0; i<tests.length; i++) {
     const test = tests[i];
     console.log("Running: ", test);

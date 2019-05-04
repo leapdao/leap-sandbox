@@ -11,6 +11,17 @@ class Node {
     this.web3 = helpers.extendWeb3(new Web3(formatHostname(hostname, jsonrpcPort)));
   }
 
+  async send(method, params) {
+    return await new Promise(
+      (resolve, reject) => {
+        this.web3.currentProvider.send(
+          { jsonrpc: '2.0', id: 42, method: method, 'params': params },
+          (err, res) => { if (err) { return reject(err); } resolve(res); }
+        );
+      }
+    );
+  }
+
   async sendTx(tx) {
     // workaround different transaction hashes (leap-core bug)
     let txHash;
