@@ -96,7 +96,8 @@ module.exports = async function(contracts, [node], accounts, web3) {
   const script = Buffer.from(BreedingCondition, 'hex');
   const scriptHash = ethUtil.ripemd160(script);
   const spAddr = `0x${scriptHash.toString('hex')}`;
-  const transferTx = Tx.transfer(
+  // XXX: add support for approval in ERC1949
+  let transferTx = Tx.transfer(
     [
       new Input({
         prevout: new Outpoint(unspents[0].outpoint.slice(0, -2), 0),
@@ -149,13 +150,37 @@ module.exports = async function(contracts, [node], accounts, web3) {
 
   console.log('sending breeding condition');
   await node.sendTx(condTx);
+
+  unspents = (await node.send('plasma_unspent', [minter, nstColor])).result;
+  console.log('---------------------------------------');
+  console.log('-----------unpsents-------------------');
+  console.log(unspents);
+
+  console.log('what a bullshit, circumventing proof bug with youngestInputIndex > 0');
+  transferTx = Tx.transfer(
+    [
+      new Input({
+        prevout: new Outpoint(unspents[0].outpoint.slice(0, -2), parseInt(unspents[0].outpoint.slice(-2), 16)),
+      }),
+    ],
+    [
+      new Output(
+        unspents[0].output.value,
+        minter,
+        unspents[0].output.color,
+        unspents[0].output.data,
+      ),
+    ],
+  );
+  transferTx.signAll(minterPriv);
+  await node.sendTx(transferTx);
   await minePeriod(node, accounts);
 
   unspents = (await node.send('plasma_unspent', [minter])).result;
-  while (unspents.length) {
+  //while (unspents.length) {
     console.log(unspents);
-    const utxo = await exitUnspent(contracts, node, web3, minter);
+    const utxo = await exitUnspent(contracts, node, web3, minter, unspents.length - 1);
     console.log(utxo);
-    unspents = (await node.send('plasma_unspent', [minter])).result;
-  }
+    //unspents = (await node.send('plasma_unspent', [minter])).result;
+  //}
 }
