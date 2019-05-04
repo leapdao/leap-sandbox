@@ -1,7 +1,7 @@
 const Web3 = require('web3');
 const { helpers } = require('leap-core');
 
-const { formatHostname, advanceBlocks } = require('./helpers');
+const { formatHostname, advanceBlocks, sleep } = require('./helpers');
 
 let idCounter = 0;
 
@@ -88,6 +88,7 @@ class Node {
       }
 
       await advanceBlocks(1, web3);
+      await sleep(100);
     }
   }
 }

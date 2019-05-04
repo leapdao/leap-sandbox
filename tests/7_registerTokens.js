@@ -1,4 +1,3 @@
-const { advanceBlocks } = require('../src/helpers');
 const erc20abi = require('../src/erc20abi');
 const SimpleToken = require('../build/contracts/build/contracts/SimpleToken');
 const chai = require("chai");
@@ -39,7 +38,7 @@ module.exports = async function(contracts, [node], accounts, web3) {
     });
 
     // wait for event buffer
-    await advanceBlocks(128, web3);
+    await node.advanceUntilChange(web3);
 
     const afterColors = await node.web3.getColors();
     console.log('Checking..');
