@@ -141,12 +141,9 @@ module.exports = async function(contracts, node, web3, addr, uIndex) {
     log("Account plasma balance: ", plasmaBalanceAfter);
 
     const unspentsAfter = await node.web3.getUnspent(addr);
-    // const unspentsValue = unspentsAfter.reduce((sum, unspent) => sum + unspent.output.value, 0);
     const unspentsValue = unspentsAfter.reduce((sum, unspent) => add(bi(sum), bi(unspent.output.value)), 0);
     unspentsAfter.length.should.be.equal(unspents.length - 1);
-    // assert(equal(bi(unspentsValue), bi(plasmaBalanceAfter)));
     plasmaBalanceAfter.should.be.equal(plasmaBalanceBefore - amount);
-    // assert(equal(bi(balanceAfter), add(bi(balanceBefore), bi(amount))));
 
     return unspent;
 }
