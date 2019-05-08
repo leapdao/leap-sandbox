@@ -17,7 +17,6 @@ jobs:
   include:
     - stage: tests
       name: "Integration tests"
-      before_script:
-        - yarn build
       script:
+        - yarn build
         - yarn test
