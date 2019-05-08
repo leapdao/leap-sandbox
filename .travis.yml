@@ -4,9 +4,6 @@ node_js:
 cache:
   - yarn
   - npm
-os:
-  - linux
-  - osx
 branches:
   only:
     - master
@@ -17,6 +14,9 @@ jobs:
   include:
     - stage: tests
       name: "Integration tests"
+      os:
+        - linux
+        - osx
       script:
         - yarn build
         - yarn test
