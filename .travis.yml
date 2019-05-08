@@ -10,13 +10,9 @@ branches:
     - stable
     - staging
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
-jobs:
-  include:
-    - stage: tests
-      name: "Integration tests"
-      os:
-        - linux
-        - osx
-      script:
-        - yarn build
-        - yarn test
+  os:
+    - linux
+    - osx
+  script:
+    - yarn build
+    - yarn test
