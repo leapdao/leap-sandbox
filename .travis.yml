@@ -10,9 +10,9 @@ branches:
     - stable
     - staging
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
-  os:
-    - linux
-    - osx
-  script:
-    - yarn build
-    - yarn test
+os:
+  - linux
+  - osx
+script:
+  - yarn build
+  - yarn test
