@@ -1,0 +1,18 @@
+language: node_js
+node_js:
+  - "lts/*"
+cache:
+  - yarn
+  - npm
+branches:
+  only:
+    - master
+    - stable
+    - staging
+    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+os:
+  - linux
+  - osx
+script:
+  - yarn build
+  - yarn test

@@ -8,8 +8,7 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   const alicePriv = accounts[0].privKey;
   const bob = accounts[1].addr;
   const bobPriv = accounts[1].privKey;
-  const amount = 10000000;
-  const spCode = '0x608060405234801561001057600080fd5b506004361061002e5760e060020a600035046341c9a5ea8114610033575b600080fd5b61006e6004803603608081101561004957600080fd5b50803590602081013590604081013560ff169060600135600160a060020a0316610070565b005b60408051600080825260208083018085526c010000000000000000000000006bffffffffffffffffffffffff193082021604905260ff86168385015260608301889052608083018790529251909260019260a080820193601f1981019281900390910190855afa1580156100e8573d6000803e3d6000fd5b505060408051601f198101517f70a082310000000000000000000000000000000000000000000000000000000082523060048084018290529351919550869450926000929091600160a060020a038616916370a08231916024808301926020929190829003018186803b15801561015e57600080fd5b505afa158015610172573d6000803e3d6000fd5b505050506040513d602081101561018857600080fd5b505181151561019357fe5b04905060008184600160a060020a03166370a08231856040518263ffffffff1660e060020a0281526004018082600160a060020a0316600160a060020a0316815260200191505060206040518083038186803b1580156101f257600080fd5b505afa158015610206573d6000803e3d6000fd5b505050506040513d602081101561021c57600080fd5b5051604080517fa9059cbb000000000000000000000000000000000000000000000000000000008152600160a060020a03898116600483015260248201879052915193909203935086169163a9059cbb916044808201926020929091908290030181600087803b15801561028f57600080fd5b505af11580156102a3573d6000803e3d6000fd5b505050506040513d60208110156102b957600080fd5b505060008111156103545783600160a060020a031663a9059cbb84836040518363ffffffff1660e060020a0281526004018083600160a060020a0316600160a060020a0316815260200182815260200192505050602060405180830381600087803b15801561032757600080fd5b505af115801561033b573d6000803e3d6000fd5b505050506040513d602081101561035157600080fd5b50505b50505050505050505056fea165627a7a723058208007f5a72195df8bb6daad1a81961769daceaf4d35b9944529bb957a6b3be8050029';
+  const spCode = '0x608060405234801561001057600080fd5b506004361061002e5760e060020a6000350463d01a81e18114610033575b600080fd5b61005f6004803603604081101561004957600080fd5b50600160a060020a038135169060200135610061565b005b6040805160e060020a6370a08231028152306004820152905173111111111111111111111111111111111111111191600091849184916370a0823191602480820192602092909190829003018186803b1580156100bd57600080fd5b505afa1580156100d1573d6000803e3d6000fd5b505050506040513d60208110156100e757600080fd5b50516040805160e060020a63a9059cbb028152600160a060020a03888116600483015260248201889052915193909203935084169163a9059cbb916044808201926020929091908290030181600087803b15801561014457600080fd5b505af1158015610158573d6000803e3d6000fd5b505050506040513d602081101561016e57600080fd5b505060008111156101f8576040805160e060020a63a9059cbb028152306004820152602481018390529051600160a060020a0384169163a9059cbb9160448083019260209291908290030181600087803b1580156101cb57600080fd5b505af11580156101df573d6000803e3d6000fd5b505050506040513d60208110156101f557600080fd5b50505b5050505056fea165627a7a72305820b6375cb3c7f659844afea0adf999ea78d73fd047f5823fbe1447f8051fe0189b0029'.replace('1111111111111111111111111111111111111111', contracts.token.options.address.replace('0x', '').toLowerCase());
   const codeBuf = Buffer.from(spCode.replace('0x', ''), 'hex');
   const spAddrBuf = ethUtil.ripemd160(codeBuf);
   const spAddr = `0x${spAddrBuf.toString('hex')}`;
@@ -23,16 +22,27 @@ module.exports = async function(contracts, nodes, accounts, web3) {
 
   let balanceAlice = (await nodes[0].web3.eth.getBalance(alice)) * 1;
   let balanceSp = (await nodes[0].web3.eth.getBalance(spAddr)) * 1;
+  let amount = 100000000;
 
-  const transferTx = await transfer(
+  // for gas
+  await transfer(
     alice, 
     alicePriv, 
     spAddr, 
     amount, 
     nodes[0]);
 
-  ((await nodes[0].web3.eth.getBalance(alice)) * 1).should.be.equal(balanceAlice - amount);
-  ((await nodes[0].web3.eth.getBalance(spAddr)) * 1).should.be.equal(balanceSp + amount);
+  // for the actual transfer
+  await transfer(
+    alice, 
+    alicePriv, 
+    spAddr, 
+    amount, 
+    nodes[0]);
+
+  ((await nodes[0].web3.eth.getBalance(alice)) * 1).should.be.equal(balanceAlice - (amount * 2));
+  ((await nodes[0].web3.eth.getBalance(spAddr)) * 1).should.be.equal(balanceSp + (amount * 2));
+
   console.log("Balances before SP TX:");
   let balanceBob = (await nodes[0].web3.eth.getBalance(bob)) * 1;
   console.log('bob: ', balanceBob);
@@ -42,21 +52,54 @@ module.exports = async function(contracts, nodes, accounts, web3) {
   const unspents = await nodes[0].web3.getUnspent(spAddr);
   const condTx = Tx.spendCond(
     [
+      // gas
       new Input({
         prevout: unspents[0].outpoint,
         gasPrice: 0,
         script: spCode,
       }),
+      // actual token input
+      new Input({
+        prevout: unspents[1].outpoint,
+      }),
     ],
-    [new Output(amount / 4, bob, 0),
-      new Output(balanceSp - (amount / 4), spAddr, 0)]
+    [
+      new Output(amount, bob, 0),
+      // the leftover from gas input
+      new Output(94177716, spAddr, 0),
+    ]
   );
 
-  const sig = condTx.getConditionSig(bobPriv);
-  const condition = new web3.eth.Contract(spendingConditionABI, spAddr);
-  const msgData = (await condition.methods.fulfil(`0x${sig.r.toString('hex')}`, `0x${sig.s.toString('hex')}`, sig.v, contracts.token.options.address))
-    .encodeABI();
+  const amountBuf = ethUtil.setLengthLeft(ethUtil.toBuffer(amount), 32);
+  const msgData =
+    '0xd01a81e1' + // function called
+    `000000000000000000000000${bob.replace('0x', '').toLowerCase()}${amountBuf.toString(
+        'hex'
+      )}`; // outputs
+
   condTx.inputs[0].setMsgData(msgData);
+  // XXX: leap-core bug
+  // not if that makes a difference, but if the input is not signed we later get problems in exit (needs fixing)
+  condTx.signAll(bobPriv);
+
+  /*
+  let computedOutputs = await new Promise(
+    (resolve, reject) => {
+      nodes[0].web3.currentProvider.send(
+        { jsonrpc: '2.0', id: 42, method: 'checkSpendingCondition', 'params': [condTx.hex()] },
+        (err, res) => { if (err) { return reject(err); } resolve(res); }
+      );
+    }
+  );
+
+  console.log(computedOutputs);
+  console.log(computedOutputs.result, computedOutputs.result.outputs);
+  // computedOutputs.result.outputs.forEach(
+  //  (output) => {
+  //    condTx.outputs.push(Output.fromJSON(output));
+  //  }
+  //);
+  */
 
   await nodes[0].sendTx(condTx);
 
