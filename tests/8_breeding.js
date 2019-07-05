@@ -68,7 +68,7 @@ module.exports = async function(contracts, [node], accounts, web3) {
   console.log(`   ✅ getColor(${deployedToken.options.address}): 1`);
 
   console.log('   Minting..');
-  let res = await deployedToken.methods.mintQueen(minter).send({ from: minter, gas: 200000 });
+  let res = await deployedToken.methods.mintDelegate(minter).send({ from: minter, gas: 200000 });
   let tokenId = `0x${new ethUtil.BN(res.events.Transfer.returnValues.tokenId).toString('hex')}`;
   let tokenData = res.events.DataUpdated.returnValues.newData;
   console.log({ tokenId, tokenData });
