@@ -31,7 +31,7 @@ module.exports = async function(contracts, [node], accounts, web3) {
   console.log('   Address:', deployedToken.options.address);
 
   console.log('Submitting registerToken proposal..');
-  const data = contracts.exitHandler.methods.registerNST(deployedToken.options.address).encodeABI();
+  const data = contracts.exitHandler.methods.registerToken(deployedToken.options.address, 2).encodeABI();
   console.log('   Subject:', contracts.exitHandler.options.address)
   console.log('   Data:', data)
   await contracts.governance.methods.propose(contracts.exitHandler.options.address, data).send({
