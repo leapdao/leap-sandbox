@@ -25,7 +25,7 @@ module.exports = async function(contracts, [node], accounts, web3) {
     console.log('   Address:', simpleToken.options.address);
 
     console.log('Submitting registerToken proposal..');
-    const data = contracts.exitHandler.methods.registerToken(simpleToken.options.address, false).encodeABI();
+    const data = contracts.exitHandler.methods.registerToken(simpleToken.options.address, 0).encodeABI();
     console.log('   Subject:', contracts.exitHandler.options.address)
     console.log('   Data:', data)
     await contracts.governance.methods.propose(contracts.exitHandler.options.address, data).send({
