@@ -1,6 +1,7 @@
 const ethers = require('ethers');
 
 const minePeriod = require('./actions/minePeriod');
+const { awaitTx } = require('../../src/helpers');
 const PosOperator = require('../build/contracts/build/contracts/PosOperator');
 
 module.exports = async function(contracts, [node], accounts, wallet) {
@@ -28,13 +29,15 @@ module.exports = async function(contracts, [node], accounts, wallet) {
   await posOperator.deployed();
  
   let data = contracts.proxy.interface.functions.upgradeTo.encode([posOperator.address]);
-  await (await contracts.governance.propose(
-    contracts.operator.address, data,
-    {
-      gasLimit: 2000000,
-    }
-  )).wait();
-  await (await contracts.governance.finalize()).wait();
+  await awaitTx(
+    contracts.governance.propose(
+      contracts.operator.address, data,
+      {
+        gasLimit: 2000000,
+      }
+    )
+  );
+  await awaitTx(contracts.governance.finalize());
 
   console.log("have some epochs pass by...");
   await minePeriod(node, accounts);

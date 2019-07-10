@@ -91,4 +91,9 @@ async function advanceBlocks(number, wallet) {
   }
 };
 
-module.exports = { sleep, formatHostname, makeTransfer, makeTransferUxto, getLog, advanceBlocks };
+async function awaitTx(tx) {
+  // we are awaiting the a{wak, wait}enings 😱
+  return tx.then((tx) => tx.wait());
+};
+
+module.exports = { awaitTx, sleep, formatHostname, makeTransfer, makeTransferUxto, getLog, advanceBlocks };

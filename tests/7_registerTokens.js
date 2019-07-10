@@ -2,6 +2,7 @@ const ethers = require('ethers');
 
 const erc20abi = require('../src/erc20abi');
 const SimpleToken = require('../build/contracts/build/contracts/SimpleToken');
+const { awaitTx } = require('../../src/helpers');
 const chai = require("chai");
 const { assert } = chai;
 const chaiAsPromised = require("chai-as-promised");
@@ -37,15 +38,15 @@ module.exports = async function(contracts, [node], accounts, wallet) {
     console.log('   Subject:', contracts.exitHandler.address)
     console.log('   Data:', data)
     const gov = contracts.governance.connect(wallet.provider.getSigner(minter));
-    await (await gov.propose(
-      contracts.exitHandler.address, data,
-      { gasLimit: 2000000, gasPrice: 100000000000 }
-    )).wait();
-    
+    await awaitTx(
+      gov.propose(
+        contracts.exitHandler.address, data,
+        { gasLimit: 2000000, gasPrice: 100000000000 }
+      )
+    );
+
     console.log('Finalizing proposal..');
-    await (await contracts.governance.finalize(
-      { gasLimit: 1000000, gasPrice: 100000000000 }
-    )).wait();
+    await awaitTx(contracts.governance.finalize({ gasLimit: 1000000, gasPrice: 100000000000 }));
 
     // wait for event buffer
     await node.advanceUntilChange(wallet);

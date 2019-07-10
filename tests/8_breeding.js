@@ -5,6 +5,7 @@ const { Tx, Input, Output, Outpoint } = require('leap-core');
 
 const exitUnspent = require('./actions/exitUnspent');
 const minePeriod = require('./actions/minePeriod');
+const { awaitTx } = require('../../src/helpers');
 
 const TOKEN = require('../build/contracts/build/contracts/ERC1949.json');
 
@@ -41,16 +42,15 @@ module.exports = async function(contracts, [node], accounts, wallet) {
   const data = contracts.exitHandler.interface.functions.registerToken.encode([deployedToken.address, 2]);
   console.log('   Subject:', contracts.exitHandler.address)
   console.log('   Data:', data)
-  await (await contracts.governance
-    .propose(contracts.exitHandler.address, data,
+  await awaitTx(
+    contracts.governance.propose(
+      contracts.exitHandler.address, data,
       { gasLimit: 2000000, gasPrice: 100000000000 }
     )
-  ).wait();
+  );
 
   console.log('Finalizing proposal..');
-  await (
-    await contracts.governance.finalize({ gasLimit: 1000000, gasPrice: 100000000000 })
-  ).wait();
+  await awaitTx(contracts.governance.finalize({ gasLimit: 1000000, gasPrice: 100000000000 }));
 
     // wait for event buffer
   await node.advanceUntilChange(wallet);
@@ -84,14 +84,16 @@ module.exports = async function(contracts, [node], accounts, wallet) {
   console.log({ tokenId, tokenData });
 
   console.log('   Approving..');
-  await (await deployedToken.approve(contracts.exitHandler.address, tokenId)).wait();
+  await awaitTx(deployedToken.approve(contracts.exitHandler.address, tokenId));
   console.log('   Depositing..');
-  await (await contracts.exitHandler.depositBySender(
-    tokenId, nstColor,
-    {
-      gasLimit: 2000000,
-    }
-  )).wait();
+  await awaitTx(
+    contracts.exitHandler.depositBySender(
+      tokenId, nstColor,
+      {
+        gasLimit: 2000000,
+      }
+    )
+  );
 
   console.log('    advanceBlocks');
   await node.advanceUntilChange(wallet);
