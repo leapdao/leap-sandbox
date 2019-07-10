@@ -9,20 +9,17 @@ module.exports = async function(alice, amount, minter, token, exitHandler, node,
   log(`Minting and depositing ${amount} tokens to account ${alice}...`);
   console.log('   Minting..');
   const balanceOrig = Number(await token.balanceOf(alice));
-  let tx = await token.connect(wallet.provider.getSigner(minter)).mint(alice, amount);
-  await tx.wait();
+  await (await token.connect(wallet.provider.getSigner(minter)).mint(alice, amount)).wait();
   const balanceMint = Number(await token.balanceOf(alice));
   console.log('   Approving..');
-  tx = await token.connect(wallet.provider.getSigner(alice)).approve(exitHandler.address, amount);
-  await tx.wait();
+  await (await token.connect(wallet.provider.getSigner(alice)).approve(exitHandler.address, amount)).wait();
   console.log('   Depositing..');
-  tx = await exitHandler.connect(wallet.provider.getSigner(alice)).deposit(
+  await (await exitHandler.connect(wallet.provider.getSigner(alice)).deposit(
     alice, amount, 0,
     {
       gasLimit: 2000000
     }
-  );
-  await tx.wait();
+  )).wait();
   const balanceFinal = Number(await token.balanceOf(alice));
 
   const currentPlasmaBalance = await waitForBalanceChange(alice, oldPlasmaBalance, node, wallet.provider);

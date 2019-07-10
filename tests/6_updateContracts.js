@@ -28,15 +28,13 @@ module.exports = async function(contracts, [node], accounts, wallet) {
   await posOperator.deployed();
  
   let data = contracts.proxy.interface.functions.upgradeTo.encode([posOperator.address]);
-  let tx = await contracts.governance.propose(
+  await (await contracts.governance.propose(
     contracts.operator.address, data,
     {
       gasLimit: 2000000,
     }
-  );
-  await tx.wait();
-  tx = await contracts.governance.finalize();
-  await tx.wait();
+  )).wait();
+  await (await contracts.governance.finalize()).wait();
 
   console.log("have some epochs pass by...");
   await minePeriod(node, accounts);

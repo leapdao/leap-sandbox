@@ -1,3 +1,4 @@
+const ethers = require('ethers');
 const debug = require('debug')('exitUnspent');
 const { helpers, Tx, Period, Util } = require('leap-core');
 const { bufferToHex } = require('ethereumjs-util');
@@ -93,7 +94,7 @@ module.exports = async function(contracts, node, wallet, addr, uIndex) {
         proof,
         unspent.outpoint.index,
         youngestInput.index,
-        { value: `0x${(10**18).toString(16)}`, gasLimit: 2000000 }
+        { value: ethers.utils.parseEther('1'), gasLimit: 2000000 }
     );
     await startExitResult.wait();
 

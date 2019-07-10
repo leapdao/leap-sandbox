@@ -37,17 +37,15 @@ module.exports = async function(contracts, [node], accounts, wallet) {
     console.log('   Subject:', contracts.exitHandler.address)
     console.log('   Data:', data)
     const gov = contracts.governance.connect(wallet.provider.getSigner(minter));
-    let tx = await gov.propose(
+    await (await gov.propose(
       contracts.exitHandler.address, data,
       { gasLimit: 2000000, gasPrice: 100000000000 }
-    );
-    await tx.wait();
+    )).wait();
     
     console.log('Finalizing proposal..');
-    tx = await contracts.governance.finalize(
+    await (await contracts.governance.finalize(
       { gasLimit: 1000000, gasPrice: 100000000000 }
-    );
-    await tx.wait();
+    )).wait();
 
     // wait for event buffer
     await node.advanceUntilChange(wallet);

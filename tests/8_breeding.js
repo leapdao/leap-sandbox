@@ -41,20 +41,18 @@ module.exports = async function(contracts, [node], accounts, wallet) {
   const data = contracts.exitHandler.interface.functions.registerToken.encode([deployedToken.address, 2]);
   console.log('   Subject:', contracts.exitHandler.address)
   console.log('   Data:', data)
-  let tx = await contracts.governance
+  await (await contracts.governance
     .propose(contracts.exitHandler.address, data,
       { gasLimit: 2000000, gasPrice: 100000000000 }
-    );
-  await tx.wait();
+    )
+  ).wait();
 
   console.log('Finalizing proposal..');
-  tx = await contracts.governance
-    .finalize({
-      gasLimit: 1000000, gasPrice: 100000000000 
-    });
-  await tx.wait();
+  await (
+    await contracts.governance.finalize({ gasLimit: 1000000, gasPrice: 100000000000 })
+  ).wait();
 
-  // wait for event buffer
+    // wait for event buffer
   await node.advanceUntilChange(wallet);
 
   const afterColors = (await node.provider.send('plasma_getColors', [false, true]));
@@ -86,16 +84,14 @@ module.exports = async function(contracts, [node], accounts, wallet) {
   console.log({ tokenId, tokenData });
 
   console.log('   Approving..');
-  tx = await deployedToken.approve(contracts.exitHandler.address, tokenId);
-  await tx.wait();
+  await (await deployedToken.approve(contracts.exitHandler.address, tokenId)).wait();
   console.log('   Depositing..');
-  tx = await contracts.exitHandler.depositBySender(
+  await (await contracts.exitHandler.depositBySender(
     tokenId, nstColor,
     {
       gasLimit: 2000000,
     }
-  );
-  await tx.wait();
+  )).wait();
 
   console.log('    advanceBlocks');
   await node.advanceUntilChange(wallet);

@@ -20,8 +20,8 @@ module.exports = async function(contracts, nodes, accounts, wallet) {
   console.log("║2. Claim from SP by Bob                   ║");
   console.log("╚══════════════════════════════════════════╝");
 
-  let balanceAlice = (await nodes[0].getBalance(alice)) * 1;
-  let balanceSp = (await nodes[0].getBalance(spAddr)) * 1;
+  let balanceAlice = await nodes[0].getBalance(alice);
+  let balanceSp = await nodes[0].getBalance(spAddr);
   let amount = 100000000;
 
   // for gas
@@ -40,13 +40,13 @@ module.exports = async function(contracts, nodes, accounts, wallet) {
     amount, 
     nodes[0]);
 
-  ((await nodes[0].getBalance(alice)) * 1).should.be.equal(balanceAlice - (amount * 2));
-  ((await nodes[0].getBalance(spAddr)) * 1).should.be.equal(balanceSp + (amount * 2));
+  (await nodes[0].getBalance(alice)).should.be.equal(balanceAlice - (amount * 2));
+  (await nodes[0].getBalance(spAddr)).should.be.equal(balanceSp + (amount * 2));
 
   console.log("Balances before SP TX:");
-  let balanceBob = (await nodes[0].getBalance(bob)) * 1;
+  let balanceBob = await nodes[0].getBalance(bob);
   console.log('bob: ', balanceBob);
-  balanceSp = (await nodes[0].getBalance(spAddr)) * 1;
+  balanceSp = await nodes[0].getBalance(spAddr);
   console.log('sp: ', balanceSp);
 
   const unspents = await nodes[0].getUnspent(spAddr);
@@ -94,9 +94,9 @@ module.exports = async function(contracts, nodes, accounts, wallet) {
   await nodes[0].sendTx(condTx);
 
   console.log("Balances after SP TX:");
-  balanceBob = (await nodes[0].getBalance(bob)) * 1;
+  balanceBob = await nodes[0].getBalance(bob);
   console.log('bob: ', balanceBob);
-  balanceSp = (await nodes[0].getBalance(spAddr)) * 1;
+  balanceSp = await nodes[0].getBalance(spAddr);
   console.log('sp: ', balanceSp);
 
   if (balanceBob == 0) {

@@ -35,14 +35,12 @@ module.exports = async function(contracts, [node], accounts, wallet) {
     console.log("Changing epochLength...");
     const data = await contracts.operator.interface.functions.setEpochLength.encode([2]);
     const gov = contracts.governance.connect(wallet.provider.getSigner(minter));
-    let tx = await gov.propose(contracts.operator.address, data, { gasLimit: 2000000 });
-    await tx.wait();
+    await (await gov.propose(contracts.operator.address, data, { gasLimit: 2000000 })).wait();
 
     // 2 weeks waiting period ;)
-    tx = await gov.finalize({
+    await (await gov.finalize({
       gasLimit: 2000000
-    });
-    await tx.wait();
+    })).wait();
 
     await minePeriod(node, accounts);
     console.log("------Exit Bob------");
