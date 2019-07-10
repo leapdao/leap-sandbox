@@ -14,32 +14,7 @@ class Node extends helpers.LeapEthers {
   }
 
   async sendTx(tx) {
-    // workaround different transaction hashes (leap-core bug)
-    let txHash;
-
-    try {
-      txHash = await this.provider.send('eth_sendRawTransaction', [tx.hex()]);
-    } catch(e) {
-      console.log(e);
-    }
-
-    if (txHash !== tx.hash()) {
-      console.warn(`txHash(${txHash}) from rpc does not match local tx.hash(${tx.hash()})`);
-    }
-
-    let rounds = 50;
-    while (rounds--) {
-      let res = await this.provider.getTransaction(txHash)
-
-      if (res && res.blockHash) {
-        return;
-      }
-
-      // wait ~100ms
-      await new Promise((resolve) => setTimeout(() => resolve(), 100));
-    }
-
-    throw new Error('transaction not included in time');
+    return helpers.sendSignedTransaction(this.provider, tx.hex());
   };
 
   async getBalance(addr) {
