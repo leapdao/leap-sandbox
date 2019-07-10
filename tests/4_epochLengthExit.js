@@ -6,7 +6,7 @@ const chai = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 
-module.exports = async function(contracts, [node], accounts, web3) {
+module.exports = async function(contracts, [node], accounts, wallet) {
     const minter = accounts[0].addr;
     const alice = accounts[7].addr;
     const alicePriv = accounts[7].privKey;
@@ -22,7 +22,7 @@ module.exports = async function(contracts, [node], accounts, web3) {
     console.log("║4. Exit Bob                               ║");
     console.log("╚══════════════════════════════════════════╝");
     
-    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler, node, web3);
+    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler, node, wallet);
     
     console.log("------Transfer from Alice to Bob------");
     let txAmount = Math.round(amount/(2000))+ Math.round(100 * Math.random());
@@ -33,20 +33,20 @@ module.exports = async function(contracts, [node], accounts, web3) {
         txAmount, 
         node);
     console.log("Changing epochLength...");
-    const data = await contracts.operator.methods.setEpochLength(2).encodeABI();
-    await contracts.governance.methods.propose(contracts.operator.options.address, data).send({
-        from: minter,
-        gas: 2000000
-    });
+    const data = await contracts.operator.interface.functions.setEpochLength.encode([2]);
+    const gov = contracts.governance.connect(wallet.provider.getSigner(minter));
+    let tx = await gov.propose(contracts.operator.address, data, { gasLimit: 2000000 });
+    await tx.wait();
+
     // 2 weeks waiting period ;)
-    await contracts.governance.methods.finalize().send({
-      from: minter,
-      gas: 2000000
+    tx = await gov.finalize({
+      gasLimit: 2000000
     });
+    await tx.wait();
 
     await minePeriod(node, accounts);
     console.log("------Exit Bob------");
-    await exitUnspent(contracts, node, web3, bob);
+    await exitUnspent(contracts, node, wallet, bob);
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║   Test: Exit after epochLength change    ║");

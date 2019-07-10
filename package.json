@@ -13,9 +13,9 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "ethereumjs-util": "^6.1.0",
+    "ethers": "^4.0.33",
     "ganache-cli": "^6.2.3",
     "jsbi-utils": "^1.0.0",
-    "leap-core": "^0.30.1",
-    "web3": "1.0.0-beta.37"
+    "leap-core": "^0.32.2"
   }
 }

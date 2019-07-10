@@ -2,7 +2,7 @@ const { helpers } = require('leap-core');
 const { makeTransfer } = require('../../src/helpers');
 
 module.exports = async (node, [{ addr, privKey }]) => {
-  const currentBlock = (await node.web3.eth.getBlock('latest')).number;
+  const currentBlock = Number((await node.getBlock('latest')).number);
   const [, lastBlockInPeriod] = helpers.periodBlockRange(currentBlock);
 
   for (let i = 0; i <= lastBlockInPeriod - currentBlock + 1; i++) {

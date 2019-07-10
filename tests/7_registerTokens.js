@@ -1,3 +1,5 @@
+const ethers = require('ethers');
+
 const erc20abi = require('../src/erc20abi');
 const SimpleToken = require('../build/contracts/build/contracts/SimpleToken');
 const chai = require("chai");
@@ -5,58 +7,68 @@ const { assert } = chai;
 const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 
-module.exports = async function(contracts, [node], accounts, web3) {
+module.exports = async function(contracts, [node], accounts, wallet) {
     const minter = accounts[0].addr;
 
     console.log("Registering another token...");
 
-    const beforeColors = await node.web3.getColors();
+    const beforeColors = await node.getColors();
     console.log('Initial state');
     console.log('   Token count:', beforeColors.length);
     console.log('   Tokens:', beforeColors);
 
     console.log('Deploying new ERC20 token..');
-    const erc20Contract = new web3.eth.Contract(erc20abi);
-    simpleToken = await erc20Contract.deploy({ data: SimpleToken.bytecode }).send({
-        from: accounts[0].addr,
-        gas: 1712388,
-        gasPrice: 100000000000
-    });
-    console.log('   Address:', simpleToken.options.address);
+    let factory = new ethers.ContractFactory(
+      erc20abi,
+      SimpleToken.bytecode,
+      wallet
+    );
+    let simpleToken = await factory.deploy(
+      {
+        gasLimit: 1712388,
+        gasPrice: 100000000000,
+      }
+    );
+    await simpleToken.deployed();
+    console.log('   Address:', simpleToken.address);
 
     console.log('Submitting registerToken proposal..');
-    const data = contracts.exitHandler.methods.registerToken(simpleToken.options.address, 0).encodeABI();
-    console.log('   Subject:', contracts.exitHandler.options.address)
+    const data = contracts.exitHandler.interface.functions.registerToken.encode([simpleToken.address, 0]);
+    console.log('   Subject:', contracts.exitHandler.address)
     console.log('   Data:', data)
-    await contracts.governance.methods.propose(contracts.exitHandler.options.address, data).send({
-      from: minter, gas: 2000000, gasPrice: 100000000000
-    });
+    const gov = contracts.governance.connect(wallet.provider.getSigner(minter));
+    let tx = await gov.propose(
+      contracts.exitHandler.address, data,
+      { gasLimit: 2000000, gasPrice: 100000000000 }
+    );
+    await tx.wait();
     
     console.log('Finalizing proposal..');
-    await contracts.governance.methods.finalize().send({
-        from: minter, gas: 1000000, gasPrice: 100000000000 
-    });
+    tx = await contracts.governance.finalize(
+      { gasLimit: 1000000, gasPrice: 100000000000 }
+    );
+    await tx.wait();
 
     // wait for event buffer
-    await node.advanceUntilChange(web3);
+    await node.advanceUntilChange(wallet);
 
-    const afterColors = await node.web3.getColors();
+    const afterColors = await node.getColors();
     console.log('Checking..');
 
     assert.equal(afterColors.length, beforeColors.length + 1, 'Token count');
     console.log('   ✅ Token count:', afterColors.length);
 
     assert.deepEqual(
-        beforeColors.concat([simpleToken.options.address]),
+        beforeColors.concat([simpleToken.address]),
         afterColors,
         "getColors()"
     );
     console.log('   ✅ getColors(): ' + afterColors);
 
     assert.equal(
-        await node.web3.getColor(simpleToken.options.address),
+        await node.getColor(simpleToken.address),
         1,
         "getColor()"
     );
-    console.log(`   ✅ getColor(${simpleToken.options.address}): 1`);
+    console.log(`   ✅ getColor(${simpleToken.address}): 1`);
 }
