@@ -1,7 +1,7 @@
 const ethers = require('ethers');
 
 const minePeriod = require('./actions/minePeriod');
-const { awaitTx } = require('../../src/helpers');
+const { awaitTx } = require('../src/helpers');
 const PosOperator = require('../build/contracts/build/contracts/PosOperator');
 
 module.exports = async function(contracts, [node], accounts, wallet) {

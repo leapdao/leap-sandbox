@@ -2,7 +2,7 @@ const ethers = require('ethers');
 
 const erc20abi = require('../src/erc20abi');
 const SimpleToken = require('../build/contracts/build/contracts/SimpleToken');
-const { awaitTx } = require('../../src/helpers');
+const { awaitTx } = require('../src/helpers');
 const chai = require("chai");
 const { assert } = chai;
 const chaiAsPromised = require("chai-as-promised");

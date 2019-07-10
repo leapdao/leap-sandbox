@@ -5,7 +5,7 @@ const { Tx, Input, Output, Outpoint } = require('leap-core');
 
 const exitUnspent = require('./actions/exitUnspent');
 const minePeriod = require('./actions/minePeriod');
-const { awaitTx } = require('../../src/helpers');
+const { awaitTx } = require('../src/helpers');
 
 const TOKEN = require('../build/contracts/build/contracts/ERC1949.json');
 
