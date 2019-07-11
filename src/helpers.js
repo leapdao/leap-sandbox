@@ -37,7 +37,7 @@ async function makeTransfer(
   let fromAddr = from.toLowerCase();
   to = to.toLowerCase();
 
-  const utxos = await node.web3.getUnspent(from);
+  const utxos = await node.getUnspent(from);
   const len = utxos.length;
   let balance = 0;
   let unspent = [];
@@ -81,27 +81,19 @@ function makeTransferUxto(
   return Tx.transferFromUtxos(utxos, from, to, value, color).signAll(privKey);
 }
 
-function advanceBlock(web3) {
-  const id = Date.now();
-
-  return new Promise((resolve, reject) => {
-    web3.currentProvider.send(
-      {
-        jsonrpc: "2.0",
-        method: "evm_mine",
-        id: id + 1
-      },
-      (err, res) => {
-        return err ? reject(err) : resolve(res);
-      }
-    );
-  });
+function advanceBlock(wallet) {
+  return (wallet.provider || wallet).send('evm_mine', []);
 };
 
-async function advanceBlocks(number, web3) {
+async function advanceBlocks(number, wallet) {
   for (let i = 0; i < number; i++) {
-    await advanceBlock(web3);
+    await advanceBlock(wallet);
   }
 };
 
-module.exports = { sleep, formatHostname, makeTransfer, makeTransferUxto, getLog, advanceBlocks };
+async function mine(tx) {
+  // we are awaiting the a{wak, wait}enings 😱
+  return tx.then((tx) => tx.wait());
+};
+
+module.exports = { mine, sleep, formatHostname, makeTransfer, makeTransferUxto, getLog, advanceBlocks };

@@ -1,3 +1,4 @@
+const ethers = require('ethers');
 const debug = require('debug')('exitUnspent');
 const { helpers, Tx, Period, Util } = require('leap-core');
 const { bufferToHex } = require('ethereumjs-util');
@@ -9,19 +10,19 @@ const waitForBalanceChange = require('./waitForBalanceChange');
 const ERC20_ERC721_TRANSFER_EVENT = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 const ERC1948_DATA_UPDATED_EVENT = '0x8ec06c2117d45dcb6bcb6ecf8918414a7ff1cb1ed07da8175e2cf638d0f4777f';
 
-module.exports = async function(contracts, node, web3, addr, uIndex) {
+module.exports = async function(contracts, node, wallet, addr, uIndex) {
     const log = getLog(false);
     const slotId = 0;
-    const validatorAddr = (await node.web3.getValidatorInfo()).ethAddress;
+    const validatorAddr = (await node.getValidatorInfo()).ethAddress;
     
     let txHash;
     let txData;
 
     log(`------Unspents of ${addr}------`);
-    const unspents = await node.web3.getUnspent(addr);
+    const unspents = await node.getUnspent(addr);
     log(unspents);
     debug("------Looking for unspent from submitted period------");
-    const latestBlockNumber = (await node.web3.eth.getBlock('latest')).number;
+    const latestBlockNumber = (await node.getBlock('latest')).number;
     debug("Latest Block number: ", latestBlockNumber);
     const latestSubmittedBlock = latestBlockNumber - latestBlockNumber % 32;
     debug("Latest submitted block number: ", latestSubmittedBlock);
@@ -32,7 +33,7 @@ module.exports = async function(contracts, node, web3, addr, uIndex) {
     const getIndex = async (unspents, lastBlock) =>{
         for(let i=0; i<unspents.length; i++) {
             txHash = unspents[i].outpoint.hash;
-            txData = await node.web3.eth.getTransaction(bufferToHex(txHash));
+            txData = await node.getTransaction(bufferToHex(txHash));
             debug("Unspent", i, "blocknumber:", txData.blockNumber);
             debug("Is submitted?", txData.blockNumber < lastBlock);
             if (txData.blockNumber < lastBlock) return i;
@@ -48,27 +49,28 @@ module.exports = async function(contracts, node, web3, addr, uIndex) {
     log(`------Will attept to exit unspent ${unspentIndex} of ${addr}------`);
     const unspent = unspents[unspentIndex];
     txHash = unspent.outpoint.hash;
-    txData = await node.web3.eth.getTransaction(bufferToHex(txHash));
+    txData = await node.getTransaction(bufferToHex(txHash));
     const amount = unspent.output.value;
+    const txColor = unspent.output.color;
     log("Unspent amount: ", amount);
     debug(`------Transaction hash for Bob's unspent ${unspentIndex}------`);
     debug(txHash);
     debug("------Transaction data------");
     debug(txData);
     debug("------Period------");
-    const period = await Period.periodForTx(node.web3, txData);
+    const period = await Period.periodForTx(node, txData);
     debug(period);
     debug("------Proof------");
     period.setValidatorData(slotId, validatorAddr);
     const proof = period.proof(Tx.fromRaw(txData.raw));
     debug(proof);
     debug("------Youngest Input------");
-    const youngestInput = await helpers.getYoungestInputTx(node.web3, Tx.fromRaw(txData.raw));
+    const youngestInput = await helpers.getYoungestInputTx(node, Tx.fromRaw(txData.raw));
     debug(youngestInput);
     let youngestInputProof;
     if (youngestInput.tx) {
         debug("------Youngest Input Period------");
-        const youngestInputPeriod = await Period.periodForTx(node.web3, youngestInput.tx);
+        const youngestInputPeriod = await Period.periodForTx(node, youngestInput.tx);
         debug(youngestInputPeriod);
         debug("------Youngest Input Proof------");
         youngestInputPeriod.setValidatorData(slotId, validatorAddr);
@@ -79,33 +81,36 @@ module.exports = async function(contracts, node, web3, addr, uIndex) {
         youngestInputProof = [];
     }
     debug("------Period from the contract by merkle root------");
-    debug(await contracts.bridge.methods.periods(proof[0]).call());
+    debug(await contracts.bridge.periods(proof[0]));
     log("------Balance before exit------");
-    const balanceBefore = await contracts.token.methods.balanceOf(addr).call();
+    const balanceBefore = await contracts.token.balanceOf(addr);
     const plasmaBalanceBefore = await node.getBalance(addr);
     log("Account mainnet balance: ", balanceBefore);
     log("Account plasma balance: ", plasmaBalanceBefore);
     log("Attempting exit...");
-    const startExitResult = await contracts.exitHandler.methods.startExit(
+    let startExitResult =
+      await contracts.exitHandler.connect(wallet.provider.getSigner(addr)).startExit(
         youngestInputProof,
         proof,
         unspent.outpoint.index,
-        youngestInput.index
-    ).send({from: addr, value: 100000000000000000, gas: 2000000});
+        youngestInput.index,
+        { value: ethers.utils.parseEther('1'), gasLimit: 2000000 }
+    );
+    await startExitResult.wait();
 
     log("Finalizing exit...");
 
-    const txColor = txData.color;
-    const exitResult = await contracts.exitHandler.methods.finalizeExits(txColor).send({from: addr, gas: 2000000});
+    let exitResult =
+      await contracts.exitHandler.connect(wallet.provider.getSigner(addr))
+        .finalizeExits(txColor, { gasLimit: 2000000 });
+    exitResult = await exitResult.wait();
 
     if (Util.isNFT(txColor) || Util.isNST(txColor)) {
       let nstUpdated = false;
       let nstTransferred = false;
 
-      Object.keys(exitResult.events).forEach(
-        (i) => {
-          const event = exitResult.events[i].raw;
-
+      exitResult.events.forEach(
+        (event) => {
           // update data
           if (event.topics[0] === ERC1948_DATA_UPDATED_EVENT) {
             if (equal(bi(event.topics[1]), bi(unspent.output.value))) {
@@ -134,13 +139,13 @@ module.exports = async function(contracts, node, web3, addr, uIndex) {
     }
 
     log("------Balance after exit------");
-    const balanceAfter = await contracts.token.methods.balanceOf(addr).call();
+    const balanceAfter = await contracts.token.balanceOf(addr);
     log("Account mainnet balance: ", balanceAfter);
     
-    const plasmaBalanceAfter = await waitForBalanceChange(addr, plasmaBalanceBefore, node, web3);
+    const plasmaBalanceAfter = await waitForBalanceChange(addr, plasmaBalanceBefore, node, wallet);
     log("Account plasma balance: ", plasmaBalanceAfter);
 
-    const unspentsAfter = await node.web3.getUnspent(addr);
+    const unspentsAfter = await node.getUnspent(addr);
     const unspentsValue = unspentsAfter.reduce((sum, unspent) => add(bi(sum), bi(unspent.output.value)), 0);
     unspentsAfter.length.should.be.equal(unspents.length - 1);
     plasmaBalanceAfter.should.be.equal(plasmaBalanceBefore - amount);

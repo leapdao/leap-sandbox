@@ -1,40 +1,59 @@
+const ethers = require('ethers');
+const { mine } = require('./helpers');
 const mintAndDeposit = require('../tests/actions/mintAndDeposit');
 
-module.exports = async function(contracts, nodes, accounts, web3) {
+module.exports = async function(contracts, nodes, accounts, wallet) {
   const alice = accounts[0].addr;
 
-  let data = contracts.token.methods.addMinter(alice).encodeABI();
-  await contracts.governance.methods.propose(contracts.token.options.address, data).send({
-    from: alice, gas: 2000000
-  });
-  await contracts.governance.methods.finalize().send({ from: alice });
-  await contracts.token.methods.mint(alice, 500000000000).send({from: alice});
-  await contracts.token.methods.approve(contracts.exitHandler.options.address, 500000000000).send({from: alice});
-  await contracts.token.methods.approve(contracts.operator.options.address, 500000000000).send({from: alice});
+  let data = contracts.token.interface.functions.addMinter.encode([alice]);
+
+  await mine(contracts.governance.propose(contracts.token.address, data, { gasLimit: 2000000 }));
+  await mine(contracts.governance.finalize());
+  await mine(contracts.token.mint(alice, 500000000000));
+  await mine(contracts.token.approve(contracts.exitHandler.address, 500000000000));
+  await mine(contracts.token.approve(contracts.operator.address, 500000000000));
 
   for (let i = 0; i < nodes.length - 1; i++) {
-    const validatorInfo = await nodes[i].web3.getValidatorInfo();
-    const overloadedSlotId = `${contracts.operator.options.address}00000000000000000000000${i}`;
-    await contracts.governance.methods.setSlot(
-      overloadedSlotId, validatorInfo.ethAddress, `0x${validatorInfo.tendermintAddress}`
-    ).send({ from: alice, gas: 2000000 });
+    const validatorInfo = await nodes[i].getValidatorInfo();
+    const overloadedSlotId = `${contracts.operator.address}00000000000000000000000${i}`;
 
-    await web3.eth.sendTransaction({
-      from: alice,
-      to: validatorInfo.ethAddress,
-      value: web3.utils.toWei('1', "ether")
-    });
+    await mine(
+      contracts.governance.setSlot(
+        overloadedSlotId,
+        validatorInfo.ethAddress,
+        `0x${validatorInfo.tendermintAddress}`,
+        { gasLimit: 2000000 }
+      )
+    );
+
+    await mine(
+      wallet.sendTransaction({
+        to: validatorInfo.ethAddress,
+        value: ethers.utils.parseEther('1'),
+      })
+    );
   }
 
-  data = contracts.operator.methods.setEpochLength(nodes.length).encodeABI();
-  await contracts.governance.methods.propose(contracts.operator.options.address, data).send({
-    from: alice, gas: 2000000
-  });
-  data = contracts.exitHandler.methods.setExitDuration(0).encodeABI();
-  await contracts.governance.methods.propose(contracts.exitHandler.options.address, data).send({
-    from: alice, gas: 2000000
-  });
-  await contracts.governance.methods.finalize().send({ from: alice, gas: 2000000 });
+  data = contracts.operator.interface.functions.setEpochLength.encode([nodes.length]);
+  await mine(
+    contracts.governance.propose(
+      contracts.operator.address, data,
+      {
+        gasLimit: 2000000
+      }
+    )
+  );
 
-  await mintAndDeposit(alice, 200000000000, alice, contracts.token, contracts.exitHandler, nodes[0], web3);
+  data = contracts.exitHandler.interface.functions.setExitDuration.encode([0]);
+  await mine(
+    contracts.governance.propose(
+      contracts.exitHandler.address, data,
+      {
+        gasLimit: 2000000
+      }
+    )
+  );
+  await mine(contracts.governance.finalize({ gasLimit: 2000000 }));
+
+  await mintAndDeposit(alice, 200000000000, alice, contracts.token, contracts.exitHandler, nodes[0], wallet);
 }

@@ -18,10 +18,10 @@ async function transfer(alice, alicePriv, bob, amount, node) {
     await node.sendTx(transfer);
     debug('Transfer:', transfer.hex());
     debug(transfer.hash());
-    const txData = await node.web3.eth.getTransaction(transfer.hash());
+    const txData = await node.getTransaction(transfer.hash());
     expect(txData, "Transaction not found").to.exist;
     debug(`getTransaction: ${JSON.stringify(txData, null, 2)}`);
-    const blockData = await node.web3.eth.getBlock(txData.blockHash);
+    const blockData = await node.getBlock(txData.blockHash);
     debug(`Block data: ${JSON.stringify(blockData, null, 2)}`);
 
     return transfer;
@@ -37,10 +37,10 @@ async function transferUtxo(utxo, bob, alicePriv, node) {
     await node.sendTx(transfer);
     debug('Transfer:', transfer.hex());
     debug(transfer.hash());
-    const txData = await node.web3.eth.getTransaction(transfer.hash());
+    const txData = await node.getTransaction(transfer.hash());
     expect(txData, "Transaction not found").to.exist;
     debug(`getTransaction: ${JSON.stringify(txData, null, 2)}`);
-    const blockData = await node.web3.eth.getBlock(txData.blockHash);
+    const blockData = await node.getBlock(txData.blockHash);
     debug(`Block data: ${JSON.stringify(blockData, null, 2)}`);
 
     return transfer;

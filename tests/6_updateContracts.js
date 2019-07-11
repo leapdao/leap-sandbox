@@ -1,7 +1,10 @@
+const ethers = require('ethers');
+
 const minePeriod = require('./actions/minePeriod');
+const { mine } = require('../src/helpers');
 const PosOperator = require('../build/contracts/build/contracts/PosOperator');
 
-module.exports = async function(contracts, [node], accounts, web3) {
+module.exports = async function(contracts, [node], accounts, wallet) {
   const alice = accounts[0].addr;
 
   console.log("╔═════════════════════════════════════╗");
@@ -12,17 +15,29 @@ module.exports = async function(contracts, [node], accounts, web3) {
   console.log("╚═════════════════════════════════════╝");
 
   console.log("upgrade Poa to Pos");
-  let posOperator = new web3.eth.Contract(PosOperator.abi);
-  posOperator = await posOperator.deploy({ data: PosOperator.bytecode }).send({
-    from: accounts[0].addr,
-      gas: 4712388,
-      gasPrice: 100000000000
-  });
-  let data = contracts.proxy.methods.upgradeTo(posOperator.options.address).encodeABI();
-  await contracts.governance.methods.propose(contracts.operator.options.address, data).send({
-    from: alice, gas: 2000000
-  });
-  await contracts.governance.methods.finalize().send({ from: alice });
+  let factory = new ethers.ContractFactory(
+    PosOperator.abi,
+    PosOperator.bytecode,
+    wallet
+  );
+  let posOperator = await factory.deploy(
+    {
+      gasLimit: 4712388,
+      gasPrice: 100000000000,
+    }
+  );
+  await posOperator.deployed();
+ 
+  let data = contracts.proxy.interface.functions.upgradeTo.encode([posOperator.address]);
+  await mine(
+    contracts.governance.propose(
+      contracts.operator.address, data,
+      {
+        gasLimit: 2000000,
+      }
+    )
+  );
+  await mine(contracts.governance.finalize());
 
   console.log("have some epochs pass by...");
   await minePeriod(node, accounts);

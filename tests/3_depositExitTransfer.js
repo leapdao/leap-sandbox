@@ -7,7 +7,7 @@ const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-module.exports = async function(contracts, [node], accounts, web3) {
+module.exports = async function(contracts, [node], accounts, wallet) {
     const minter = accounts[0].addr;
     const alice = accounts[6].addr;
     const alicePriv = accounts[6].privKey;
@@ -22,16 +22,16 @@ module.exports = async function(contracts, [node], accounts, web3) {
     console.log("║3. Try to transfer exited utxo            ║");
     console.log("╚══════════════════════════════════════════╝");
     
-    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler, node, web3);
+    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler, node, wallet);
     
     await minePeriod(node, accounts);
     
     console.log("------Exit Alice------");
-    const utxo = await exitUnspent(contracts, node, web3, alice);
+    const utxo = await exitUnspent(contracts, node, wallet, alice);
     console.log("------Attemp to transfer exited utxo from Alice to Bob (should fail)------");
     let plasmaBalanceBefore = await node.getBalance(alice);
     const bobBalanceBefore = await node.getBalance(bob);
-    await expect(transferUtxo(utxo, bob, alicePriv, node)).to.eventually.be.rejectedWith("transaction not included in time");
+    await expect(transferUtxo(utxo, bob, alicePriv, node)).to.eventually.be.rejectedWith("Transaction not included in block after 5 secs.");
     plasmaBalanceAfter = await node.getBalance(alice);
     const bobBalanceAfter = await node.getBalance(bob);
     console.log("Alice balance after: ", plasmaBalanceAfter);

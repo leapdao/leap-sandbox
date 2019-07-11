@@ -5,7 +5,7 @@ const minePeriod = require('./actions/minePeriod');
 
 require('chai').should();
 
-module.exports = async function(contracts, [node], accounts, web3) {
+module.exports = async function(contracts, [node], accounts, wallet) {
     const minter = accounts[0].addr;
     const alice = accounts[2].addr;
     const alicePriv = accounts[2].privKey;
@@ -20,7 +20,7 @@ module.exports = async function(contracts, [node], accounts, web3) {
     console.log("║3. Exit Alice and Bob                     ║");
     console.log("╚══════════════════════════════════════════╝");
 
-    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler, node, web3);
+    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler, node, wallet);
 
     console.log("------Will make some transactions to fill a block------");
     for (let i = 0; i < 5; i++) {
@@ -40,9 +40,9 @@ module.exports = async function(contracts, [node], accounts, web3) {
     }
     await minePeriod(node, accounts);
     console.log("------Exit Alice------");
-    await exitUnspent(contracts, node, web3, alice);
+    await exitUnspent(contracts, node, wallet, alice);
     console.log("------Exit Bob------");
-    await exitUnspent(contracts, node, web3, bob);
+    await exitUnspent(contracts, node, wallet, bob);
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║    Test: Deposit, trasfer, then exit     ║");

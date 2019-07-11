@@ -1,6 +1,6 @@
 const fs = require('fs');
 const spawn = require('child_process').spawn;
-const Web3 = require('web3');
+const ethers = require('ethers');
 const ganache = require('ganache-cli');
 
 let bridgeAbi;
@@ -105,26 +105,28 @@ async function deployContracts(ganachePort) {
 }
 
 async function spawnNode(rpcPort, args, env, logOutput) {
-  const node = new Node('localhost', rpcPort);
-
   return new Promise(
     async (resolve, reject) => {
-      let proc = spawn('node', args, { env });
+      const proc = spawn('node', args, { env });
 
       proc.stdout.pipe(logOutput);
       proc.stderr.pipe(logOutput);
       proc.on('exit', (exitCode) => console.log('leap-node exit', exitCode));
 
-      let node = new Node('localhost', rpcPort);
       while (true) {
         let res;
         try {
-          res = await node.web3.status();
-        } catch (e) {
-        }
-
+          // if we construct the rpc provider before the node is up,
+          // we will get a uncaught promise rejection because ethers.js
+          // invokes a request to it we can not catch :/
+          res = await ethers.utils.fetchJson(
+            formatHostname('localhost', rpcPort),
+            '{"jsonrpc":"2.0","id":42,"method":"plasma_status","params":[]}'
+          );
+        } catch (e) {}
         // ready
-        if (res === 'ok') {
+        if (res && res.result === 'ok') {
+          const node = new Node('localhost', rpcPort);
           return resolve(node);
         }
 
@@ -145,7 +147,8 @@ async function run() {
   await deployContracts(ganachePort);
 
   const nodes = [];
-  const web3 = new Web3(formatHostname('localhost', ganachePort));
+  const wallet = new ethers.providers.JsonRpcProvider(formatHostname('localhost', ganachePort)).getSigner(0);
+
   const generatedConfigPath = `${process.cwd()}/build/contracts/build/nodeFiles/generatedConfig.json`;
 
   let basePort = parseInt(process.env['base_port']) || 7000;
@@ -180,17 +183,25 @@ async function run() {
     nodes.push(await spawnNode(rpcPort, args, env, logOutput));
   }
 
-  const nodeConfig = await nodes[0].web3.getConfig();
+  // fix for admin()
+  adminableProxyAbi.forEach((obj) => {
+    if (obj.name === 'admin') {
+      obj.constant = true;
+      obj.stateMutability = 'view';
+    }
+  });
 
-  const exitHandlerContract = new web3.eth.Contract(exitHandlerAbi, nodeConfig.exitHandlerAddr);
-  const operatorContract = new web3.eth.Contract(operatorAbi, nodeConfig.operatorAddr);
-  const bridgeContract = new web3.eth.Contract(bridgeAbi, nodeConfig.bridgeAddr);
-  const proxyContract = new web3.eth.Contract(adminableProxyAbi, nodeConfig.operatorAddr);
-  const governanceAddr = await proxyContract.methods.admin().call();
-  const governanceContract = new web3.eth.Contract(minGovAbi, governanceAddr);
+  const nodeConfig = await nodes[0].getConfig();
 
-  const tokenAddress = await exitHandlerContract.methods.getTokenAddr(0).call();
-  const tokenContract = new web3.eth.Contract(erc20abi, tokenAddress);
+  const exitHandlerContract = new ethers.Contract(nodeConfig.exitHandlerAddr, exitHandlerAbi, wallet);
+  const operatorContract = new ethers.Contract(nodeConfig.operatorAddr, operatorAbi, wallet);
+  const bridgeContract = new ethers.Contract(nodeConfig.bridgeAddr, bridgeAbi, wallet);
+  const proxyContract = new ethers.Contract(nodeConfig.operatorAddr, adminableProxyAbi, wallet);
+  const governanceAddr = await proxyContract.admin();
+  const governanceContract = new ethers.Contract(governanceAddr, minGovAbi, wallet);
+
+  const tokenAddress = await exitHandlerContract.getTokenAddr(0);
+  const tokenContract = new ethers.Contract(tokenAddress, erc20abi, wallet);
 
   const contracts = {
     exitHandler: exitHandlerContract,
@@ -203,7 +214,7 @@ async function run() {
 
   const accounts = getAccounts(mnemonic, 10);
 
-  await setup(contracts, nodes, accounts, web3);
+  await setup(contracts, nodes, accounts, wallet);
   // Wait for setup to propagate to all the nodes
   await sleep(2000);
 
@@ -214,7 +225,7 @@ async function run() {
   for (let i = 0; i < tests.length; i++) {
     const test = tests[i];
     console.log("Running: ", test);
-    await require("./tests/" + test)(contracts, nodes, accounts, web3);
+    await require("./tests/" + test)(contracts, nodes, accounts, wallet);
   }
 
   console.log('Done');
