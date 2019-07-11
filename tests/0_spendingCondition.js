@@ -3,7 +3,7 @@ const ethUtil = require('ethereumjs-util');
 const spendingConditionABI = require('../src/spendingConditionABI');
 const { Tx, Input, Output } = require('leap-core');
 
-module.exports = async function(contracts, nodes, accounts, wallet) {
+module.exports = async function(contracts, [node], accounts, wallet) {
   const alice = accounts[0].addr;
   const alicePriv = accounts[0].privKey;
   const bob = accounts[1].addr;
@@ -20,8 +20,8 @@ module.exports = async function(contracts, nodes, accounts, wallet) {
   console.log("║2. Claim from SP by Bob                   ║");
   console.log("╚══════════════════════════════════════════╝");
 
-  let balanceAlice = await nodes[0].getBalance(alice);
-  let balanceSp = await nodes[0].getBalance(spAddr);
+  let balanceAlice = await node.getBalance(alice);
+  let balanceSp = await node.getBalance(spAddr);
   let amount = 100000000;
 
   // for gas
@@ -30,7 +30,7 @@ module.exports = async function(contracts, nodes, accounts, wallet) {
     alicePriv, 
     spAddr, 
     amount, 
-    nodes[0]);
+    node);
 
   // for the actual transfer
   await transfer(
@@ -38,18 +38,18 @@ module.exports = async function(contracts, nodes, accounts, wallet) {
     alicePriv, 
     spAddr, 
     amount, 
-    nodes[0]);
+    node);
 
-  (await nodes[0].getBalance(alice)).should.be.equal(balanceAlice - (amount * 2));
-  (await nodes[0].getBalance(spAddr)).should.be.equal(balanceSp + (amount * 2));
+  (await node.getBalance(alice)).should.be.equal(balanceAlice - (amount * 2));
+  (await node.getBalance(spAddr)).should.be.equal(balanceSp + (amount * 2));
 
   console.log("Balances before SP TX:");
-  let balanceBob = await nodes[0].getBalance(bob);
+  let balanceBob = await node.getBalance(bob);
   console.log('bob: ', balanceBob);
-  balanceSp = await nodes[0].getBalance(spAddr);
+  balanceSp = await node.getBalance(spAddr);
   console.log('sp: ', balanceSp);
 
-  const unspents = await nodes[0].getUnspent(spAddr);
+  const unspents = await node.getUnspent(spAddr);
   const condTx = Tx.spendCond(
     [
       // gas
@@ -82,7 +82,7 @@ module.exports = async function(contracts, nodes, accounts, wallet) {
   // not if that makes a difference, but if the input is not signed we later get problems in exit (needs fixing)
   condTx.signAll(bobPriv);
 
-  // let computedOutputs = await nodes[0].provider.send('checkSpendingCondition', [condTx.hex()]);
+  // let computedOutputs = await node.provider.send('checkSpendingCondition', [condTx.hex()]);
   // console.log(computedOutputs);
   // console.log(computedOutputs.outputs);
   // computedOutputs.outputs.forEach(
@@ -91,12 +91,12 @@ module.exports = async function(contracts, nodes, accounts, wallet) {
   //  }
   // );
 
-  await nodes[0].sendTx(condTx);
+  await node.sendTx(condTx);
 
   console.log("Balances after SP TX:");
-  balanceBob = await nodes[0].getBalance(bob);
+  balanceBob = await node.getBalance(bob);
   console.log('bob: ', balanceBob);
-  balanceSp = await nodes[0].getBalance(spAddr);
+  balanceSp = await node.getBalance(spAddr);
   console.log('sp: ', balanceSp);
 
   if (balanceBob == 0) {
