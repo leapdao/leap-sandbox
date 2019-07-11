@@ -1,4 +1,4 @@
-const { getLog, awaitTx } = require('../../src/helpers');
+const { getLog, mine } = require('../../src/helpers');
 const waitForBalanceChange = require('./waitForBalanceChange');
 require('chai').should();
 
@@ -9,12 +9,12 @@ module.exports = async function(alice, amount, minter, token, exitHandler, node,
   log(`Minting and depositing ${amount} tokens to account ${alice}...`);
   console.log('   Minting..');
   const balanceOrig = Number(await token.balanceOf(alice));
-  await awaitTx(token.connect(wallet.provider.getSigner(minter)).mint(alice, amount));
+  await mine(token.connect(wallet.provider.getSigner(minter)).mint(alice, amount));
   const balanceMint = Number(await token.balanceOf(alice));
   console.log('   Approving..');
-  await awaitTx(token.connect(wallet.provider.getSigner(alice)).approve(exitHandler.address, amount));
+  await mine(token.connect(wallet.provider.getSigner(alice)).approve(exitHandler.address, amount));
   console.log('   Depositing..');
-  await awaitTx(
+  await mine(
     exitHandler.connect(wallet.provider.getSigner(alice)).deposit(
       alice, amount, 0,
       {
