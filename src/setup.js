@@ -9,9 +9,9 @@ module.exports = async function(contracts, nodes, accounts, wallet) {
 
   await mine(contracts.governance.propose(contracts.token.address, data, { gasLimit: 2000000 }));
   await mine(contracts.governance.finalize());
-  await mine(contracts.token.mint(alice, 500000000000));
-  await mine(contracts.token.approve(contracts.exitHandler.address, 500000000000));
-  await mine(contracts.token.approve(contracts.operator.address, 500000000000));
+  await mine(contracts.token.mint(alice, '500000000000000000000'));
+  await mine(contracts.token.approve(contracts.exitHandler.address, '500000000000000000000'));
+  await mine(contracts.token.approve(contracts.operator.address, '500000000000000000000'));
 
   for (let i = 0; i < nodes.length - 1; i++) {
     const validatorInfo = await nodes[i].getValidatorInfo();
@@ -55,5 +55,5 @@ module.exports = async function(contracts, nodes, accounts, wallet) {
   );
   await mine(contracts.governance.finalize({ gasLimit: 2000000 }));
 
-  await mintAndDeposit(alice, 200000000000, alice, contracts.token, contracts.exitHandler, nodes[0], wallet);
+  await mintAndDeposit(alice, '200000000000000000000', alice, contracts.token, contracts.exitHandler, nodes[0], wallet);
 }

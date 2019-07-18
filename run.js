@@ -229,7 +229,7 @@ async function run() {
   }
 
   console.log('Done');
-  process.exit(0);
+  // process.exit(0);
 }
 
 function onException (e) {

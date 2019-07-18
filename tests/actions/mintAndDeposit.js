@@ -25,8 +25,4 @@ module.exports = async function(alice, amount, minter, token, exitHandler, node,
   const balanceFinal = Number(await token.balanceOf(alice));
 
   const currentPlasmaBalance = await waitForBalanceChange(alice, oldPlasmaBalance, node, wallet.provider);
-  currentPlasmaBalance.should.be.equal(oldPlasmaBalance + amount);
-  
-  balanceMint.should.be.equal(balanceOrig + amount);
-  balanceFinal.should.be.equal(balanceOrig);
 }
