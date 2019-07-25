@@ -95,3 +95,5 @@ yarn start <recipe>
 ```
 
 E.g. `yarn start planetA` to start a local network for Planet A project.
+
+Alternatively, you can start vanilla leap network and then apply a recipe with `yarn apply planetA`.
