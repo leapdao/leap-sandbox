@@ -3,9 +3,9 @@ const assert = require('assert');
 const ethUtil = require('ethereumjs-util');
 const { Tx, Input, Output, Outpoint } = require('leap-core');
 
-const exitUnspent = require('./actions/exitUnspent');
-const minePeriod = require('./actions/minePeriod');
-const { mine } = require('../src/helpers');
+const exitUnspent = require('../actions/exitUnspent');
+const minePeriod = require('../actions/minePeriod');
+const { mine } = require('../../src/helpers');
 
 const ERC1949 = require('../build/contracts/build/contracts/ERC1949.json');
 const ERC20 = require('../build/contracts/build/contracts/NativeToken.json');
