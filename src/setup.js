@@ -2,11 +2,10 @@ const ethers = require('ethers');
 const { mine } = require('./helpers');
 const mintAndDeposit = require('../tests/actions/mintAndDeposit');
 
-module.exports = async function(contracts, nodes, accounts, wallet) {
+module.exports = async function(contracts, nodes, accounts, wallet, plasmaWallet) {
   const alice = accounts[0].addr;
 
   let data = contracts.token.interface.functions.addMinter.encode([alice]);
-
   await mine(contracts.governance.propose(contracts.token.address, data, { gasLimit: 2000000 }));
   await mine(contracts.governance.finalize());
   await mine(contracts.token.mint(alice, '500000000000000000000'));
@@ -55,5 +54,8 @@ module.exports = async function(contracts, nodes, accounts, wallet) {
   );
   await mine(contracts.governance.finalize({ gasLimit: 2000000 }));
 
-  await mintAndDeposit(alice, '200000000000000000000', alice, contracts.token, contracts.exitHandler, nodes[0], wallet);
+  await mintAndDeposit(
+    accounts[0], '200000000000000000000', alice, 
+    contracts.token, 0, contracts.exitHandler, nodes[0], wallet, plasmaWallet
+  );
 }

@@ -73,3 +73,25 @@ accounts = [{addr, privKey}, {addr, privKey}...]
 // web3 is just Web3 contected to the ganache network
 web3 = Web3
 ```
+
+## Start local environment for development
+
+### Start default / vanilla Leap network
+
+```sh
+yarn start
+```
+
+This will launch a local Leap Network for you: Ganache as a root chain with Leap contracts deployed and leap-node with JSON RPC.
+
+### Start flavoured Leap Network
+
+In `tests/recipies` you can see possible recipies to run against the local network. Each recipe prepares the environment for a particular purpose — sets up required tokens, makes deposits etc.
+
+To start a network with recipe:
+
+```sh
+yarn start <recipe>
+```
+
+E.g. `yarn start planetA` to start a local network for Planet A project.

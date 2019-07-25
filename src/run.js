@@ -3,42 +3,13 @@ const spawn = require('child_process').spawn;
 const ethers = require('ethers');
 const ganache = require('ganache-cli');
 
-let bridgeAbi;
-let exitHandlerAbi;
-let operatorAbi;
-let adminableProxyAbi;
-let minGovAbi;
-const erc20abi = require('./src/erc20abi');
+const getEnv = require('./getEnv');
 
-const bip39 = require('bip39');
-const hdkey = require('ethereumjs-wallet/hdkey');
+const mnemonic = require('./mnemonic');
 
-const Node = require('./src/nodeClient');
-const setup = require('./src/setup');
-const { formatHostname } = require('./src/helpers');
-
-const sleep = ms => new Promise(res => setTimeout(res, ms));
-
-function getAccounts(mnemonic, num) {
-  const accounts = [];
-  for (let i=0; i<num; i++) {
-    accounts.push(getAccount(mnemonic, i));
-  }
-  return accounts;
-}
-
-function getAccount(mnemonic, id) {
-  const seed = bip39.mnemonicToSeed(mnemonic); // mnemonic is the string containing the words
-  const hdk = hdkey.fromMasterSeed(seed);
-  const addr_node = hdk.derivePath("m/44'/60'/0'/0/" + id); //m/44'/60'/0'/0/0 is derivation path for the first account. m/44'/60'/0'/0/1 is the derivation path for the second account and so on
-  const addr = addr_node.getWallet().getAddressString(); //check that this is the same with the address that ganache list for the first account to make sure the derivation is correct
-  const private_key = '0x' + addr_node.getWallet().getPrivateKey().toString('hex');
-
-  return {
-    addr: addr,
-    privKey: private_key
-  }
-}
+const Node = require('./nodeClient');
+const setup = require('./setup');
+const { formatHostname } = require('./helpers');
 
 async function setupGanache(port, mnemonic) {
   return new Promise(
@@ -58,7 +29,7 @@ async function setupGanache(port, mnemonic) {
 async function deployContracts(ganachePort) {
   return new Promise(
     (resolve, reject) => {
-      console.log('Deploying contracts..');
+      console.log('Deploying contracts.. Logs: ./out/contracts.log');
       const env = {
         ...process.env,
         PROPOSAL_TIME: '0',
@@ -67,7 +38,7 @@ async function deployContracts(ganachePort) {
         EVENTS_DELAY: '1'
       };
       const cwd = process.cwd();
-
+      
       process.chdir(`${cwd}/build/contracts`);
       let truffleConfig = fs.readFileSync('./truffle-config.js').toString();
       // replace the rpc port(s)
@@ -87,16 +58,10 @@ async function deployContracts(ganachePort) {
       proc.stderr.pipe(logOutput);
       proc.on('exit', (exitCode) => {
         process.chdir(cwd);
-
+        
         if (exitCode !== 0) {
           return reject();
         }
-        
-        adminableProxyAbi = require('./build/contracts/build/contracts/AdminableProxy').abi;
-        minGovAbi = require('./build/contracts/build/contracts/MinGov').abi;
-        bridgeAbi = require('./build/contracts/build/contracts/Bridge').abi;
-        exitHandlerAbi = require('./build/contracts/build/contracts/ExitHandler').abi;
-        operatorAbi = require('./build/contracts/build/contracts/PoaOperator').abi;
         
         resolve();
       });
@@ -136,31 +101,26 @@ async function spawnNode(rpcPort, args, env, logOutput) {
   );
 }
 
-async function run() {
+module.exports = async () => {
   const ganachePort = parseInt(process.env['ganache_port']) || 8545;
   // seems like only one connection from the same source addr can connect to the same tendermint instance
   const numNodes = parseInt(process.env['num_nodes']) || 2;
-  const mnemonic = process.env['mnemonic'] ||
-    'base embrace minute bone orphan spread teach finger eagle weekend outside reduce';
 
   await setupGanache(ganachePort, mnemonic);
   await deployContracts(ganachePort);
-
+  
   const nodes = [];
-  const wallet = new ethers.providers.JsonRpcProvider(formatHostname('localhost', ganachePort)).getSigner(0);
 
   const generatedConfigPath = `${process.cwd()}/build/contracts/build/nodeFiles/generatedConfig.json`;
 
   let basePort = parseInt(process.env['base_port']) || 7000;
-  let deprecatedPort = 49000;
   const firstNodeURL = `http://localhost:${basePort}`;
 
   for (let i = 0; i < numNodes; i++) {
     const rpcPort = basePort;
     const env = { 
       ...process.env,
-      DEBUG: 'tendermint,leap-node*',
-      TX_PORT: deprecatedPort++,
+      DEBUG: 'tendermint,leap-node*'
     };
     const configURL = i === 0 ? generatedConfigPath : firstNodeURL;
     const args = [
@@ -179,65 +139,26 @@ async function run() {
 
     const logOutput = fs.createWriteStream(`./out/node-${i + 1}.log`);
 
-    console.log(`Starting node ${i + 1} of ${numNodes} logfile=./out/node-${i + 1}.log`);
+    console.log(`Starting node ${i + 1} of ${numNodes} Logs: ./out/node-${i + 1}.log`);
     nodes.push(await spawnNode(rpcPort, args, env, logOutput));
   }
 
-  // fix for admin()
-  adminableProxyAbi.forEach((obj) => {
-    if (obj.name === 'admin') {
-      obj.constant = true;
-      obj.stateMutability = 'view';
-    }
-  });
+  const config = {
+    nodes: nodes.map(n => n.toString()),
+    ganache: `http://localhost:${ganachePort}`
+  };
 
-  const nodeConfig = await nodes[0].getConfig();
+  fs.writeFileSync('./process.json', JSON.stringify(config, null, 2));
 
-  const exitHandlerContract = new ethers.Contract(nodeConfig.exitHandlerAddr, exitHandlerAbi, wallet);
-  const operatorContract = new ethers.Contract(nodeConfig.operatorAddr, operatorAbi, wallet);
-  const bridgeContract = new ethers.Contract(nodeConfig.bridgeAddr, bridgeAbi, wallet);
-  const proxyContract = new ethers.Contract(nodeConfig.operatorAddr, adminableProxyAbi, wallet);
-  const governanceAddr = await proxyContract.admin();
-  const governanceContract = new ethers.Contract(governanceAddr, minGovAbi, wallet);
+  const { contracts, accounts, wallet, plasmaWallet } = await getEnv();
 
-  const tokenAddress = await exitHandlerContract.getTokenAddr(0);
-  const tokenContract = new ethers.Contract(tokenAddress, erc20abi, wallet);
+  await setup(contracts, nodes, accounts, wallet, plasmaWallet);
 
-  const contracts = {
-    exitHandler: exitHandlerContract,
-    operator: operatorContract,
-    bridge: bridgeContract,
-    token: tokenContract,
-    governance: governanceContract,
-    proxy: proxyContract,
-  }
+  console.log('Started');
 
-  const accounts = getAccounts(mnemonic, 10);
+  console.log(`\n Leap JSON RPC: ${nodes[0].getRpcUrl()}`);
+  console.log(`Root chain RPC: http://localhost:${ganachePort}\n`);
 
-  await setup(contracts, nodes, accounts, wallet);
-  // Wait for setup to propagate to all the nodes
-  await sleep(2000);
+  return { contracts, nodes, accounts, wallet, plasmaWallet };
+};
 
-  var testPath = require("path").join(__dirname, "tests");
-  const tests = fs.readdirSync(testPath).filter((fileName => {
-    return fileName.endsWith('.js') && fs.lstatSync("./tests/" + fileName).isFile();
-  }));
-  for (let i = 0; i < tests.length; i++) {
-    const test = tests[i];
-    console.log("Running: ", test);
-    await require("./tests/" + test)(contracts, nodes, accounts, wallet);
-  }
-
-  console.log('Done');
-  // process.exit(0);
-}
-
-function onException (e) {
-  console.error(e);
-  process.exit(1);
-}
-
-process.on('uncaughtException', onException);
-process.on('unhandledRejection', onException);
-
-run();

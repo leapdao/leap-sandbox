@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node run.js",
+    "test": "node src/commands/test",
+    "start": "node src/commands/start",
+    "apply": "node src/commands/applyRecipe",
     "build": "./scripts/build.sh"
   },
   "author": "",
@@ -12,10 +14,11 @@
   "dependencies": {
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
+    "debug": "^4.1.1",
     "ethereumjs-util": "^6.1.0",
     "ethers": "^4.0.33",
-    "ganache-cli": "^6.2.3",
+    "ganache-cli": "6.5.0",
     "jsbi-utils": "^1.0.0",
-    "leap-core": "^0.32.3"
+    "leap-core": "^0.33.0"
   }
 }

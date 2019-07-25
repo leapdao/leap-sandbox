@@ -1,6 +1,7 @@
 const ethers = require('ethers');
 const { helpers } = require('leap-core');
 
+const erc20abi = require('./erc20abi');
 const { formatHostname, advanceBlocks, sleep } = require('./helpers');
 
 let idCounter = 0;
@@ -11,6 +12,8 @@ class Node extends helpers.LeapEthers {
     super(provider);
 
     this.id = idCounter++;
+    this.hostname = hostname;
+    this.port = jsonrpcPort;
   }
 
   async sendTx(tx) {
@@ -61,6 +64,37 @@ class Node extends helpers.LeapEthers {
       await advanceBlocks(1, wallet);
       await sleep(100);
     }
+  }
+
+  async advanceUntilTokenBalanceChange(addr, tokenAddr, prevBalance, rootWallet, plasmaWallet) {
+    const token = new ethers.Contract(tokenAddr, erc20abi, plasmaWallet);
+    const rootToken = new ethers.Contract(tokenAddr, erc20abi, rootWallet);
+    const symbol = (await rootToken.symbol()).toUpperCase();
+    let currentBalance;
+    
+    const frames = ['🌕','🌖','🌗','🌘','🌑','🌒','🌓','🌔'];
+    let i = 0;
+    do {
+      i++;
+      await advanceBlocks(1, rootWallet);
+      await sleep(100);
+      currentBalance = await token.balanceOf(addr);
+      process.stdout.write(
+        `\r${symbol} balance: ${currentBalance.toString()} `+ 
+        `${currentBalance.toString() !== String(prevBalance) ? '✅' : frames[i % 8]} `
+      );
+    } while(currentBalance.toString() === String(prevBalance))
+    console.log();
+    return currentBalance;
+  }
+
+  getRpcUrl() {
+    return `http://${this.hostname}:${this.port}`;
+  }
+
+  toString() {
+    const { hostname, port } = this;
+    return { hostname, port };
   }
 }
 
