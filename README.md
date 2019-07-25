@@ -97,3 +97,19 @@ yarn start <recipe>
 E.g. `yarn start planetA` to start a local network for Planet A project.
 
 Alternatively, you can start vanilla leap network and then apply a recipe with `yarn apply planetA`.
+
+### Using with Docker
+
+Start vanilla network:
+
+```sh
+docker run -p 7000:7000 -p 8545:8545 --name leap-env quay.io/leapdao/leap-sandbox
+```
+
+Apply recipe to vanilla network:
+
+```sh
+docker exec leap-env node applyRecipe planetA
+```
+
+`yarn start <recipe>` should also work for applying recipes to dockerized network, given you have the repo working copy.
