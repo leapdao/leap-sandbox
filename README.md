@@ -73,3 +73,43 @@ accounts = [{addr, privKey}, {addr, privKey}...]
 // web3 is just Web3 contected to the ganache network
 web3 = Web3
 ```
+
+## Start local environment for development
+
+### Start default / vanilla Leap network
+
+```sh
+yarn start
+```
+
+This will launch a local Leap Network for you: Ganache as a root chain with Leap contracts deployed and leap-node with JSON RPC.
+
+### Start flavoured Leap Network
+
+In `tests/recipies` you can see possible recipies to run against the local network. Each recipe prepares the environment for a particular purpose — sets up required tokens, makes deposits etc.
+
+To start a network with recipe:
+
+```sh
+yarn start <recipe>
+```
+
+E.g. `yarn start planetA` to start a local network for Planet A project.
+
+Alternatively, you can start vanilla leap network and then apply a recipe with `yarn apply planetA`.
+
+### Using with Docker
+
+Start vanilla network:
+
+```sh
+docker run -p 7000:7000 -p 8545:8545 --name leap-env quay.io/leapdao/leap-sandbox
+```
+
+Apply recipe to vanilla network:
+
+```sh
+docker exec leap-env node applyRecipe planetA
+```
+
+`yarn start <recipe>` should also work for applying recipes to dockerized network, given you have the repo working copy.

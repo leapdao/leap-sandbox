@@ -7,7 +7,7 @@ const chai = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 
-module.exports = async function(contracts, [node], accounts, wallet) {
+module.exports = async function(contracts, [node], accounts, wallet, plasmaWallet) {
     const minter = accounts[0].addr;
     const alice = accounts[7].addr;
     const alicePriv = accounts[7].privKey;
@@ -23,7 +23,7 @@ module.exports = async function(contracts, [node], accounts, wallet) {
     console.log("║4. Exit Bob                               ║");
     console.log("╚══════════════════════════════════════════╝");
     
-    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler, node, wallet);
+    await mintAndDeposit(accounts[7], amount, minter, contracts.token, 0, contracts.exitHandler, node, wallet, plasmaWallet);
     
     console.log("------Transfer from Alice to Bob------");
     let txAmount = Math.round(amount/(2000))+ Math.round(100 * Math.random());

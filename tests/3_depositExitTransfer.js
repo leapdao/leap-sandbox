@@ -7,7 +7,7 @@ const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-module.exports = async function(contracts, [node], accounts, wallet) {
+module.exports = async function(contracts, [node], accounts, wallet, plasmaWallet) {
     const minter = accounts[0].addr;
     const alice = accounts[6].addr;
     const alicePriv = accounts[6].privKey;
@@ -22,7 +22,7 @@ module.exports = async function(contracts, [node], accounts, wallet) {
     console.log("║3. Try to transfer exited utxo            ║");
     console.log("╚══════════════════════════════════════════╝");
     
-    await mintAndDeposit(alice, amount, minter, contracts.token, contracts.exitHandler, node, wallet);
+    await mintAndDeposit(accounts[6], amount, minter, contracts.token, 0, contracts.exitHandler, node, wallet, plasmaWallet);
     
     await minePeriod(node, accounts);
     

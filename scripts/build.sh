@@ -34,6 +34,7 @@ build_node() {
 rm -rf build
 mkdir build
 mkdir build/logs
+mkdir out || true
 source configs/build
 
 build_contracts
