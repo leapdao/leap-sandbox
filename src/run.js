@@ -158,6 +158,7 @@ module.exports = async () => {
 
   console.log(`\n Leap JSON RPC: ${nodes[0].getRpcUrl()}`);
   console.log(`Root chain RPC: http://localhost:${ganachePort}\n`);
+  console.log('Priv key: ', accounts[0].privKey);
 
   return { contracts, nodes, accounts, wallet, plasmaWallet };
 };
