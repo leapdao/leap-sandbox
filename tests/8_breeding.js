@@ -1,3 +1,4 @@
+
 const ethers = require('ethers');
 const assert = require('assert');
 const ethUtil = require('ethereumjs-util');
@@ -29,12 +30,7 @@ module.exports = async function(contracts, [node], accounts, wallet) {
     TOKEN.bytecode,
     wallet
   );
-  let deployedToken = await factory.deploy(
-    {
-      gasLimit: 1712388,
-      gasPrice: 100000000000,
-    }
-  );
+  let deployedToken = await factory.deploy("qwe", "QWE");
   await deployedToken.deployed();
   console.log('   Address:', deployedToken.address);
 
@@ -77,7 +73,7 @@ module.exports = async function(contracts, [node], accounts, wallet) {
   console.log(`   ✅ getColor(${deployedToken.address}): 1`);
 
   console.log('   Minting..');
-  let res = await deployedToken.mintDelegate(minter, { gasLimit: 200000 });
+  let res = await deployedToken.mintDelegate(minter);
   res = await res.wait();
   let tokenId = res.events[0].args.tokenId.toHexString();
   let tokenData = res.events[1].args.newData;
