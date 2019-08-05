@@ -17,37 +17,26 @@ function replaceAll(str, find, replace) {
 }
 
 const mintPassport = async (countryToken, nstColor, minter, contracts) => {
-  const res = await mine(countryToken.mintDelegate(minter, { gasLimit: 200000 }));
+  const res = await mine(countryToken.mintDelegate(minter));
   let tokenId = res.events[0].args.tokenId.toHexString();
   
   await mine(countryToken.approve(contracts.exitHandler.address, tokenId));
   await mine(
-    contracts.exitHandler.depositBySender(
-      tokenId, nstColor,
-      {
-        gasLimit: 2000000,
-      }
-    )
+    contracts.exitHandler.depositBySender(tokenId, nstColor)
   );
   return tokenId;
 };
 
 const deployAndRegisterToken = async (factory, type, contracts, name, symbol) => {
-  let params = [{
-    gasLimit: 1712388,
-    gasPrice: 100000000000,
-  }];
+  let params = [ name, symbol ];
   if (type === 0) {
-    params = [ name, symbol, 18, ...params];
+    params.push(18); // decimals for ERC20 constructor
   }
   const token = await factory.deploy(...params);
   await token.deployed();
   const data = contracts.exitHandler.interface.functions.registerToken.encode([token.address, type]);
   await mine(
-    contracts.governance.propose(
-      contracts.exitHandler.address, data,
-      { gasLimit: 2000000, gasPrice: 100000000000 }
-    )
+    contracts.governance.propose(contracts.exitHandler.address, data)
   );  
   return token;
 };
@@ -59,7 +48,7 @@ module.exports = async function(contracts, [node], accounts, wallet, plasmaWalle
 
   // passports
   let factory = new ethers.ContractFactory(ERC1949.abi, ERC1949.bytecode, wallet);
-  const countryToken = await deployAndRegisterToken(factory, 2, contracts);
+  const countryToken = await deployAndRegisterToken(factory, 2, contracts, "USA", "USA");
 
   // tokens
   factory = new ethers.ContractFactory(ERC20.abi, ERC20.bytecode, wallet);
@@ -67,7 +56,7 @@ module.exports = async function(contracts, [node], accounts, wallet, plasmaWalle
   const goellarsToken = await deployAndRegisterToken(factory, 0, contracts, 'Goellars', 'GOE');
 
   // finalize register tokens
-  await mine(contracts.governance.finalize({ gasLimit: 1000000, gasPrice: 100000000000 }));
+  await mine(contracts.governance.finalize());
 
   // wait for colors to appear
   const getColors = () => node.provider.send('plasma_getColors', [false, false]);
