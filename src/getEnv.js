@@ -69,9 +69,8 @@ const getContracts = async (nodeConfig, wallet) => {
 
 module.exports = async () => {
   
-
   const networkProcess = require('../process.json');
-  const nodes = networkProcess.nodes.map(n => new Node(n.hostname, n.port))
+  const nodes = networkProcess.nodes.map(n => new Node(n.hostname, n.port, n.configURL, n.pid))
 
   const nodeConfig = await nodes[0].getConfig();
 

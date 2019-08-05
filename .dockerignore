@@ -5,3 +5,4 @@ out/
 build/
 .github/
 .node_modules/
+data/
