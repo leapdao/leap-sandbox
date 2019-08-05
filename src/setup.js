@@ -12,7 +12,7 @@ module.exports = async function(contracts, nodes, accounts, wallet, plasmaWallet
   await mine(contracts.token.approve(contracts.exitHandler.address, '500000000000000000000'));
   await mine(contracts.token.approve(contracts.operator.address, '500000000000000000000'));
 
-  for (let i = 0; i < nodes.length - 1; i++) {
+  for (let i = 0; i < nodes.length; i++) {
     const validatorInfo = await nodes[i].getValidatorInfo();
     const overloadedSlotId = `${contracts.operator.address}00000000000000000000000${i}`;
 
