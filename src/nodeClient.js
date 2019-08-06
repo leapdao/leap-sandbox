@@ -23,7 +23,8 @@ class Node extends helpers.LeapEthers {
 
   static async spawn(id, port, configURL, extraEnv) {
     const nodeIndex = id + 1;
-    console.log(`Starting node ${nodeIndex}. Logs: ./out/node-${nodeIndex}.log`);
+    const logs = `./out/node-${nodeIndex}.log`;
+    console.log(`Starting node ${nodeIndex}. Logs: ${logs}`);
 
     let basePort = port;
     const env = { 
@@ -45,7 +46,7 @@ class Node extends helpers.LeapEthers {
       '--dataPath', `./data/node${nodeIndex}`,
     ];
     
-    const logOutput = fs.createWriteStream(`./out/node-${nodeIndex}.log`);
+    const logOutput = fs.createWriteStream(logs, { flags: 'a' });
 
     const proc = spawn('node', args, { env });
 
