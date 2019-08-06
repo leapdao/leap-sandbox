@@ -32,7 +32,7 @@ async function deployContracts(ganachePort) {
       const env = {
         ...process.env,
         PROPOSAL_TIME: '0',
-        EVENTS_DELAY: '1'
+        EVENTS_DELAY: '2'
       };
       const cwd = process.cwd();
       
@@ -71,6 +71,9 @@ module.exports = async () => {
   // seems like only one connection from the same source addr can connect to the same tendermint instance
   const numNodes = parseInt(process.env['num_nodes']) || 2;
 
+  rimraf.sync(`./data`);
+  rimraf.sync('./out/*');
+
   await setupGanache(ganachePort, mnemonic);
   await deployContracts(ganachePort);
   
@@ -80,7 +83,6 @@ module.exports = async () => {
 
   let basePort = parseInt(process.env['base_port']) || 7000;
   const firstNodeURL = `http://localhost:${basePort}`;
-  rimraf.sync(`./data`);
 
   for (let i = 0; i < numNodes; i++) {
     const configURL = i === 0 ? generatedConfigPath : firstNodeURL;
