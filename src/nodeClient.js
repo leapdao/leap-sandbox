@@ -21,14 +21,15 @@ class Node extends helpers.LeapEthers {
     this.pid = pid;
   }
 
-  static async spawn(id, port, configURL) {
+  static async spawn(id, port, configURL, extraEnv) {
     const nodeIndex = id + 1;
     console.log(`Starting node ${nodeIndex}. Logs: ./out/node-${nodeIndex}.log`);
 
     let basePort = port;
     const env = { 
       ...process.env,
-      DEBUG: 'tendermint,leap-node*'
+      DEBUG: 'tendermint,leap-node*',
+      ...extraEnv
     };
     const args = [
       'build/node/index.js',
@@ -76,13 +77,12 @@ class Node extends helpers.LeapEthers {
     );
   }
 
-  async start() {
-    const node = await Node.spawn(this.id, this.port, this.configURL);
-    console.log(node.pid);
+  async start(extraEnv = {}) {
+    const node = await Node.spawn(this.id, this.port, this.configURL, extraEnv);
     this.pid = node.pid;
   }
 
-  async stop() {
+  stop() {
     console.log(`Stopping node ${this.id + 1}`);
     return process.kill(this.pid, 'SIGHUP');
   }
