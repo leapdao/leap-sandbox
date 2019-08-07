@@ -18,15 +18,19 @@ module.exports = async function(contracts, [node1, node2], accounts, wallet) {
     submissions.push(args);
   });
 
-  //node2.stop();
+  console.log('Restarting node 2 with PeriodVote disabled..');
+  node2.stop();
+  await node2.start({ NO_PERIOD_VOTE: true });
   await minePeriod(node1, accounts);
   console.log('Try to exit..');
   await sleep(4000);
   expect(submissions.length).to.equal(0);
   await expect(exitUnspent(contracts, node1, wallet, alice)).to.eventually.be.rejectedWith("");
 
+  console.log('Restarting node 2 normally..');
+  node2.stop()
   await node2.start();
-  await sleep(2000);
+  await minePeriod(node1, accounts);
   console.log('Try to exit again..');
   expect(submissions.length).to.equal(1);
   await exitUnspent(contracts, node1, wallet, alice);

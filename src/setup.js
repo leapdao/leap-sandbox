@@ -52,7 +52,7 @@ module.exports = async function(contracts, nodes, accounts, wallet, plasmaWallet
       }
     )
   );
-  await mine(contracts.governance.finalize({ gasLimit: 2000000 }));
+  await mine(contracts.governance.finalize());
 
   await mintAndDeposit(
     accounts[0], '200000000000000000000', alice, 
