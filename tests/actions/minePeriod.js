@@ -1,11 +1,16 @@
 const { helpers } = require('leap-core');
 const { makeTransfer } = require('../../src/helpers');
 
-module.exports = async (node, [{ addr, privKey }]) => {
+module.exports = async (node, [{ addr, privKey }], contracts) => {
   const currentBlock = Number((await node.getBlock('latest')).number);
   const [, lastBlockInPeriod] = helpers.periodBlockRange(currentBlock);
 
-  for (let i = 0; i <= lastBlockInPeriod - currentBlock + 1; i++) {
+  const submissions = [];
+  contracts.operator.on("Submission", (...args) => {
+    submissions.push(args);
+  });
+
+  for (let i = 0; i <= lastBlockInPeriod - currentBlock + 10; i++) {
     const transfer = await makeTransfer(
       node,
       addr,
@@ -16,6 +21,10 @@ module.exports = async (node, [{ addr, privKey }]) => {
     );
     await node.sendTx(transfer);
     process.stdout.write(`\rMachinegunning till next period: ${currentBlock + i}/${lastBlockInPeriod + 1}`);
+    if (submissions.length > 0) {
+      console.log();
+      return;
+    }
   }
-  console.log();
+  throw new Error('Period wasn\'t submitted on time');
 }

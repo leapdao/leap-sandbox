@@ -40,7 +40,7 @@ module.exports = async function(contracts, [node], accounts, wallet) {
   await mine(contracts.governance.finalize());
 
   console.log("have some epochs pass by...");
-  await minePeriod(node, accounts);
+  await minePeriod(node, accounts, contracts);
 
   console.log("╔══════════════════════════════════════╗");
   console.log("║   Test: Upgrade contract             ║");
