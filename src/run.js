@@ -35,6 +35,7 @@ async function deployContracts(ganachePort) {
         PROPOSAL_TIME: '0',
         PARENT_BLOCK_INTERVAL: '0',
         ADVANCE_BLOCK: '0',
+        EPOCH_LENGTH: '2',
         EVENTS_DELAY: '1'
       };
       const cwd = process.cwd();
