@@ -41,7 +41,7 @@ module.exports = async function(contracts, [node], accounts, wallet, plasmaWalle
     // 2 weeks waiting period ;)
     await mine(gov.finalize({ gasLimit: 2000000 }));
 
-    await minePeriod(node, accounts);
+    await minePeriod(node, accounts, contracts);
     console.log("------Exit Bob------");
     await exitUnspent(contracts, node, wallet, bob);
 

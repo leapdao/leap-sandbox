@@ -185,7 +185,7 @@ module.exports = async function(contracts, [node], accounts, wallet) {
   );
   transferTx.signAll(minterPriv);
   await node.sendTx(transferTx);
-  await minePeriod(node, accounts);
+  await minePeriod(node, accounts, contracts);
 
   unspents = (await node.provider.send('plasma_unspent', [minter]));
   console.log(unspents);

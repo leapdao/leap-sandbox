@@ -38,7 +38,7 @@ module.exports = async function(contracts, [node], accounts, wallet, plasmaWalle
         (await node.getBalance(alice)).should.be.equal(balanceAlice - txAmount);
         (await node.getBalance(bob)).should.be.equal(balanceBob + txAmount);
     }
-    await minePeriod(node, accounts);
+    await minePeriod(node, accounts, contracts);
     console.log("------Exit Alice------");
     await exitUnspent(contracts, node, wallet, alice);
     console.log("------Exit Bob------");

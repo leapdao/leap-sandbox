@@ -24,7 +24,7 @@ module.exports = async function(contracts, [node], accounts, wallet, plasmaWalle
     
     await mintAndDeposit(accounts[6], amount, minter, contracts.token, 0, contracts.exitHandler, node, wallet, plasmaWallet);
     
-    await minePeriod(node, accounts);
+    await minePeriod(node, accounts, contracts);
     
     console.log("------Exit Alice------");
     const utxo = await exitUnspent(contracts, node, wallet, alice);
