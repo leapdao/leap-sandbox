@@ -12,7 +12,6 @@ branches:
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 os:
   - linux
-  - osx
 script:
   - yarn build
   - yarn test
