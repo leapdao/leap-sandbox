@@ -23,6 +23,9 @@ async function run() {
     console.log('Running: ', test);
     await require('../../tests/' + test)(contracts, nodes, accounts, wallet, plasmaWallet);
   }
+  if (process.env.CI || process.env.TRAVIS) {
+    process.exit(0);
+  }
   var opts = {
     colors: true, // use colors instead of just raw ascii
     pure: true, // use solid colors only
