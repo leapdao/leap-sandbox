@@ -485,6 +485,11 @@ number-is-nan@^1.0.0:
   resolved "https://registry.yarnpkg.com/number-is-nan/-/number-is-nan-1.0.1.tgz#097b602b53422a522c1afb8790318336941a011d"
   integrity sha1-CXtgK1NCKlIsGvuHkDGDNpQaAR0=
 
+nyan-js@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/nyan-js/-/nyan-js-1.1.1.tgz#638c85fc9e209b9723bb39fcc86f00f5d55969cb"
+  integrity sha1-Y4yF/J4gm5cjuzn8yG8A9dVZacs=
+
 os-locale@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/os-locale/-/os-locale-2.1.0.tgz#42bc2900a6b5b8bd17376c8e882b65afccf24bf2"
