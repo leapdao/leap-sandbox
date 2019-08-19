@@ -1,2 +1,2 @@
 contracts_repo=" --single-branch -b master https://github.com/leapdao/leap-contracts.git"
-node_repo=" --single-branch -b feature/txLogs https://github.com/leapdao/leap-node.git"
+node_repo=" --single-branch -b master https://github.com/leapdao/leap-node.git"
