@@ -13,7 +13,10 @@ const TOKEN = require('../build/contracts/build/contracts/ERC1949.json');
 const BreedingCondition =
   '6080604052348015600f57600080fd5b5060043610602b5760e060020a6000350463689dcafc81146030575b600080fd5b606960048036036080811015604457600080fd5b50803590600160a060020a03602082013581169160408101359160609091013516606b565b005b6040805160e060020a63451da9f902815260048101869052600160a060020a038581166024830152604482018590529151839283169163451da9f991606480830192600092919082900301818387803b15801560c657600080fd5b505af115801560d9573d6000803e3d6000fd5b50505050505050505056fea165627a7a72305820ff50695e9e2f7357f76cac1b8adb0d5d43b7930e23a23bdae6c9f81c5fcddfcc0029';
 
-module.exports = async function(contracts, [node], accounts, wallet) {
+module.exports = async function(env) {
+  const { contracts, nodes, accounts, wallet } = env;
+  const node = nodes[0];
+
   const minter = accounts[0].addr;
   const minterPriv = accounts[0].privKey;
 
@@ -185,10 +188,10 @@ module.exports = async function(contracts, [node], accounts, wallet) {
   );
   transferTx.signAll(minterPriv);
   await node.sendTx(transferTx);
-  await minePeriod(node, accounts, contracts);
+  await minePeriod(env);
 
   unspents = (await node.provider.send('plasma_unspent', [minter]));
   console.log(unspents);
-  const utxo = await exitUnspent(contracts, node, wallet, minter, unspents.length - 1);
+  const utxo = await exitUnspent(env, minter, unspents.length - 1);
   console.log(utxo);
 }

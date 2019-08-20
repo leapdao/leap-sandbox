@@ -5,7 +5,9 @@ const minePeriod = require('./actions/minePeriod');
 
 require('chai').should();
 
-module.exports = async function(contracts, [node], accounts, wallet, plasmaWallet) {
+module.exports = async function(env) {
+    const { contracts, nodes, accounts, wallet, plasmaWallet } = env;
+    const node = nodes[0];
     const minter = accounts[0].addr;
     const alice = accounts[2].addr;
     const alicePriv = accounts[2].privKey;
@@ -38,11 +40,11 @@ module.exports = async function(contracts, [node], accounts, wallet, plasmaWalle
         (await node.getBalance(alice)).should.be.equal(balanceAlice - txAmount);
         (await node.getBalance(bob)).should.be.equal(balanceBob + txAmount);
     }
-    await minePeriod(node, accounts, contracts);
+    await minePeriod(env);
     console.log("------Exit Alice------");
-    await exitUnspent(contracts, node, wallet, alice);
+    await exitUnspent(env, alice);
     console.log("------Exit Bob------");
-    await exitUnspent(contracts, node, wallet, bob);
+    await exitUnspent(env, bob);
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║    Test: Deposit, trasfer, then exit     ║");

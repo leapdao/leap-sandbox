@@ -8,8 +8,10 @@ const { assert } = chai;
 const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 
-module.exports = async function(contracts, [node], accounts, wallet) {
-    const minter = accounts[0].addr;
+module.exports = async function(env) {
+  const { contracts, nodes, accounts, wallet } = env;
+  const node = nodes[0];
+  const minter = accounts[0].addr;
 
     console.log("Registering another token...");
 

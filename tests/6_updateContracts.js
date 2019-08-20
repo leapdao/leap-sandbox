@@ -4,7 +4,9 @@ const minePeriod = require('./actions/minePeriod');
 const { mine } = require('../src/helpers');
 const PosOperator = require('../build/contracts/build/contracts/PosOperator');
 
-module.exports = async function(contracts, [node], accounts, wallet) {
+module.exports = async function(env) {
+  const { contracts, nodes, accounts, wallet } = env;
+  const node = nodes[0];
   const alice = accounts[0].addr;
 
   console.log("╔═════════════════════════════════════╗");
@@ -40,7 +42,7 @@ module.exports = async function(contracts, [node], accounts, wallet) {
   await mine(contracts.governance.finalize());
 
   console.log("have some epochs pass by...");
-  await minePeriod(node, accounts, contracts);
+  await minePeriod(env);
 
   console.log("╔══════════════════════════════════════╗");
   console.log("║   Test: Upgrade contract             ║");

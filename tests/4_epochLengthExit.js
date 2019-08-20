@@ -7,7 +7,9 @@ const chai = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 
-module.exports = async function(contracts, [node], accounts, wallet, plasmaWallet) {
+module.exports = async function(env) {
+    const { contracts, nodes, accounts, wallet, plasmaWallet } = env;
+    const node = nodes[0];
     const minter = accounts[0].addr;
     const alice = accounts[7].addr;
     const alicePriv = accounts[7].privKey;
@@ -41,9 +43,9 @@ module.exports = async function(contracts, [node], accounts, wallet, plasmaWalle
     // 2 weeks waiting period ;)
     await mine(gov.finalize({ gasLimit: 2000000 }));
 
-    await minePeriod(node, accounts, contracts);
+    await minePeriod(env);
     console.log("------Exit Bob------");
-    await exitUnspent(contracts, node, wallet, bob);
+    await exitUnspent(env, bob);
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║   Test: Exit after epochLength change    ║");
