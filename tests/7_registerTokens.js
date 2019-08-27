@@ -2,7 +2,7 @@ const ethers = require('ethers');
 
 const erc20abi = require('../src/erc20abi');
 const SimpleToken = require('../build/contracts/build/contracts/SimpleToken');
-const { mine } = require('../src/helpers');
+const { mine, advanceBlocks } = require('../src/helpers');
 const chai = require("chai");
 const { assert } = chai;
 const chaiAsPromised = require("chai-as-promised");
@@ -50,6 +50,7 @@ module.exports = async function(contracts, [node], accounts, wallet) {
 
     // wait for event buffer
     await node.advanceUntilChange(wallet);
+    await advanceBlocks(8, wallet);
 
     const afterColors = await node.getColors();
     console.log('Checking..');
