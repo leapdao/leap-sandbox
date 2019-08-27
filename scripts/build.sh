@@ -3,6 +3,8 @@
 # Exit script as soon as a command fails.
 set -o errexit
 
+CURRENT_DIR=`pwd`
+
 build_contracts() {
   echo "Fetching contracts repo..."
   if [[ $contracts_repo == *".git"* ]]
@@ -23,11 +25,11 @@ build_node() {
   then
     git clone --quiet $node_repo ./build/node > /dev/null
   else
-    cp -R $node_repo ./build/node
+    ln -s $node_repo ./build/node
   fi
   cd build/node
   echo "Running yarn in node..."
-  yarn &> ../logs/node_yarn.out
+  yarn &> $CURRENT_DIR/build/logs/node_yarn.out
   cd - > /dev/null
 }
 
