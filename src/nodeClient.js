@@ -18,7 +18,16 @@ class Node extends helpers.LeapEthers {
   }
 
   async sendTx(tx) {
-    return this.provider.sendTransaction(tx).then(tx => tx.wait());
+    return this.provider.sendTransaction(tx)
+      .then(tx => 
+        Promise.race([
+          tx.wait(), 
+          new Promise((_, reject) => setTimeout(
+            () => reject('Transaction not included in block after 5 secs.'),
+            5000
+          ))
+        ])
+      );
   };
 
   async getBalance(addr) {
