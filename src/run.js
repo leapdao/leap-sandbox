@@ -15,7 +15,7 @@ async function setupGanache(port, mnemonic) {
   return new Promise(
     (resolve, reject) => {
       console.log('Starting ganache..');
-      const srv = ganache.server({ locked: false, mnemonic });
+      const srv = ganache.server({ locked: false, mnemonic, blockTime: 1 });
       srv.listen(port, (err) => {
         if (err) {
           return reject();
