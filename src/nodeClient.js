@@ -1,5 +1,6 @@
 const ethers = require('ethers');
 const { helpers } = require('leap-core');
+const LeapProvider = require('leap-provider');
 
 const erc20abi = require('./erc20abi');
 const { formatHostname, advanceBlocks, sleep } = require('./helpers');
@@ -8,7 +9,7 @@ let idCounter = 0;
 
 class Node extends helpers.LeapEthers {
   constructor(hostname, jsonrpcPort) {
-    const provider = new ethers.providers.JsonRpcProvider(formatHostname(hostname, jsonrpcPort))
+    const provider = new LeapProvider(formatHostname(hostname, jsonrpcPort))
     super(provider);
 
     this.id = idCounter++;
@@ -17,7 +18,7 @@ class Node extends helpers.LeapEthers {
   }
 
   async sendTx(tx) {
-    return helpers.sendSignedTransaction(this.provider, tx.hex());
+    return this.provider.sendTransaction(tx).then(tx => tx.wait());
   };
 
   async getBalance(addr) {
