@@ -7,7 +7,9 @@ const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-module.exports = async function(contracts, [node], accounts, wallet, plasmaWallet) {
+module.exports = async function(env) {
+    const { contracts, nodes, accounts, wallet, plasmaWallet } = env;
+    const node = nodes[0];
     const minter = accounts[0].addr;
     const alice = accounts[6].addr;
     const alicePriv = accounts[6].privKey;
@@ -24,10 +26,10 @@ module.exports = async function(contracts, [node], accounts, wallet, plasmaWalle
     
     await mintAndDeposit(accounts[6], amount, minter, contracts.token, 0, contracts.exitHandler, node, wallet, plasmaWallet);
     
-    await minePeriod(node, accounts, contracts);
+    await minePeriod(env);
     
     console.log("------Exit Alice------");
-    const utxo = await exitUnspent(contracts, node, wallet, alice);
+    const utxo = await exitUnspent(env, alice);
     console.log("------Attemp to transfer exited utxo from Alice to Bob (should fail)------");
     let plasmaBalanceBefore = await node.getBalance(alice);
     const bobBalanceBefore = await node.getBalance(bob);

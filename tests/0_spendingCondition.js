@@ -3,7 +3,9 @@ const ethUtil = require('ethereumjs-util');
 const spendingConditionABI = require('../src/spendingConditionABI');
 const { Tx, Input, Output } = require('leap-core');
 
-module.exports = async function(contracts, [node], accounts, wallet) {
+module.exports = async function(env) {
+  const { contracts, nodes, accounts } = env;
+  const node = nodes[0];
   const alice = accounts[0].addr;
   const alicePriv = accounts[0].privKey;
   const bob = accounts[1].addr;

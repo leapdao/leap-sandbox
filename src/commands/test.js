@@ -19,12 +19,12 @@ const getTests = async () => {
 };
 
 async function run() {
-  const { contracts, nodes, accounts, wallet, plasmaWallet } = await startNetwork();
+  const env = await startNetwork();
 
   const tests = await getTests();
   for (const test of tests) {
     console.log('Running: ', test);
-    await require('../../tests/' + test)(contracts, nodes, accounts, wallet, plasmaWallet);
+    await require('../../tests/' + test)(env);
   }
   if (process.env.CI || process.env.TRAVIS) {
     process.exit(0);

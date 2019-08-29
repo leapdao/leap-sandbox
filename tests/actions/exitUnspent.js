@@ -10,11 +10,12 @@ const waitForBalanceChange = require('./waitForBalanceChange');
 const ERC20_ERC721_TRANSFER_EVENT = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 const ERC1948_DATA_UPDATED_EVENT = '0x8ec06c2117d45dcb6bcb6ecf8918414a7ff1cb1ed07da8175e2cf638d0f4777f';
 
-module.exports = async function(contracts, node, wallet, addr, uIndex) {
-    const log = getLog(false);
-    const slotId = 0;
-    const validatorAddr = (await node.getValidatorInfo()).ethAddress;
-    
+module.exports = async function(env, addr, uIndex) {
+  const { contracts, nodes, wallet, plasmaWallet } = env;
+  const node = nodes[0];
+
+  const log = getLog(false);
+  
     let txHash;
     let txData;
 
@@ -42,7 +43,8 @@ module.exports = async function(contracts, node, wallet, addr, uIndex) {
         return -1;
     };
 
-    const unspentIndex = uIndex === undefined ? await getIndex(unspents, latestSubmittedBlock) : uIndex;
+    const unspentIndex = uIndex === undefined || uIndex === null ? await getIndex(unspents, latestSubmittedBlock) : uIndex;
+
     if (unspentIndex === -1) {
         throw new Error("Can't exit, no unspents are in submitted periods found");
     };
@@ -61,7 +63,8 @@ module.exports = async function(contracts, node, wallet, addr, uIndex) {
     const period = await Period.periodForTx(node, txData);
     debug(period);
     debug("------Proof------");
-    period.setValidatorData(slotId, validatorAddr);
+    const periodData = await plasmaWallet.provider.send('plasma_getPeriodByBlockHeight', [txData.blockNumber]);
+    period.setValidatorData(periodData[0].slotId, periodData[0].validatorAddress, periodData[0].casBitmap);
     const proof = period.proof(Tx.fromRaw(txData.raw));
     debug(proof);
     debug("------Youngest Input------");
@@ -73,7 +76,8 @@ module.exports = async function(contracts, node, wallet, addr, uIndex) {
         const youngestInputPeriod = await Period.periodForTx(node, youngestInput.tx);
         debug(youngestInputPeriod);
         debug("------Youngest Input Proof------");
-        youngestInputPeriod.setValidatorData(slotId, validatorAddr);
+        const periodData = await plasmaWallet.provider.send('plasma_getPeriodByBlockHeight', [youngestInput.tx.blockNumber]);
+        youngestInputPeriod.setValidatorData(periodData[0].slotId, periodData[0].validatorAddress, periodData[0].casBitmap);
         youngestInputProof = youngestInputPeriod.proof(Tx.fromRaw(youngestInput.tx.raw));
         debug(youngestInputProof);
     } else {
