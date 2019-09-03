@@ -59,7 +59,7 @@ module.exports = async function(contracts, [node], accounts, wallet, plasmaWalle
   await mine(contracts.governance.finalize());
 
   // wait for colors to appear
-  const getColors = () => node.provider.send('plasma_getColors', [false, false]);
+  const getColors = () => node.getColors(false, false);
   while ((await getColors()).length < 3) {
     await node.advanceUntilChange(wallet);
   }
@@ -71,7 +71,7 @@ module.exports = async function(contracts, [node], accounts, wallet, plasmaWalle
   const co2Color = afterColors.length - 2;
   const goellarsColor = afterColors.length - 1;
 
-  const nstAfterColors = (await node.provider.send('plasma_getColors', [false, true]));
+  const nstAfterColors = (await node.getColors(false, true));
   const nstColor = ((2 ** 14) + (2 ** 15)) + nstAfterColors.length;
 
   // minting and depositing passports

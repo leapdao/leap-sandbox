@@ -461,20 +461,20 @@ lcid@^2.0.0:
   dependencies:
     invert-kv "^2.0.0"
 
-leap-core@^0.35.0:
-  version "0.35.0"
-  resolved "https://registry.yarnpkg.com/leap-core/-/leap-core-0.35.0.tgz#89d5a470a37a355a843647840a3f6ffdd5a99f79"
-  integrity sha512-q8VKCXtbFVCUEkAbQp4YE+8aZ8lxXc9zOQGxwZ2M/6eRysXVzloywcD7/T2zJG+nvaw4xg7+kGxgaDEiaZrORA==
+leap-core@^0.35.1:
+  version "0.35.1"
+  resolved "https://registry.yarnpkg.com/leap-core/-/leap-core-0.35.1.tgz#74d56375b1d6d327a264bb32afe6786f341e6e1d"
+  integrity sha512-ovvNd+mPLX5ynVC3bs/fIlP7Xp+rV6Zz/vDnJexzBmsiBR3DIYScts+uW4NxP7um6LwYk//99EeLhujnuQN+iA==
   dependencies:
     "@types/web3" "^1.0.18"
     ethereumjs-util "6.0.0"
     jsbi-utils "^1.0.0"
     node-fetch "^2.3.0"
 
-leap-provider@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/leap-provider/-/leap-provider-1.0.0.tgz#0798783b1c9fc8b5892fb183da857957d1cf9231"
-  integrity sha512-iawd6QLqJnszXMW+N0D/1wqS+LSctqa5iB8IZDtIP5nc5NTPy5Iie7m24dklQdeUut+WMdEExgWKVEmjWO8FZA==
+leap-provider@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/leap-provider/-/leap-provider-1.1.0.tgz#b2e54be3c611165ba67035033a0fafd344771555"
+  integrity sha512-Il7vuWGOCg8JRl3aA/OdtBbmPO7V4a/ZsUTXt1DcAFTx35LAGfn2zIbAGQ04xvv89O18uk7ovX8CRvKiRAOAXQ==
 
 locate-path@^3.0.0:
   version "3.0.0"

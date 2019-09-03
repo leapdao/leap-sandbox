@@ -1,12 +1,16 @@
 const ethers = require('ethers');
+const chai = require("chai");
+const chaiAsPromised = require("chai-as-promised");
+const debug = require('debug');
 
 const erc20abi = require('../src/erc20abi');
 const SimpleToken = require('../build/contracts/build/contracts/SimpleToken');
 const { mine, advanceBlocks } = require('../src/helpers');
-const chai = require("chai");
 const { assert } = chai;
-const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
+
+const log = debug('7_registerTokens');
+
 
 module.exports = async function(env) {
   const { contracts, nodes, accounts, wallet } = env;
@@ -52,7 +56,7 @@ module.exports = async function(env) {
 
     // wait for event buffer
     await node.advanceUntilChange(wallet);
-    await advanceBlocks(8, wallet);
+    await advanceBlocks(10, wallet);
 
     const afterColors = await node.getColors();
     console.log('Checking..');

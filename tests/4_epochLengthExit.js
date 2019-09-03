@@ -1,11 +1,16 @@
+const debug = require('debug');
+const chai = require("chai");
+const chaiAsPromised = require("chai-as-promised");
+
 const mintAndDeposit = require('./actions/mintAndDeposit');
 const { transfer } = require('./actions/transfer');
 const exitUnspent = require('./actions/exitUnspent');
 const minePeriod = require('./actions/minePeriod');
 const { mine } = require('../src/helpers');
-const chai = require("chai");
-const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
+
+const log = debug('4_epochLengthExit');
+
 
 module.exports = async function(env) {
     const { contracts, nodes, accounts, wallet, plasmaWallet } = env;
@@ -27,7 +32,7 @@ module.exports = async function(env) {
     
     await mintAndDeposit(accounts[7], amount, minter, contracts.token, 0, contracts.exitHandler, node, wallet, plasmaWallet);
     
-    console.log("------Transfer from Alice to Bob------");
+    log("------Transfer from Alice to Bob------");
     let txAmount = Math.round(amount/(2000))+ Math.round(100 * Math.random());
     await transfer(
         alice, 
@@ -35,7 +40,7 @@ module.exports = async function(env) {
         bob, 
         txAmount, 
         node);
-    console.log("Changing epochLength...");
+    log("Changing epochLength...");
     const data = await contracts.operator.interface.functions.setEpochLength.encode([2]);
     const gov = contracts.governance.connect(wallet.provider.getSigner(minter));
     await mine(gov.propose(contracts.operator.address, data, { gasLimit: 2000000 }));
@@ -44,7 +49,7 @@ module.exports = async function(env) {
     await mine(gov.finalize({ gasLimit: 2000000 }));
 
     await minePeriod(env);
-    console.log("------Exit Bob------");
+    log("------Exit Bob------");
     await exitUnspent(env, bob);
 
     console.log("╔══════════════════════════════════════════╗");

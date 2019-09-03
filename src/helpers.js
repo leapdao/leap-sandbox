@@ -1,5 +1,4 @@
-const { helpers, Tx, Outpoint, Period, Block } = require('leap-core');
-const { bufferToHex } = require('ethereumjs-util');
+const { Tx } = require('leap-core');
 
 const range = (s, e) =>
   Array.from(new Array(e - s + 1), (_, i) => i + s);
@@ -8,17 +7,6 @@ function sleep(ms){
   return new Promise(resolve => {
       setTimeout(resolve,ms);
   })
-}
-
-function getLog(noLog) {
-  let log;
-  if (noLog) {
-    log = function(){};
-  } else {
-      log = console.log;
-  }
-
-  return log;
 }
 
 function formatHostname(hostname, port) {
@@ -55,8 +43,8 @@ async function makeTransfer(
     throw new Error('Insufficient balance');
   }
 
-  const inputs = helpers.calcInputs(unspent, from, amount, color);
-  const outputs = helpers.calcOutputs(
+  const inputs = Tx.calcInputs(unspent, from, amount, color);
+  const outputs = Tx.calcOutputs(
     unspent,
     inputs,
     fromAddr,
@@ -96,4 +84,4 @@ async function mine(tx) {
   return tx.then((tx) => tx.wait());
 };
 
-module.exports = { mine, sleep, formatHostname, makeTransfer, makeTransferUxto, getLog, advanceBlocks };
+module.exports = { mine, sleep, formatHostname, makeTransfer, makeTransferUxto, advanceBlocks };

@@ -1,4 +1,5 @@
 const ethers = require('ethers');
+const LeapProvider = require('leap-provider');
 
 const Node = require('./nodeClient');
 const erc20abi = require('./erc20abi');
@@ -78,7 +79,7 @@ module.exports = async () => {
   const rootProvider = new ethers.providers.JsonRpcProvider(networkProcess.ganache);
   const wallet = ethers.Wallet.fromMnemonic(mnemonic).connect(rootProvider);
 
-  const plasmaProvider = new ethers.providers.JsonRpcProvider(nodes[0].getRpcUrl());
+  const plasmaProvider = new LeapProvider(nodes[0].getRpcUrl());
   const plasmaWallet = ethers.Wallet.fromMnemonic(mnemonic).connect(plasmaProvider);
 
   const accounts = getAccounts(mnemonic, 10, rootProvider);

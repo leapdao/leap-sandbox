@@ -1,11 +1,11 @@
 const ethers = require('ethers');
-const debug = require('debug')('exitUnspent');
-const { helpers, Tx, Period, Util } = require('leap-core');
+const debug = require('debug');
+const { helpers, Tx, Util } = require('leap-core');
 const { bufferToHex } = require('ethereumjs-util');
-const { bi, equal, add } = require('jsbi-utils');
+const { bi, equal, subtract } = require('jsbi-utils');
 const { assert } = require('chai');
-const { getLog } = require('../../src/helpers');
-const waitForBalanceChange = require('./waitForBalanceChange');
+
+const log = debug('exitUnspent');
 
 const ERC20_ERC721_TRANSFER_EVENT = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 const ERC1948_DATA_UPDATED_EVENT = '0x8ec06c2117d45dcb6bcb6ecf8918414a7ff1cb1ed07da8175e2cf638d0f4777f';
@@ -14,19 +14,18 @@ module.exports = async function(env, addr, uIndex) {
   const { contracts, nodes, wallet, plasmaWallet } = env;
   const node = nodes[0];
 
-  const log = getLog(false);
-  
     let txHash;
     let txData;
 
+    const msg = '\rExiting UTXO...';
     log(`------Unspents of ${addr}------`);
     const unspents = await node.getUnspent(addr);
     log(unspents);
-    debug("------Looking for unspent from submitted period------");
+    log("------Looking for unspent from submitted period------");
     const latestBlockNumber = (await node.getBlock('latest')).number;
-    debug("Latest Block number: ", latestBlockNumber);
+    log("Latest Block number: ", latestBlockNumber);
     const latestSubmittedBlock = latestBlockNumber - latestBlockNumber % 32;
-    debug("Latest submitted block number: ", latestSubmittedBlock);
+    log("Latest submitted block number: ", latestSubmittedBlock);
     if (latestSubmittedBlock === 0) {
         throw new Error("Can't exit, no periods were submitted yet");
     };
@@ -35,8 +34,8 @@ module.exports = async function(env, addr, uIndex) {
         for(let i=0; i<unspents.length; i++) {
             txHash = unspents[i].outpoint.hash;
             txData = await node.getTransaction(bufferToHex(txHash));
-            debug("Unspent", i, "blocknumber:", txData.blockNumber);
-            debug("Is submitted?", txData.blockNumber < lastBlock);
+            log("Unspent", i, "blocknumber:", txData.blockNumber);
+            log("Is submitted?", txData.blockNumber < lastBlock);
             if (txData.blockNumber < lastBlock) return i;
         }
     
@@ -49,49 +48,42 @@ module.exports = async function(env, addr, uIndex) {
         throw new Error("Can't exit, no unspents are in submitted periods found");
     };
     log(`------Will attept to exit unspent ${unspentIndex} of ${addr}------`);
+    process.stdout.write(`${msg} getting tx proof`);
     const unspent = unspents[unspentIndex];
     txHash = unspent.outpoint.hash;
     txData = await node.getTransaction(bufferToHex(txHash));
     const amount = unspent.output.value;
     const txColor = unspent.output.color;
     log("Unspent amount: ", amount);
-    debug(`------Transaction hash for Bob's unspent ${unspentIndex}------`);
-    debug(txHash);
-    debug("------Transaction data------");
-    debug(txData);
-    debug("------Period------");
-    const period = await Period.periodForTx(node, txData);
-    debug(period);
-    debug("------Proof------");
-    const periodData = await plasmaWallet.provider.send('plasma_getPeriodByBlockHeight', [txData.blockNumber]);
-    period.setValidatorData(periodData[0].slotId, periodData[0].validatorAddress, periodData[0].casBitmap);
-    const proof = period.proof(Tx.fromRaw(txData.raw));
-    debug(proof);
-    debug("------Youngest Input------");
+    log(`------Transaction hash for Bob's unspent ${unspentIndex}------`);
+    log(txHash);
+    log("------Transaction data------");
+    log(txData);
+    log("------Proof------");
+    const proof = await helpers.getProof(plasmaWallet.provider, txData);
+    log(proof);
+    log("------Youngest Input------");
+    process.stdout.write(`${msg} getting input proof`);
     const youngestInput = await helpers.getYoungestInputTx(node, Tx.fromRaw(txData.raw));
-    debug(youngestInput);
+    log(youngestInput);
     let youngestInputProof;
     if (youngestInput.tx) {
-        debug("------Youngest Input Period------");
-        const youngestInputPeriod = await Period.periodForTx(node, youngestInput.tx);
-        debug(youngestInputPeriod);
-        debug("------Youngest Input Proof------");
-        const periodData = await plasmaWallet.provider.send('plasma_getPeriodByBlockHeight', [youngestInput.tx.blockNumber]);
-        youngestInputPeriod.setValidatorData(periodData[0].slotId, periodData[0].validatorAddress, periodData[0].casBitmap);
-        youngestInputProof = youngestInputPeriod.proof(Tx.fromRaw(youngestInput.tx.raw));
-        debug(youngestInputProof);
+        log("------Youngest Input Proof------");
+        youngestInputProof = await helpers.getProof(plasmaWallet.provider, youngestInput.tx);
+        log(youngestInputProof);
     } else {
-        debug("No youngest input found. Will try to exit deposit");
+        log("No youngest input found. Will try to exit deposit");
         youngestInputProof = [];
     }
-    debug("------Period from the contract by merkle root------");
-    debug(await contracts.bridge.periods(proof[0]));
+    log("------Period from the contract by merkle root------");
+    log(await contracts.bridge.periods(proof[0]));
     log("------Balance before exit------");
     const balanceBefore = await contracts.token.balanceOf(addr);
-    const plasmaBalanceBefore = await node.getBalance(addr);
+    const plasmaBalanceBefore = await node.getBalanceNum(addr);
     log("Account mainnet balance: ", balanceBefore);
     log("Account plasma balance: ", plasmaBalanceBefore);
     log("Attempting exit...");
+    process.stdout.write(`${msg} submitting exit`);
     let startExitResult =
       await contracts.exitHandler.connect(wallet.provider.getSigner(addr)).startExit(
         youngestInputProof,
@@ -103,13 +95,14 @@ module.exports = async function(env, addr, uIndex) {
     await startExitResult.wait();
 
     log("Finalizing exit...");
-
+    process.stdout.write(`${msg} finalizing exit`);
     let exitResult =
       await contracts.exitHandler.connect(wallet.provider.getSigner(addr))
         .finalizeExits(txColor, { gasLimit: 2000000 });
     exitResult = await exitResult.wait();
 
     if (Util.isNFT(txColor) || Util.isNST(txColor)) {
+      process.stdout.write(`${msg} checking events`);
       let nstUpdated = false;
       let nstTransferred = false;
 
@@ -141,18 +134,23 @@ module.exports = async function(env, addr, uIndex) {
 
       return unspent;
     }
-
     log("------Balance after exit------");
     const balanceAfter = await contracts.token.balanceOf(addr);
     log("Account mainnet balance: ", balanceAfter);
     
-    const plasmaBalanceAfter = await waitForBalanceChange(addr, plasmaBalanceBefore, node, wallet);
+    const plasmaBalanceAfter = await node.advanceUntilTokenBalanceChange(
+      addr, contracts.token.address, plasmaBalanceBefore, wallet, plasmaWallet, 
+      `${msg} waiting for balance change`
+    );
+  
     log("Account plasma balance: ", plasmaBalanceAfter);
 
     const unspentsAfter = await node.getUnspent(addr);
-    const unspentsValue = unspentsAfter.reduce((sum, unspent) => add(bi(sum), bi(unspent.output.value)), 0);
     unspentsAfter.length.should.be.equal(unspents.length - 1);
-    plasmaBalanceAfter.should.be.equal(plasmaBalanceBefore - amount);
-
+    assert.equal(
+      bi(plasmaBalanceAfter).toString(),
+      subtract(bi(plasmaBalanceBefore), bi(amount)).toString()
+    );
+    process.stdout.write(`${msg} ✅ ${' '.repeat(50)}\n`);
     return unspent;
 }

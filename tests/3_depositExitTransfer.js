@@ -1,11 +1,16 @@
+const debug = require('debug');
+const chai = require("chai");
+const chaiAsPromised = require("chai-as-promised");
+
 const mintAndDeposit = require('./actions/mintAndDeposit');
 const { transferUtxo } = require('./actions/transfer');
 const exitUnspent = require('./actions/exitUnspent');
 const minePeriod = require('./actions/minePeriod');
-const chai = require("chai");
-const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 const expect = chai.expect;
+
+const log = debug('3_depositExitTransfer');
+
 
 module.exports = async function(env) {
     const { contracts, nodes, accounts, wallet, plasmaWallet } = env;
@@ -28,15 +33,15 @@ module.exports = async function(env) {
     
     await minePeriod(env);
     
-    console.log("------Exit Alice------");
+    log("------Exit Alice------");
     const utxo = await exitUnspent(env, alice);
-    console.log("------Attemp to transfer exited utxo from Alice to Bob (should fail)------");
-    let plasmaBalanceBefore = await node.getBalance(alice);
-    const bobBalanceBefore = await node.getBalance(bob);
+    log("------Attemp to transfer exited utxo from Alice to Bob (should fail)------");
+    let plasmaBalanceBefore = await node.getBalanceNum(alice);
+    const bobBalanceBefore = await node.getBalanceNum(bob);
     await expect(transferUtxo(utxo, bob, alicePriv, node)).to.eventually.be.rejectedWith("Transaction not included in block after 5 secs.");
-    plasmaBalanceAfter = await node.getBalance(alice);
-    const bobBalanceAfter = await node.getBalance(bob);
-    console.log("Alice balance after: ", plasmaBalanceAfter);
+    plasmaBalanceAfter = await node.getBalanceNum(alice);
+    const bobBalanceAfter = await node.getBalanceNum(bob);
+    log("Alice balance after: ", plasmaBalanceAfter);
     expect(plasmaBalanceAfter).to.be.equal(plasmaBalanceBefore);
     expect(bobBalanceAfter).to.be.equal(bobBalanceBefore);
 

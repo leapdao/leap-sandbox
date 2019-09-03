@@ -1,13 +1,14 @@
 const ethers = require('ethers');
+const debug = require('debug'); 
 
 const minePeriod = require('./actions/minePeriod');
 const { mine } = require('../src/helpers');
 const PosOperator = require('../build/contracts/build/contracts/PosOperator');
 
+const log = debug('6_updateContracts');
+
 module.exports = async function(env) {
-  const { contracts, nodes, accounts, wallet } = env;
-  const node = nodes[0];
-  const alice = accounts[0].addr;
+  const { contracts, wallet } = env;
 
   console.log("╔═════════════════════════════════════╗");
   console.log("║   Test: Upgrade contract            ║");
@@ -16,7 +17,7 @@ module.exports = async function(env) {
   console.log("║2. submit some periods               ║");
   console.log("╚═════════════════════════════════════╝");
 
-  console.log("upgrade Poa to Pos");
+  log("upgrade Poa to Pos");
   let factory = new ethers.ContractFactory(
     PosOperator.abi,
     PosOperator.bytecode,
@@ -41,7 +42,7 @@ module.exports = async function(env) {
   );
   await mine(contracts.governance.finalize());
 
-  console.log("have some epochs pass by...");
+  log("have some epochs pass by...");
   await minePeriod(env);
 
   console.log("╔══════════════════════════════════════╗");

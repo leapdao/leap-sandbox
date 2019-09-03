@@ -1,7 +1,12 @@
-const { transfer } = require('./actions/transfer');
 const ethUtil = require('ethereumjs-util');
-const spendingConditionABI = require('../src/spendingConditionABI');
+const debug = require('debug');
+
 const { Tx, Input, Output } = require('leap-core');
+
+const { transfer } = require('./actions/transfer');
+
+const log = debug('0_spendingCondition');
+
 
 module.exports = async function(env) {
   const { contracts, nodes, accounts } = env;
@@ -22,8 +27,8 @@ module.exports = async function(env) {
   console.log("║2. Claim from SP by Bob                   ║");
   console.log("╚══════════════════════════════════════════╝");
 
-  let balanceAlice = await node.getBalance(alice);
-  let balanceSp = await node.getBalance(spAddr);
+  let balanceAlice = await node.getBalanceNum(alice);
+  let balanceSp = await node.getBalanceNum(spAddr);
   let amount = 100000000;
 
   // for gas
@@ -42,14 +47,14 @@ module.exports = async function(env) {
     amount, 
     node);
 
-  (await node.getBalance(alice)).should.be.equal(balanceAlice - (amount * 2));
-  (await node.getBalance(spAddr)).should.be.equal(balanceSp + (amount * 2));
+  (await node.getBalanceNum(alice)).should.be.equal(balanceAlice - (amount * 2));
+  (await node.getBalanceNum(spAddr)).should.be.equal(balanceSp + (amount * 2));
 
-  console.log("Balances before SP TX:");
-  let balanceBob = await node.getBalance(bob);
-  console.log('bob: ', balanceBob);
-  balanceSp = await node.getBalance(spAddr);
-  console.log('sp: ', balanceSp);
+  log("Balances before SP TX:");
+  let balanceBob = await node.getBalanceNum(bob);
+  log('bob: ', balanceBob);
+  balanceSp = await node.getBalanceNum(spAddr);
+  log('sp: ', balanceSp);
 
   const unspents = await node.getUnspent(spAddr);
   const condTx = Tx.spendCond(
@@ -95,11 +100,11 @@ module.exports = async function(env) {
 
   await node.sendTx(condTx);
 
-  console.log("Balances after SP TX:");
-  balanceBob = await node.getBalance(bob);
-  console.log('bob: ', balanceBob);
-  balanceSp = await node.getBalance(spAddr);
-  console.log('sp: ', balanceSp);
+  log("Balances after SP TX:");
+  balanceBob = await node.getBalanceNum(bob);
+  log('bob: ', balanceBob);
+  balanceSp = await node.getBalanceNum(spAddr);
+  log('sp: ', balanceSp);
 
   if (balanceBob == 0) {
     throw Error('transfer failed');
