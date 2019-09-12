@@ -36,14 +36,14 @@ module.exports = async function(env) {
     log("------Exit Alice------");
     const utxo = await exitUnspent(env, alice);
     log("------Attemp to transfer exited utxo from Alice to Bob (should fail)------");
-    let plasmaBalanceBefore = await node.getBalanceNum(alice);
-    const bobBalanceBefore = await node.getBalanceNum(bob);
+    let plasmaBalanceBefore = await node.getBalance(alice);
+    const bobBalanceBefore = await node.getBalance(bob);
     await expect(transferUtxo(utxo, bob, alicePriv, node)).to.eventually.be.rejectedWith("Transaction not included in block after 5 secs.");
-    plasmaBalanceAfter = await node.getBalanceNum(alice);
-    const bobBalanceAfter = await node.getBalanceNum(bob);
+    plasmaBalanceAfter = await node.getBalance(alice);
+    const bobBalanceAfter = await node.getBalance(bob);
     log("Alice balance after: ", plasmaBalanceAfter);
-    expect(plasmaBalanceAfter).to.be.equal(plasmaBalanceBefore);
-    expect(bobBalanceAfter).to.be.equal(bobBalanceBefore);
+    expect(plasmaBalanceAfter.toString()).to.be.equal(plasmaBalanceBefore.toString());
+    expect(bobBalanceAfter.toString()).to.be.equal(bobBalanceBefore.toString());
 
     console.log("╔══════════════════════════════════════════╗");
     console.log("║Test: Transfer utxo after exit (negative) ║");

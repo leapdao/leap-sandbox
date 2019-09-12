@@ -84,4 +84,6 @@ async function mine(tx) {
   return tx.then((tx) => tx.wait());
 };
 
-module.exports = { mine, sleep, formatHostname, makeTransfer, makeTransferUxto, advanceBlocks };
+const updateLine = text => process.stdout.write(`\r${text}${' '.repeat(30)}`);
+
+module.exports = { mine, sleep, formatHostname, makeTransfer, makeTransferUxto, advanceBlocks, updateLine };

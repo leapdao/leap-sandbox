@@ -5,21 +5,23 @@ const { bufferToHex } = require('ethereumjs-util');
 const { bi, equal, subtract } = require('jsbi-utils');
 const { assert } = require('chai');
 
+const { advanceBlocks, updateLine } = require('./../../src/helpers');
+
 const log = debug('exitUnspent');
 
 const ERC20_ERC721_TRANSFER_EVENT = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 const ERC1948_DATA_UPDATED_EVENT = '0x8ec06c2117d45dcb6bcb6ecf8918414a7ff1cb1ed07da8175e2cf638d0f4777f';
 
-module.exports = async function(env, addr, uIndex) {
+module.exports = async function(env, addr, color) {
   const { contracts, nodes, wallet, plasmaWallet } = env;
   const node = nodes[0];
 
     let txHash;
     let txData;
 
-    const msg = '\rExiting UTXO...';
+    const msg = 'Exiting UTXO...';
     log(`------Unspents of ${addr}------`);
-    const unspents = await node.getUnspent(addr);
+    const unspents = await node.getUnspent(addr, color);
     log(unspents);
     log("------Looking for unspent from submitted period------");
     const latestBlockNumber = (await node.getBlock('latest')).number;
@@ -42,13 +44,13 @@ module.exports = async function(env, addr, uIndex) {
         return -1;
     };
 
-    const unspentIndex = uIndex === undefined || uIndex === null ? await getIndex(unspents, latestSubmittedBlock) : uIndex;
+    const unspentIndex = await getIndex(unspents, latestSubmittedBlock);
 
     if (unspentIndex === -1) {
         throw new Error("Can't exit, no unspents are in submitted periods found");
     };
     log(`------Will attept to exit unspent ${unspentIndex} of ${addr}------`);
-    process.stdout.write(`${msg} getting tx proof`);
+    updateLine(`${msg} getting tx proof`);
     const unspent = unspents[unspentIndex];
     txHash = unspent.outpoint.hash;
     txData = await node.getTransaction(bufferToHex(txHash));
@@ -63,7 +65,7 @@ module.exports = async function(env, addr, uIndex) {
     const proof = await helpers.getProof(plasmaWallet.provider, txData);
     log(proof);
     log("------Youngest Input------");
-    process.stdout.write(`${msg} getting input proof`);
+    updateLine(`${msg} getting input proof`);
     const youngestInput = await helpers.getYoungestInputTx(node, Tx.fromRaw(txData.raw));
     log(youngestInput);
     let youngestInputProof;
@@ -79,11 +81,11 @@ module.exports = async function(env, addr, uIndex) {
     log(await contracts.bridge.periods(proof[0]));
     log("------Balance before exit------");
     const balanceBefore = await contracts.token.balanceOf(addr);
-    const plasmaBalanceBefore = await node.getBalanceNum(addr);
-    log("Account mainnet balance: ", balanceBefore);
+    const plasmaBalanceBefore = await node.getBalance(addr);
+    log("Account mainnet balance: ", balanceBefore.toString());
     log("Account plasma balance: ", plasmaBalanceBefore);
     log("Attempting exit...");
-    process.stdout.write(`${msg} submitting exit`);
+    updateLine(`${msg} submitting exit`);
     let startExitResult =
       await contracts.exitHandler.connect(wallet.provider.getSigner(addr)).startExit(
         youngestInputProof,
@@ -92,17 +94,17 @@ module.exports = async function(env, addr, uIndex) {
         youngestInput.index,
         { value: ethers.utils.parseEther('1'), gasLimit: 2000000 }
     );
-    await startExitResult.wait();
+    log(await startExitResult.wait());
 
     log("Finalizing exit...");
-    process.stdout.write(`${msg} finalizing exit`);
+    updateLine(`${msg} finalizing exit`);
     let exitResult =
       await contracts.exitHandler.connect(wallet.provider.getSigner(addr))
         .finalizeExits(txColor, { gasLimit: 2000000 });
     exitResult = await exitResult.wait();
-
+    log(exitResult);
     if (Util.isNFT(txColor) || Util.isNST(txColor)) {
-      process.stdout.write(`${msg} checking events`);
+      updateLine(`${msg} checking events`);
       let nstUpdated = false;
       let nstTransferred = false;
 
@@ -136,21 +138,23 @@ module.exports = async function(env, addr, uIndex) {
     }
     log("------Balance after exit------");
     const balanceAfter = await contracts.token.balanceOf(addr);
-    log("Account mainnet balance: ", balanceAfter);
+    log("Account mainnet balance: ", balanceAfter.toString());
     
     const plasmaBalanceAfter = await node.advanceUntilTokenBalanceChange(
       addr, contracts.token.address, plasmaBalanceBefore, wallet, plasmaWallet, 
       `${msg} waiting for balance change`
     );
   
-    log("Account plasma balance: ", plasmaBalanceAfter);
+    await advanceBlocks(8, wallet);
+    log("Account plasma balance: ", plasmaBalanceAfter.toString());
 
-    const unspentsAfter = await node.getUnspent(addr);
+    const unspentsAfter = await node.getUnspent(addr, color);
     unspentsAfter.length.should.be.equal(unspents.length - 1);
     assert.equal(
       bi(plasmaBalanceAfter).toString(),
       subtract(bi(plasmaBalanceBefore), bi(amount)).toString()
     );
-    process.stdout.write(`${msg} ✅ ${' '.repeat(50)}\n`);
+    updateLine(`${msg} ✅`);
+    console.log();
     return unspent;
 }

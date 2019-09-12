@@ -59,19 +59,19 @@ module.exports = async function(contracts, [node], accounts, wallet, plasmaWalle
   await mine(contracts.governance.finalize());
 
   // wait for colors to appear
-  const getColors = () => node.getColors(false, false);
-  while ((await getColors()).length < 3) {
+  const getColors = () => node.getColors('erc20');
+  while ((await getColors('erc20')).length < 2) {
     await node.advanceUntilChange(wallet);
   }
 
   // read results
-  const afterColors = await getColors();
+  const afterColors = await getColors('erc20');
 
   const leapColor = afterColors.length - 3;
   const co2Color = afterColors.length - 2;
   const goellarsColor = afterColors.length - 1;
 
-  const nstAfterColors = (await node.getColors(false, true));
+  const nstAfterColors = (await node.getColors('nst'));
   const nstColor = ((2 ** 14) + (2 ** 15)) + nstAfterColors.length;
 
   // minting and depositing passports

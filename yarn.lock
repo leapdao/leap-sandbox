@@ -471,10 +471,10 @@ leap-core@^0.35.1:
     jsbi-utils "^1.0.0"
     node-fetch "^2.3.0"
 
-leap-provider@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/leap-provider/-/leap-provider-1.1.0.tgz#b2e54be3c611165ba67035033a0fafd344771555"
-  integrity sha512-Il7vuWGOCg8JRl3aA/OdtBbmPO7V4a/ZsUTXt1DcAFTx35LAGfn2zIbAGQ04xvv89O18uk7ovX8CRvKiRAOAXQ==
+leap-provider@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/leap-provider/-/leap-provider-1.2.0.tgz#bf1ffdf43e47cc7d97e4bd00c2a415da6842a44f"
+  integrity sha512-bDT4QmzeE71S4/a6F+UBHf8DYCNfeNRQu6UQTOiEgVWA8HLt+eEr5UGcarXNSNBYsHYJsNtup0Nhjx0oTaNeTA==
 
 locate-path@^3.0.0:
   version "3.0.0"

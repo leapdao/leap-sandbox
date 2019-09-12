@@ -19,7 +19,7 @@ module.exports = async function(env) {
 
     console.log("Registering another token...");
 
-    const beforeColors = await node.getColors();
+    const beforeColors = await node.getColors('erc20');
     console.log('Initial state');
     console.log('   Token count:', beforeColors.length);
     console.log('   Tokens:', beforeColors);
@@ -41,8 +41,8 @@ module.exports = async function(env) {
 
     console.log('Submitting registerToken proposal..');
     const data = contracts.exitHandler.interface.functions.registerToken.encode([simpleToken.address, 0]);
-    console.log('   Subject:', contracts.exitHandler.address)
-    console.log('   Data:', data)
+    log('   Subject:', contracts.exitHandler.address)
+    log('   Data:', data)
     const gov = contracts.governance.connect(wallet.provider.getSigner(minter));
     await mine(
       gov.propose(
@@ -56,9 +56,8 @@ module.exports = async function(env) {
 
     // wait for event buffer
     await node.advanceUntilChange(wallet);
-    await advanceBlocks(10, wallet);
 
-    const afterColors = await node.getColors();
+    const afterColors = await node.getColors('erc20');
     console.log('Checking..');
 
     assert.equal(afterColors.length, beforeColors.length + 1, 'Token count');

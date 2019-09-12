@@ -1,5 +1,7 @@
 const ethUtil = require('ethereumjs-util');
 const debug = require('debug');
+const assert = require('assert');
+const { bi, subtract, add } = require('jsbi-utils');
 
 const { Tx, Input, Output } = require('leap-core');
 
@@ -27,8 +29,8 @@ module.exports = async function(env) {
   console.log("║2. Claim from SP by Bob                   ║");
   console.log("╚══════════════════════════════════════════╝");
 
-  let balanceAlice = await node.getBalanceNum(alice);
-  let balanceSp = await node.getBalanceNum(spAddr);
+  let balanceAlice = await node.getBalance(alice);
+  let balanceSp = await node.getBalance(spAddr);
   let amount = 100000000;
 
   // for gas
@@ -47,13 +49,19 @@ module.exports = async function(env) {
     amount, 
     node);
 
-  (await node.getBalanceNum(alice)).should.be.equal(balanceAlice - (amount * 2));
-  (await node.getBalanceNum(spAddr)).should.be.equal(balanceSp + (amount * 2));
+  assert.equal(
+    (await node.getBalance(alice)).toString(),
+    subtract(bi(balanceAlice), bi(amount * 2)).toString()
+  );
+  assert.equal(
+    (await node.getBalance(spAddr)).toString(),
+    add(bi(balanceSp), bi(amount * 2)).toString()
+  );
 
   log("Balances before SP TX:");
-  let balanceBob = await node.getBalanceNum(bob);
+  let balanceBob = await node.getBalance(bob);
   log('bob: ', balanceBob);
-  balanceSp = await node.getBalanceNum(spAddr);
+  balanceSp = await node.getBalance(spAddr);
   log('sp: ', balanceSp);
 
   const unspents = await node.getUnspent(spAddr);
@@ -101,9 +109,9 @@ module.exports = async function(env) {
   await node.sendTx(condTx);
 
   log("Balances after SP TX:");
-  balanceBob = await node.getBalanceNum(bob);
+  balanceBob = await node.getBalance(bob);
   log('bob: ', balanceBob);
-  balanceSp = await node.getBalanceNum(spAddr);
+  balanceSp = await node.getBalance(spAddr);
   log('sp: ', balanceSp);
 
   if (balanceBob == 0) {

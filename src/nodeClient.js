@@ -27,10 +27,6 @@ class Node extends LeapProvider {
       );
   };
 
-  async getBalanceNum(addr) {
-    return this.getBalance(addr).then(res => Number(res));
-  }
-
   async getBlock(val, includeTxs) {
     let method = 'eth_getBlockByNumber';
 
@@ -44,9 +40,7 @@ class Node extends LeapProvider {
   async advanceUntilChange(wallet) {
     const currentBlock = await this.getBlockNumber();
 
-    let colors = (await this.send('plasma_getColors', [true, false]));
-    colors = colors.concat((await this.send('plasma_getColors', [false, true])));
-    colors = colors.concat((await this.send('plasma_getColors', [false, false])));
+    let colors = Object.values(await this.getColors()).reduce((s, a) => s.concat(a), []);
 
     while (true) {
       const blockNumber = await this.getBlockNumber();
@@ -55,9 +49,7 @@ class Node extends LeapProvider {
         break;
       }
 
-      let c = (await this.send('plasma_getColors', [true, false]));
-      c = c.concat((await this.send('plasma_getColors', [false, true])));
-      c = c.concat((await this.send('plasma_getColors', [false, false])));
+      let c = Object.values(await this.getColors()).reduce((s, a) => s.concat(a), []);
 
       if (c.length !== colors.length) {
         break;
