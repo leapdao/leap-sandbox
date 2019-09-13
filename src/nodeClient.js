@@ -40,7 +40,7 @@ class Node extends LeapProvider {
   async advanceUntilChange(wallet) {
     const currentBlock = await this.getBlockNumber();
 
-    let colors = Object.values(await this.getColors()).reduce((s, a) => s.concat(a), []);
+    let colors = Object.values(await this.getColors()).flat();
 
     while (true) {
       const blockNumber = await this.getBlockNumber();
@@ -49,7 +49,7 @@ class Node extends LeapProvider {
         break;
       }
 
-      let c = Object.values(await this.getColors()).reduce((s, a) => s.concat(a), []);
+      let c = Object.values(await this.getColors()).flat();
 
       if (c.length !== colors.length) {
         break;
