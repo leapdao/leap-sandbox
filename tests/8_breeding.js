@@ -177,7 +177,7 @@ module.exports = async function(env) {
 
   console.log('sending breeding condition');
   await node.sendTx(condTx);
-  const rsp = await node.provider.send('eth_getTransactionReceipt', [condTx.hash()]);
+  const rsp = await node.send('eth_getTransactionReceipt', [condTx.hash()]);
   assert(rsp.logs && rsp.logs.length > 0, 'no events emitted');
 
   unspents = (await node.getUnspent(minter, nstColor));
