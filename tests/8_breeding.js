@@ -24,6 +24,12 @@ module.exports = async function(env) {
   const minter = accounts[0].addr;
   const minterPriv = accounts[0].privKey;
 
+  console.log("\nTest: Breeding");
+  console.log('Plan:');
+  console.log('  1. Mint and deposit ERC1949 Queen');
+  console.log('  2. Execute BreedingCondition');
+  console.log('  3. Exit');
+
   console.log("Registering ERC1949..");
 
   const beforeColors = (await node.getColors('nst'));
