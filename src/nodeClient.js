@@ -4,6 +4,9 @@ const LeapProvider = require('leap-provider');
 const erc20abi = require('./erc20abi');
 const { formatHostname, advanceBlocks, sleep } = require('./helpers');
 
+const flatValues = map => 
+  Object.values(map).reduce((s, a) => s.concat(a), []);
+
 let idCounter = 0;
 
 class Node extends LeapProvider {
@@ -40,7 +43,7 @@ class Node extends LeapProvider {
   async advanceUntilChange(wallet) {
     const currentBlock = await this.getBlockNumber();
 
-    let colors = Object.values(await this.getColors()).flat();
+    let colors = flatValues(await this.getColors());
 
     while (true) {
       const blockNumber = await this.getBlockNumber();
@@ -49,7 +52,7 @@ class Node extends LeapProvider {
         break;
       }
 
-      let c = Object.values(await this.getColors()).flat();
+      let c = flatValues(await this.getColors());
 
       if (c.length !== colors.length) {
         break;
