@@ -1,9 +1,13 @@
+const debug = require('debug');
 const mintAndDeposit = require('./actions/mintAndDeposit');
 const { transfer } = require('./actions/transfer');
 const exitUnspent = require('./actions/exitUnspent');
 const minePeriod = require('./actions/minePeriod');
 
 require('chai').should();
+
+const log = debug('1_depositTransferExit');
+
 
 module.exports = async function(env) {
     const { contracts, nodes, accounts, wallet, plasmaWallet } = env;
@@ -24,26 +28,14 @@ module.exports = async function(env) {
 
     await mintAndDeposit(accounts[2], amount, minter, contracts.token, 0, contracts.exitHandler, node, wallet, plasmaWallet);
 
-    console.log("------Will make some transactions to fill a block------");
-    for (let i = 0; i < 5; i++) {
-        let txAmount = Math.round(amount/(2000))+ Math.round(100 * Math.random());
-        let balanceAlice = await node.getBalance(alice);
-        let balanceBob = await node.getBalance(bob);
-
-        await transfer(
-            alice, 
-            alicePriv, 
-            bob, 
-            txAmount, 
-            node);
-        
-        (await node.getBalance(alice)).should.be.equal(balanceAlice - txAmount);
-        (await node.getBalance(bob)).should.be.equal(balanceBob + txAmount);
+    console.log('Making a few transfers..');
+    for (let i = 0; i < 2; i++) {
+        await transfer(alice, alicePriv, bob, '1000', node);
     }
     await minePeriod(env);
-    console.log("------Exit Alice------");
+    log("------Exit Alice------");
     await exitUnspent(env, alice);
-    console.log("------Exit Bob------");
+    log("------Exit Bob------");
     await exitUnspent(env, bob);
 
     console.log("╔══════════════════════════════════════════╗");

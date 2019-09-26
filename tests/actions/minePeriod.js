@@ -1,4 +1,4 @@
-const { helpers } = require('leap-core');
+const { Period } = require('leap-core');
 const { makeTransfer, advanceBlocks } = require('../../src/helpers');
 
 module.exports = async (env) => {
@@ -6,7 +6,7 @@ module.exports = async (env) => {
   const node = nodes[0];
   const { addr, privKey } = accounts[0];
   const currentBlock = Number((await node.getBlock('latest')).number);
-  const [, lastBlockInPeriod] = helpers.periodBlockRange(currentBlock);
+  const [, lastBlockInPeriod] = Period.periodBlockRange(currentBlock);
 
   const submissions = [];
   contracts.operator.on("Submission", (...args) => {
@@ -23,15 +23,17 @@ module.exports = async (env) => {
       privKey
     );
     await node.sendTx(transfer);
-    process.stdout.write(`\rMachinegunning till next period: ${currentBlock + i}/${lastBlockInPeriod + 1}`);
+    process.stdout.write(`\rPushing till the next period: ${currentBlock + i}/${lastBlockInPeriod + 1}`);
     if (submissions.length > 0) {
       await advanceBlocks(6, wallet);
     }
-    const periodData = await plasmaWallet.provider.send('plasma_getPeriodByBlockHeight', [currentBlock]);
+    const periodData = await plasmaWallet.provider.getPeriodByBlockHeight(currentBlock);
     if (submissions.length > 0 && periodData) {
       if (periodData) {
+        process.stdout.write(' ✅\n');
         return;
       }
+      process.stdout.write(' 🔴\n');
       break;
     }
   }

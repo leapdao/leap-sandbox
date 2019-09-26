@@ -1,10 +1,12 @@
-const debug = require('debug')('transfer');
+const debug = require('debug');
 const { makeTransfer, makeTransferUxto } = require('../../src/helpers');
 const expect = require('chai').expect;
 
+const log = debug('transfer');
+
 async function transfer(alice, alicePriv, bob, amount, node) {
-    console.log(`------Transfering ${amount} tokens from ${alice} to ${bob}------`);
-    debug("------Transfer data------");
+    log(`------Transfering ${amount} tokens from ${alice} to ${bob}------`);
+    log("------Transfer data------");
     const transfer = await makeTransfer(
       node,
       alice,
@@ -13,35 +15,35 @@ async function transfer(alice, alicePriv, bob, amount, node) {
       0,
       alicePriv
     );
-    debug(transfer);
+    log(transfer);
     expect(transfer).not.to.be.undefined;
     await node.sendTx(transfer);
-    debug('Transfer:', transfer.hex());
-    debug(transfer.hash());
+    log('Transfer:', transfer.hex());
+    log(transfer.hash());
     const txData = await node.getTransaction(transfer.hash());
     expect(txData, "Transaction not found").to.exist;
-    debug(`getTransaction: ${JSON.stringify(txData, null, 2)}`);
+    log(`getTransaction: ${JSON.stringify(txData, null, 2)}`);
     const blockData = await node.getBlock(txData.blockHash);
-    debug(`Block data: ${JSON.stringify(blockData, null, 2)}`);
+    log(`Block data: ${JSON.stringify(blockData, null, 2)}`);
 
     return transfer;
 }
 
 async function transferUtxo(utxo, bob, alicePriv, node) {
-    console.log(`------Transfering UTXO: ${utxo.output.value} tokens from ${utxo.output.address} to ${bob}------`);
-    debug("------Transfer data------");
+    log(`------Transfering UTXO: ${utxo.output.value} tokens from ${utxo.output.address} to ${bob}------`);
+    log("------Transfer data------");
     const transfer = makeTransferUxto([utxo], bob, alicePriv);
-    debug(transfer);
+    log(transfer);
     expect(transfer).not.to.be.undefined;
-    debug("------Send Tx response------");
+    log("------Send Tx response------");
     await node.sendTx(transfer);
-    debug('Transfer:', transfer.hex());
-    debug(transfer.hash());
+    log('Transfer:', transfer.hex());
+    log(transfer.hash());
     const txData = await node.getTransaction(transfer.hash());
     expect(txData, "Transaction not found").to.exist;
-    debug(`getTransaction: ${JSON.stringify(txData, null, 2)}`);
+    log(`getTransaction: ${JSON.stringify(txData, null, 2)}`);
     const blockData = await node.getBlock(txData.blockHash);
-    debug(`Block data: ${JSON.stringify(blockData, null, 2)}`);
+    log(`Block data: ${JSON.stringify(blockData, null, 2)}`);
 
     return transfer;
 }

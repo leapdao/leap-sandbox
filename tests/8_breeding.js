@@ -2,11 +2,14 @@
 const ethers = require('ethers');
 const assert = require('assert');
 const ethUtil = require('ethereumjs-util');
+const debug = require('debug');
 const { Tx, Input, Output, Outpoint } = require('leap-core');
 
 const exitUnspent = require('./actions/exitUnspent');
 const minePeriod = require('./actions/minePeriod');
 const { mine } = require('../src/helpers');
+
+const log = debug('8_breeding');
 
 const TOKEN = require('../build/contracts/build/contracts/ERC1949.json');
 
@@ -21,12 +24,18 @@ module.exports = async function(env) {
   const minter = accounts[0].addr;
   const minterPriv = accounts[0].privKey;
 
-  console.log("Registering ERC1949");
+  console.log("\nTest: Breeding");
+  console.log('Plan:');
+  console.log('  1. Mint and deposit ERC1949 Queen');
+  console.log('  2. Execute BreedingCondition');
+  console.log('  3. Exit');
 
-  const beforeColors = (await node.provider.send('plasma_getColors', [false, true]));
+  console.log("Registering ERC1949..");
+
+  const beforeColors = (await node.getColors('nst'));
   console.log('Initial state');
   console.log('   Token count:', beforeColors.length);
-  console.log('   Tokens:', beforeColors);
+  console.log('   Tokens:', JSON.stringify(beforeColors));
 
   console.log('Deploying ERC1949 token..');
   let factory = new ethers.ContractFactory(
@@ -40,10 +49,11 @@ module.exports = async function(env) {
 
   console.log('Submitting registerToken proposal..');
   const data = contracts.exitHandler.interface.functions.registerToken.encode([deployedToken.address, 2]);
-  console.log('   Subject:', contracts.exitHandler.address)
-  console.log('   Data:', data)
+  log('   Subject:', contracts.exitHandler.address);
+  log('   Data:', data);
+  const gov = contracts.governance.connect(wallet.provider.getSigner(minter));
   await mine(
-    contracts.governance.propose(
+    gov.propose(
       contracts.exitHandler.address, data,
       { gasLimit: 2000000, gasPrice: 100000000000 }
     )
@@ -52,10 +62,11 @@ module.exports = async function(env) {
   console.log('Finalizing proposal..');
   await mine(contracts.governance.finalize({ gasLimit: 1000000, gasPrice: 100000000000 }));
 
-    // wait for event buffer
+  // wait for event buffer
   await node.advanceUntilChange(wallet);
 
-  const afterColors = (await node.provider.send('plasma_getColors', [false, true]));
+  const afterColors = (await node.getColors('nst'));
+
   console.log('Checking..', afterColors);
 
   assert.equal(afterColors.length, beforeColors.length + 1, 'Token count');
@@ -81,7 +92,7 @@ module.exports = async function(env) {
   res = await res.wait();
   let tokenId = res.events[0].args.tokenId.toHexString();
   let tokenData = res.events[1].args.newData;
-  console.log({ tokenId, tokenData });
+  log({ tokenId, tokenData });
 
   console.log('   Approving..');
   await mine(deployedToken.approve(contracts.exitHandler.address, tokenId));
@@ -95,10 +106,9 @@ module.exports = async function(env) {
     )
   );
 
-  console.log('    advanceBlocks');
   await node.advanceUntilChange(wallet);
 
-  let unspents = (await node.provider.send('plasma_unspent', [minter, nstColor]));
+  let unspents = (await node.getUnspent(minter, nstColor));
   assert.equal(unspents[0].output.data, tokenData, 'tokenData should match');
 
   const script = Buffer.from(BreedingCondition, 'hex');
@@ -108,7 +118,7 @@ module.exports = async function(env) {
   let transferTx = Tx.transfer(
     [
       new Input({
-        prevout: new Outpoint(unspents[0].outpoint.slice(0, -2), 0),
+        prevout: new Outpoint(unspents[0].outpoint.hash, 0),
       }),
     ],
     [
@@ -123,15 +133,15 @@ module.exports = async function(env) {
   transferTx.signAll(minterPriv);
   await node.sendTx(transferTx);
 
-  const unspentsLEAP = (await node.provider.send('plasma_unspent', [minter, 0]));
-  const unspentsSp = (await node.provider.send('plasma_unspent', [spAddr, nstColor]));
-  const depositInput = new Outpoint(unspentsSp[0].outpoint.slice(0, -2), 0);
+  const unspentsLEAP = (await node.getUnspent(minter, 0));
+  const unspentsSp = (await node.getUnspent(spAddr, nstColor));
+  const depositInput = new Outpoint(unspentsSp[0].outpoint.hash, 0);
 
   let gasInput;
   unspentsLEAP.forEach(
     (unspent) => {
       if (unspent.output.value > 1000000000) {
-        gasInput = new Outpoint(unspent.outpoint.slice(0, -2), parseInt(unspent.outpoint.slice(-2), 16));
+        gasInput = new Outpoint(unspent.outpoint.hash, unspent.outpoint.index);
       }
     }
   );
@@ -157,7 +167,7 @@ module.exports = async function(env) {
   condTx.inputs[0].setMsgData(msgData);
   condTx.signAll(minterPriv);
 
-  let computedOutputs = (await node.provider.send('checkSpendingCondition', [condTx.hex()]));
+  let computedOutputs = (await node.checkSpendingCondition(condTx));
   computedOutputs.outputs.forEach(
     (output) => {
       condTx.outputs.push(Output.fromJSON(output));
@@ -167,17 +177,17 @@ module.exports = async function(env) {
 
   console.log('sending breeding condition');
   await node.sendTx(condTx);
-  const rsp = await node.provider.send('eth_getTransactionReceipt', [condTx.hash()]);
+  const rsp = await node.send('eth_getTransactionReceipt', [condTx.hash()]);
   assert(rsp.logs && rsp.logs.length > 0, 'no events emitted');
 
-  unspents = (await node.provider.send('plasma_unspent', [minter, nstColor]));
-  console.log('-----------------unspents--------------');
-  console.log(unspents);
-  console.log('what a bullshit, circumventing proof bug with youngestInputIndex > 0');
+  unspents = (await node.getUnspent(minter, nstColor));
+  log('-----------------unspents--------------');
+  log(unspents);
+  log('what a bullshit, circumventing proof bug with youngestInputIndex > 0');
   transferTx = Tx.transfer(
     [
       new Input({
-        prevout: new Outpoint(unspents[0].outpoint.slice(0, -2), parseInt(unspents[0].outpoint.slice(-2), 16)),
+        prevout: new Outpoint(unspents[0].outpoint.hash, unspents[0].outpoint.index),
       }),
     ],
     [
@@ -193,8 +203,8 @@ module.exports = async function(env) {
   await node.sendTx(transferTx);
   await minePeriod(env);
 
-  unspents = (await node.provider.send('plasma_unspent', [minter]));
-  console.log(unspents);
-  const utxo = await exitUnspent(env, minter, unspents.length - 1);
-  console.log(utxo);
+  unspents = (await node.getUnspent(minter, nstColor));
+  log(unspents);
+  const utxo = await exitUnspent(env, minter, nstColor);
+  log(utxo);
 }

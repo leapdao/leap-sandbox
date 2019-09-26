@@ -1,7 +1,14 @@
-const { transfer } = require('./actions/transfer');
 const ethUtil = require('ethereumjs-util');
-const spendingConditionABI = require('../src/spendingConditionABI');
+const debug = require('debug');
+const assert = require('assert');
+const { bi, subtract, add } = require('jsbi-utils');
+
 const { Tx, Input, Output } = require('leap-core');
+
+const { transfer } = require('./actions/transfer');
+
+const log = debug('0_spendingCondition');
+
 
 module.exports = async function(env) {
   const { contracts, nodes, accounts } = env;
@@ -42,14 +49,20 @@ module.exports = async function(env) {
     amount, 
     node);
 
-  (await node.getBalance(alice)).should.be.equal(balanceAlice - (amount * 2));
-  (await node.getBalance(spAddr)).should.be.equal(balanceSp + (amount * 2));
+  assert.equal(
+    (await node.getBalance(alice)).toString(),
+    subtract(bi(balanceAlice), bi(amount * 2)).toString()
+  );
+  assert.equal(
+    (await node.getBalance(spAddr)).toString(),
+    add(bi(balanceSp), bi(amount * 2)).toString()
+  );
 
-  console.log("Balances before SP TX:");
+  log("Balances before SP TX:");
   let balanceBob = await node.getBalance(bob);
-  console.log('bob: ', balanceBob);
+  log('bob: ', balanceBob);
   balanceSp = await node.getBalance(spAddr);
-  console.log('sp: ', balanceSp);
+  log('sp: ', balanceSp);
 
   const unspents = await node.getUnspent(spAddr);
   const condTx = Tx.spendCond(
@@ -95,11 +108,11 @@ module.exports = async function(env) {
 
   await node.sendTx(condTx);
 
-  console.log("Balances after SP TX:");
+  log("Balances after SP TX:");
   balanceBob = await node.getBalance(bob);
-  console.log('bob: ', balanceBob);
+  log('bob: ', balanceBob);
   balanceSp = await node.getBalance(spAddr);
-  console.log('sp: ', balanceSp);
+  log('sp: ', balanceSp);
 
   if (balanceBob == 0) {
     throw Error('transfer failed');
