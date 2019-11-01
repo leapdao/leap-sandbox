@@ -50,6 +50,7 @@ module.exports = async function(env) {
     // 2 weeks waiting period ;)
     await mine(gov.finalize({ gasLimit: 2000000 }));
 
+    console.log('Waiting for epoch length to change..');
     await waitForChange(
         async () => (await node.getState()).epochLength,
         3,
