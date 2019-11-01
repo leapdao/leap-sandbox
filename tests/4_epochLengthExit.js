@@ -6,7 +6,7 @@ const mintAndDeposit = require('./actions/mintAndDeposit');
 const { transfer } = require('./actions/transfer');
 const exitUnspent = require('./actions/exitUnspent');
 const minePeriod = require('./actions/minePeriod');
-const { mine } = require('../src/helpers');
+const { mine, waitForChange } = require('../src/helpers');
 chai.use(chaiAsPromised);
 
 const log = debug('4_epochLengthExit');
@@ -40,13 +40,21 @@ module.exports = async function(env) {
         bob, 
         txAmount, 
         node);
+
+    (await node.getState()).epochLength.should.be.equal(2);
     log("Changing epochLength...");
-    const data = await contracts.operator.interface.functions.setEpochLength.encode([2]);
+    const data = await contracts.operator.interface.functions.setEpochLength.encode([3]);
     const gov = contracts.governance.connect(wallet.provider.getSigner(minter));
     await mine(gov.propose(contracts.operator.address, data, { gasLimit: 2000000 }));
 
     // 2 weeks waiting period ;)
     await mine(gov.finalize({ gasLimit: 2000000 }));
+
+    await waitForChange(
+        async () => (await node.getState()).epochLength,
+        3,
+        8000,
+    );
 
     await minePeriod(env);
     log("------Exit Bob------");

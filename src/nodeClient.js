@@ -86,6 +86,10 @@ class Node extends LeapProvider {
     return `http://${this.hostname}:${this.port}`;
   }
 
+  getState() {
+    return this.send('plasma_getState', []);
+  }
+
   toString() {
     const { hostname, port } = this;
     return { hostname, port };
