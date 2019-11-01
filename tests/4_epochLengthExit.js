@@ -42,20 +42,34 @@ module.exports = async function(env) {
         node);
 
     (await node.getState()).epochLength.should.be.equal(2);
-    log("Changing epochLength...");
-    const data = await contracts.operator.interface.functions.setEpochLength.encode([3]);
+    (await contracts.operator.epochLength()).toNumber().should.be.equal(2);
+
+    console.log("Changing epochLength 2 → 3...");
+    let data = await contracts.operator.interface.functions.setEpochLength.encode([3]);
     const gov = contracts.governance.connect(wallet.provider.getSigner(minter));
     await mine(gov.propose(contracts.operator.address, data, { gasLimit: 2000000 }));
-
-    // 2 weeks waiting period ;)
     await mine(gov.finalize({ gasLimit: 2000000 }));
 
-    console.log('Waiting for epoch length to change..');
     await waitForChange(
         async () => (await node.getState()).epochLength,
         3,
-        8000,
+        12000,
     );
+
+    (await contracts.operator.epochLength()).toNumber().should.be.equal(3);
+
+    console.log("Changing epochLength 3 → 2...");
+    data = await contracts.operator.interface.functions.setEpochLength.encode([2]);
+    await mine(gov.propose(contracts.operator.address, data, { gasLimit: 2000000 }));
+    await mine(gov.finalize({ gasLimit: 2000000 }));
+
+    await waitForChange(
+        async () => (await node.getState()).epochLength,
+        2,
+        12000,
+    );
+
+    (await contracts.operator.epochLength()).toNumber().should.be.equal(2);
 
     await minePeriod(env);
     log("------Exit Bob------");
