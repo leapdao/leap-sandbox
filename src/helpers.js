@@ -1,3 +1,4 @@
+const assert = require('assert');
 const { Tx } = require('leap-core');
 
 const range = (s, e) =>
@@ -86,4 +87,16 @@ async function mine(tx) {
 
 const updateLine = text => process.stdout.write(`\r${text}${' '.repeat(30)}`);
 
-module.exports = { mine, sleep, formatHostname, makeTransfer, makeTransferUxto, advanceBlocks, updateLine };
+const waitForChange = async (func, expected, timeout) => {
+  let time = 0;
+  let actual;
+  while (time < timeout) {
+      actual = await func();
+      if (actual === expected) return;
+      time += 1000;
+      await sleep(1000);
+  }
+  assert.equal(actual, expected);
+};
+
+module.exports = { mine, sleep, formatHostname, makeTransfer, makeTransferUxto, advanceBlocks, updateLine, waitForChange };
