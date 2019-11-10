@@ -1,7 +1,8 @@
 const path = require('path');
 const fs = require('fs');
-const startNetwork = require('../run');
 const nyan = require('nyan-js');
+const startNetwork = require('../run');
+const getEnv = require('../getEnv');
 
 require('chai').should();
 
@@ -19,7 +20,14 @@ const getTests = async () => {
 };
 
 async function run() {
-  const env = await startNetwork();
+  let env;
+
+  try {
+    env = await getEnv();
+    console.log('Using existing local env');
+  } catch (e) {
+    env = await startNetwork();
+  }
 
   const tests = await getTests();
   for (const test of tests) {
