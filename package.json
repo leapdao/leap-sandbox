@@ -20,7 +20,6 @@
     "ganache-cli": "6.6.0",
     "jsbi-utils": "^1.0.0",
     "leap-core": "^0.37.0",
-    "leap-provider": "^1.2.0",
-    "nyan-js": "^1.1.1"
+    "leap-provider": "^1.2.0"
   }
 }
