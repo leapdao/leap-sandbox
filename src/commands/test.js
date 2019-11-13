@@ -7,8 +7,9 @@ require('chai').should();
 
 const getTests = async () => {
   const testPath = path.join(__dirname, '../../tests');
-  if (process.argv[2]) {
-    return [process.argv[2]];
+  const singleTest = process.argv.filter(a => a.startsWith('--'))[2];
+  if (singleTest) {
+    return [singleTest];
   };
   const tests = fs
     .readdirSync(testPath)

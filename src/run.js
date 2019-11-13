@@ -3,12 +3,12 @@ const spawn = require('child_process').spawn;
 const ethers = require('ethers');
 const ganache = require('ganache-cli');
 
-const { getRootEnv, getPlasmaEnv, getContracts } = require('./getEnv');
+const { getRootEnv, getPlasmaEnv, generatedConfigPath } = require('./getEnv');
 
 const mnemonic = require('./mnemonic');
 
 const Node = require('./nodeClient');
-const setup = require('./setup');
+const { setupPlasma, setupValidators } = require('./setup');
 const { formatHostname } = require('./helpers');
 
 async function setupGanache(port, mnemonic) {
@@ -106,8 +106,6 @@ const spawnNodes = async () => {
   const numNodes = parseInt(process.env['num_nodes']) || 2;
   const nodes = [];
 
-  const generatedConfigPath = `${process.cwd()}/build/contracts/build/nodeFiles/generatedConfig.json`;
-
   let basePort = parseInt(process.env['base_port']) || 7000;
   const firstNodeURL = `http://localhost:${basePort}`;
 
@@ -154,39 +152,52 @@ const connectOrStartRootNetwork = async () => {
     const rootEnv = await getRootEnv();
     console.log('Reusing existing Ganache instance');
     return rootEnv;
-  } catch (e) {
-    const ganachePort = parseInt(process.env['ganache_port']) || 8545;
-    await setupGanache(ganachePort, mnemonic);
-    await deployContracts(ganachePort);
-    appendToConfig({ ganache: `http://localhost:${ganachePort}` });
-    return getRootEnv();
-  }
+  } catch (e) { }
+
+  const ganachePort = parseInt(process.env['ganache_port']) || 8545;
+  await setupGanache(ganachePort, mnemonic);
+  await deployContracts(ganachePort);
+  
+  appendToConfig({ ganache: `http://localhost:${ganachePort}` });
+  
+  const rootEnv = await getRootEnv();
+  await setupPlasma(rootEnv);
+  return rootEnv;
 };
 
-const connectOrStartPlasmaNetwork = async () => {
+const connectOrStartPlasmaNetwork = async (rootEnv) => {
   try {
     const plasmaEnv = await getPlasmaEnv();
     console.log('Reusing existing leap-node instance');
     return plasmaEnv;
-  } catch (e) {
-    const nodes = await spawnNodes();
-    appendToConfig({ nodes: nodes.map(n => n.toString()) });
-    return getPlasmaEnv();
-  }
+  } catch (e) { }
+
+  const nodes = await spawnNodes();
+  appendToConfig({ nodes: nodes.map(n => n.toString()) });
+  const plasmaEnv = await getPlasmaEnv();
+  await setupValidators({ ...rootEnv, ...plasmaEnv });
+  return getPlasmaEnv();
 };
 
 module.exports = async () => {
-  const { accounts, wallet, ganache } = await connectOrStartRootNetwork();
-  const { nodes, plasmaWallet, networkConfig } = await connectOrStartPlasmaNetwork();
-  const contracts = await getContracts(networkConfig, wallet);
-  
-  await setup(contracts, nodes, accounts, wallet, plasmaWallet);
+  let plasmaEnv = {};
+  const onlyRootChain = !!process.argv.find(a => a === '--onlyRoot');
 
-  console.log('Started');
+  const { accounts, wallet, contracts, ganache } = await connectOrStartRootNetwork();;
 
-  console.log(`\n Leap JSON RPC: ${nodes[0].getRpcUrl()}`);
-  console.log(`Root chain RPC: ${ganache}\n`);
-  console.log('Priv key: ', accounts[0].privKey);
+  if (!onlyRootChain) {
+    plasmaEnv = await connectOrStartPlasmaNetwork({ contracts, wallet });
+  }
+
+  console.log(`\n Root chain RPC (ganache): ${ganache}`);
+  plasmaEnv.nodes 
+    && console.log(`            Leap JSON RPC: ${plasmaEnv.nodes[0].getRpcUrl()}`);
+
+  console.log('\n       Funded private key:', accounts[0].privKey);
+
+  plasmaEnv.nodes && console.log('\nLocal Leap network is ready. ✨');
+
+  const { nodes, plasmaWallet } = plasmaEnv;
 
   return { contracts, nodes, accounts, wallet, plasmaWallet };
 };

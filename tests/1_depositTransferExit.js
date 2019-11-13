@@ -26,7 +26,7 @@ module.exports = async function(env) {
     console.log("║3. Exit Alice and Bob                     ║");
     console.log("╚══════════════════════════════════════════╝");
 
-    await mintAndDeposit(accounts[2], amount, minter, contracts.token, 0, contracts.exitHandler, node, wallet, plasmaWallet);
+    await mintAndDeposit(accounts[2], amount, minter, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
 
     console.log('Making a few transfers..');
     for (let i = 0; i < 2; i++) {

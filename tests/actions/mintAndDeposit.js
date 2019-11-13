@@ -2,10 +2,10 @@ const ethers = require('ethers');
 const { bi, add } = require('jsbi-utils');
 const { assert } = require('chai');
 
-const { mine, sleep } = require('../../src/helpers');
+const { mine, sleep, advanceUntilTokenBalanceChange } = require('../../src/helpers');
 const erc20abi = require('../../src/erc20abi');
 
-module.exports = async function(to, amount, minter, token, color, exitHandler, node, wallet, plasmaWallet) {
+module.exports = async function(to, amount, minter, token, color, exitHandler, wallet, plasmaWallet) {
   const plasmaToken = new ethers.Contract(token.address, erc20abi, plasmaWallet);
   const alice = to.addr;
   const aliceWallet = to.wallet;
@@ -24,7 +24,7 @@ module.exports = async function(to, amount, minter, token, color, exitHandler, n
   await mine(exitHandler.connect(aliceWallet).depositBySender(amount, color, { gasLimit: 2000000 }));
   
   const balanceFinal = Number(await token.balanceOf(alice));
-  const currentPlasmaBalance = await node.advanceUntilTokenBalanceChange(
+  const currentPlasmaBalance = await advanceUntilTokenBalanceChange(
     alice, token.address, oldPlasmaBalance, wallet, plasmaWallet, 
     `${msg} waiting for deposit to be caught`
   );

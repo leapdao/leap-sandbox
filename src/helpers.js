@@ -99,4 +99,29 @@ const waitForChange = async (func, expected, timeout) => {
   assert.equal(actual, expected);
 };
 
-module.exports = { mine, sleep, formatHostname, makeTransfer, makeTransferUxto, advanceBlocks, updateLine, waitForChange };
+const advanceUntilTokenBalanceChange = async (
+  addr, tokenAddr, prevBalance, rootWallet, plasmaWallet, msg
+) => {
+  const token = new ethers.Contract(tokenAddr, erc20abi, plasmaWallet);
+  let currentBalance;
+  
+  const frames = ['🌕','🌖','🌗','🌘','🌑','🌒','🌓','🌔'];
+  let i = 0;
+  do {
+    i++;
+    await advanceBlocks(1, rootWallet);
+    await sleep(100);
+    currentBalance = await token.balanceOf(addr);
+    process.stdout.write(
+      `\r${msg} `+ 
+      `${currentBalance.toString() !== String(prevBalance) ? '✅' : frames[i % 8]} `
+    );
+  } while(currentBalance.toString() === String(prevBalance))
+  return currentBalance;
+};
+
+module.exports = { 
+  mine, sleep, formatHostname,
+  makeTransfer, makeTransferUxto,
+  advanceBlocks, updateLine,
+  waitForChange, advanceUntilTokenBalanceChange };

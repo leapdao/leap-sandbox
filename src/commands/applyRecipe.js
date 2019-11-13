@@ -16,4 +16,4 @@ function onException (e) {
 process.on('uncaughtException', onException);
 process.on('unhandledRejection', onException);
 
-run(process.argv[2]);
+run(process.argv.filter(a => a.startsWith('--'))[2]);

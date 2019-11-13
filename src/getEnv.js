@@ -6,6 +6,9 @@ const Node = require('./nodeClient');
 const erc20abi = require('./erc20abi');
 const mnemonic = require('./mnemonic');
 
+module.exports.generatedConfigPath = generatedConfigPath = 
+  `${process.cwd()}/build/contracts/build/nodeFiles/generatedConfig.json`;
+
 const getAccount = (mnemonic, id, provider) => {
   const wallet = ethers.Wallet
     .fromMnemonic(mnemonic, `m/44'/60'/0'/0/${id}`)
@@ -45,7 +48,7 @@ const readAbi = () => {
   return { adminableProxyAbi, minGovAbi, exitHandlerAbi, bridgeAbi, operatorAbi };
 };
 
-module.exports.getContracts = async (nodeConfig, wallet) => {
+module.exports.getContracts = getContracts = async (nodeConfig, wallet) => {
   const abi = readAbi();
 
   const exitHandler = new ethers.Contract(nodeConfig.exitHandlerAddr, abi.exitHandlerAbi, wallet);
@@ -79,10 +82,12 @@ module.exports.getRootEnv = async () => {
   const wallet = ethers.Wallet.fromMnemonic(mnemonic).connect(rootProvider);
   const accounts = getAccounts(mnemonic, 10, rootProvider);
 
-  return { wallet, accounts, ganache };
+  const contracts = await getContracts(require(generatedConfigPath), wallet);
+
+  return { wallet, accounts, contracts, ganache };
 };
 
-module.exports.getPlasmaEnv = async () => {
+module.exports.getPlasmaEnv = getPlasmaEnv = async () => {
   const config = readJSON('./process.json');
   const nodes = config.nodes.map(n => new Node(n.hostname, n.port));
   const networkConfig = await nodes[0].getConfig();
@@ -90,18 +95,4 @@ module.exports.getPlasmaEnv = async () => {
   const plasmaWallet = ethers.Wallet.fromMnemonic(mnemonic).connect(plasmaProvider);
 
   return { nodes, plasmaWallet, networkConfig };
-};
-
-module.exports.getEnv = async () => {
-  const { accounts, wallet } = await getRootEnv();
-  const { networkConfig, plasmaWallet, nodes } = await getPlasmaEnv();
-  const contracts = await getContracts(networkConfig, wallet);
-
-  return {
-    contracts,
-    accounts,
-    nodes,
-    wallet,
-    plasmaWallet
-  };
 };
