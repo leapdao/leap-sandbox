@@ -1,8 +1,8 @@
-const getEnv = require('../getEnv');
+const startOrConnectToNetwork = require('../run');
 
 async function run(name) {
   console.log('Applying recipe: ', name);
-  const { contracts, nodes, accounts, wallet, plasmaWallet } = await getEnv();
+  const { contracts, nodes, accounts, wallet, plasmaWallet } = await startOrConnectToNetwork();
 
   await require(`../../tests/recipies/${name}`)(contracts, nodes, accounts, wallet, plasmaWallet);
   process.exit(0);

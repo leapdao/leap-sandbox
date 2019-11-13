@@ -1,3 +1,4 @@
+const fs = require('fs');
 const ethers = require('ethers');
 const LeapProvider = require('leap-provider');
 
@@ -44,7 +45,7 @@ const readAbi = () => {
   return { adminableProxyAbi, minGovAbi, exitHandlerAbi, bridgeAbi, operatorAbi };
 };
 
-const getContracts = async (nodeConfig, wallet) => {
+module.exports.getContracts = async (nodeConfig, wallet) => {
   const abi = readAbi();
 
   const exitHandler = new ethers.Contract(nodeConfig.exitHandlerAddr, abi.exitHandlerAbi, wallet);
@@ -68,24 +69,36 @@ const getContracts = async (nodeConfig, wallet) => {
   };
 };
 
-module.exports = async () => {
-  
+const readJSON = (filename) => 
+  JSON.parse(fs.readFileSync(filename, { flag: 'a+' }).toString() || '{}');
 
-  const networkProcess = require('../process.json');
-  const nodes = networkProcess.nodes.map(n => new Node(n.hostname, n.port))
-
-  const nodeConfig = await nodes[0].getConfig();
-
-  const rootProvider = new ethers.providers.JsonRpcProvider(networkProcess.ganache);
+module.exports.getRootEnv = async () => {
+  const { ganache } = readJSON('./process.json');
+  const rootProvider = new ethers.providers.JsonRpcProvider(ganache);
+  await rootProvider.ready;
   const wallet = ethers.Wallet.fromMnemonic(mnemonic).connect(rootProvider);
+  const accounts = getAccounts(mnemonic, 10, rootProvider);
 
+  return { wallet, accounts, ganache };
+};
+
+module.exports.getPlasmaEnv = async () => {
+  const config = readJSON('./process.json');
+  const nodes = config.nodes.map(n => new Node(n.hostname, n.port));
+  const networkConfig = await nodes[0].getConfig();
   const plasmaProvider = new LeapProvider(nodes[0].getRpcUrl());
   const plasmaWallet = ethers.Wallet.fromMnemonic(mnemonic).connect(plasmaProvider);
 
-  const accounts = getAccounts(mnemonic, 10, rootProvider);
+  return { nodes, plasmaWallet, networkConfig };
+};
+
+module.exports.getEnv = async () => {
+  const { accounts, wallet } = await getRootEnv();
+  const { networkConfig, plasmaWallet, nodes } = await getPlasmaEnv();
+  const contracts = await getContracts(networkConfig, wallet);
 
   return {
-    contracts: await getContracts(nodeConfig, wallet),
+    contracts,
     accounts,
     nodes,
     wallet,
