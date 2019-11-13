@@ -1,5 +1,5 @@
 const ethers = require('ethers');
-const { bi, add } = require('jsbi-utils');
+const { bi, add, greaterThan } = require('jsbi-utils');
 const { assert } = require('chai');
 
 const { mine, sleep, advanceUntilTokenBalanceChange } = require('../../src/helpers');
@@ -10,6 +10,10 @@ module.exports = async function(to, amount, minter, token, color, exitHandler, w
   const alice = to.addr;
   const aliceWallet = to.wallet;
   const oldPlasmaBalance = await plasmaToken.balanceOf(alice);
+
+  if (greaterThan(bi(oldPlasmaBalance), bi(0))) {
+    return;
+  }
 
   const msg = `\rMinting and depositing ${await token.symbol()}...`;
   process.stdout.write(`${msg} minting`);

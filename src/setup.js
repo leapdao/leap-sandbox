@@ -1,7 +1,10 @@
 const ethers = require('ethers');
 const { mine } = require('./helpers');
+const mintAndDeposit = require('../tests/actions/mintAndDeposit');
 
-module.exports.setupValidators = async ({ contracts, nodes, wallet }) => {
+module.exports.setupValidators = async (
+  { contracts, nodes, wallet, accounts, plasmaWallet }
+) => {
   const msg = `\r${' '.repeat(100)}\rSetting up nodes...`;
   for (let i = 0; i < nodes.length; i++) {
     
@@ -41,6 +44,11 @@ module.exports.setupValidators = async ({ contracts, nodes, wallet }) => {
   process.stdout.write(`${msg} finalize`);
   await mine(contracts.governance.finalize({ gasLimit: 2000000 }));
   process.stdout.write(`${msg} done\n`);
+  
+  await mintAndDeposit(
+    accounts[0], '200000000000000000000', accounts[0].addr, 
+    contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet
+  );
 };
 
 module.exports.setupPlasma = async ({ contracts, accounts }) => {
@@ -72,9 +80,4 @@ module.exports.setupPlasma = async ({ contracts, accounts }) => {
   await mine(contracts.governance.finalize({ gasLimit: 2000000 }));
   process.stdout.write(`${msg} done\n`);
 
-  // const mintAndDeposit = require('../tests/actions/mintAndDeposit');
-  // await mintAndDeposit(
-  //   accounts[0], '200000000000000000000', alice, 
-  //   contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet
-  // );
 }

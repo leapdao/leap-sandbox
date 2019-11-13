@@ -7,7 +7,7 @@ require('chai').should();
 
 const getTests = async () => {
   const testPath = path.join(__dirname, '../../tests');
-  const singleTest = process.argv.filter(a => a.startsWith('--'))[2];
+  const singleTest = process.argv.filter(a => !a.startsWith('--'))[2];
   if (singleTest) {
     return [singleTest];
   };

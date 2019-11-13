@@ -1,4 +1,5 @@
 const assert = require('assert');
+const ethers = require('ethers');
 const { Tx } = require('leap-core');
 
 const range = (s, e) =>
