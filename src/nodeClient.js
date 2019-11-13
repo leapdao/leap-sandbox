@@ -1,7 +1,5 @@
-const ethers = require('ethers');
 const LeapProvider = require('leap-provider');
 
-const erc20abi = require('./erc20abi');
 const { formatHostname, advanceBlocks, sleep } = require('./helpers');
 
 const flatValues = map => 

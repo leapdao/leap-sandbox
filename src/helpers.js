@@ -1,6 +1,7 @@
 const assert = require('assert');
 const ethers = require('ethers');
 const { Tx } = require('leap-core');
+const erc20abi = require('./erc20abi');
 
 const range = (s, e) =>
   Array.from(new Array(e - s + 1), (_, i) => i + s);
