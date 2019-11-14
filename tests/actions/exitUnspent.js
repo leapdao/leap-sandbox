@@ -5,7 +5,11 @@ const { bufferToHex } = require('ethereumjs-util');
 const { bi, equal, subtract } = require('jsbi-utils');
 const { assert } = require('chai');
 
-const { advanceBlocks, updateLine } = require('./../../src/helpers');
+const { 
+  advanceBlocks,
+  updateLine,
+  advanceUntilTokenBalanceChange,
+} = require('./../../src/helpers');
 
 const log = debug('exitUnspent');
 
@@ -142,7 +146,7 @@ module.exports = async function(env, addr, color) {
     const balanceAfter = await contracts.token.balanceOf(addr);
     log("Account mainnet balance: ", balanceAfter.toString());
     
-    const plasmaBalanceAfter = await node.advanceUntilTokenBalanceChange(
+    const plasmaBalanceAfter = await advanceUntilTokenBalanceChange(
       addr, contracts.token.address, plasmaBalanceBefore, wallet, plasmaWallet, 
       `${msg} waiting for balance change`
     );

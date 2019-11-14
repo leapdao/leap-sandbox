@@ -3,12 +3,12 @@ const spawn = require('child_process').spawn;
 const ethers = require('ethers');
 const ganache = require('ganache-cli');
 
-const getEnv = require('./getEnv');
+const { getRootEnv, getPlasmaEnv, generatedConfigPath } = require('./getEnv');
 
 const mnemonic = require('./mnemonic');
 
 const Node = require('./nodeClient');
-const setup = require('./setup');
+const { setupPlasma, setupValidators } = require('./setup');
 const { formatHostname } = require('./helpers');
 
 async function setupGanache(port, mnemonic) {
@@ -101,17 +101,10 @@ async function spawnNode(rpcPort, args, env, logOutput) {
   );
 }
 
-module.exports = async () => {
-  const ganachePort = parseInt(process.env['ganache_port']) || 8545;
+const spawnNodes = async () => {
   // seems like only one connection from the same source addr can connect to the same tendermint instance
   const numNodes = parseInt(process.env['num_nodes']) || 2;
-
-  await setupGanache(ganachePort, mnemonic);
-  await deployContracts(ganachePort);
-  
   const nodes = [];
-
-  const generatedConfigPath = `${process.cwd()}/build/contracts/build/nodeFiles/generatedConfig.json`;
 
   let basePort = parseInt(process.env['base_port']) || 7000;
   const firstNodeURL = `http://localhost:${basePort}`;
@@ -142,23 +135,77 @@ module.exports = async () => {
     console.log(`Starting node ${i + 1} of ${numNodes} Logs: ./out/node-${i + 1}.log`);
     nodes.push(await spawnNode(rpcPort, args, env, logOutput));
   }
+  return nodes;
+};
 
-  const config = {
-    nodes: nodes.map(n => n.toString()),
-    ganache: `http://localhost:${ganachePort}`
-  };
+const appendToConfig = (appendix) => {
+  const config = Object.assign(
+    JSON.parse(fs.readFileSync('./process.json', { flag: 'a+' }).toString() || '{}'),
+    appendix,
+  );
 
   fs.writeFileSync('./process.json', JSON.stringify(config, null, 2));
+}
 
-  const { contracts, accounts, wallet, plasmaWallet } = await getEnv();
+const connectOrStartRootNetwork = async () => {
+  try {
+    const rootEnv = await getRootEnv();
+    console.log('Reusing existing Ganache instance');
+    return rootEnv;
+  } catch (e) { }
 
-  await setup(contracts, nodes, accounts, wallet, plasmaWallet);
+  const ganachePort = parseInt(process.env['ganache_port']) || 8545;
+  await setupGanache(ganachePort, mnemonic);
+  await deployContracts(ganachePort);
+  
+  appendToConfig({ ganache: `http://localhost:${ganachePort}` });
+  
+  const rootEnv = await getRootEnv();
+  await setupPlasma(rootEnv);
+  return rootEnv;
+};
 
-  console.log('Started');
+const connectOrStartPlasmaNetwork = async (rootEnv) => {
+  try {
+    const plasmaEnv = await getPlasmaEnv();
+    console.log('Reusing existing leap-node instance');
+    return plasmaEnv;
+  } catch (e) { }
 
-  console.log(`\n Leap JSON RPC: ${nodes[0].getRpcUrl()}`);
-  console.log(`Root chain RPC: http://localhost:${ganachePort}\n`);
-  console.log('Priv key: ', accounts[0].privKey);
+  const nodes = await spawnNodes();
+  appendToConfig({ nodes: nodes.map(n => n.toString()) });
+  const plasmaEnv = await getPlasmaEnv();
+  await setupValidators({ ...rootEnv, ...plasmaEnv });
+  return getPlasmaEnv();
+};
+
+module.exports = async () => {
+  let plasmaEnv = {};
+  const onlyRootChain = !!process.argv.find(a => a === '--onlyRoot');
+
+  const { accounts, wallet, contracts, ganache } = await connectOrStartRootNetwork();;
+
+  if (!onlyRootChain) {
+    plasmaEnv = await connectOrStartPlasmaNetwork({ contracts, accounts, wallet });
+
+    const mintAndDeposit = require('../tests/actions/mintAndDeposit');
+
+    await mintAndDeposit(
+      accounts[0], '200000000000000000000', accounts[0].addr, 
+      contracts.token, 0, contracts.exitHandler, wallet, plasmaEnv.plasmaWallet
+    );
+  
+  }
+
+  console.log(`\n Root chain RPC (ganache): ${ganache}`);
+  plasmaEnv.nodes 
+    && console.log(`            Leap JSON RPC: ${plasmaEnv.nodes[0].getRpcUrl()}`);
+
+  console.log('\n       Funded private key:', accounts[0].privKey);
+
+  plasmaEnv.nodes && console.log('\nLocal Leap network is ready. ✨');
+
+  const { nodes, plasmaWallet } = plasmaEnv;
 
   return { contracts, nodes, accounts, wallet, plasmaWallet };
 };

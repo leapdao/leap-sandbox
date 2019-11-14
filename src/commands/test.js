@@ -1,13 +1,14 @@
 const path = require('path');
 const fs = require('fs');
-const startNetwork = require('../run');
+const startOrConnectToNetwork = require('../run');
 
 require('chai').should();
 
 const getTests = async () => {
   const testPath = path.join(__dirname, '../../tests');
-  if (process.argv[2]) {
-    return [process.argv[2]];
+  const singleTest = process.argv.filter(a => !a.startsWith('--'))[2];
+  if (singleTest) {
+    return [singleTest];
   };
   const tests = fs
     .readdirSync(testPath)
@@ -18,8 +19,7 @@ const getTests = async () => {
 };
 
 async function run() {
-  const env = await startNetwork();
-
+  const env = await startOrConnectToNetwork();
   const tests = await getTests();
   for (const test of tests) {
     console.log('Running: ', test);

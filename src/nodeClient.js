@@ -1,7 +1,5 @@
-const ethers = require('ethers');
 const LeapProvider = require('leap-provider');
 
-const erc20abi = require('./erc20abi');
 const { formatHostname, advanceBlocks, sleep } = require('./helpers');
 
 const flatValues = map => 
@@ -61,25 +59,6 @@ class Node extends LeapProvider {
       await advanceBlocks(1, wallet);
       await sleep(100);
     }
-  }
-
-  async advanceUntilTokenBalanceChange(addr, tokenAddr, prevBalance, rootWallet, plasmaWallet, msg) {
-    const token = new ethers.Contract(tokenAddr, erc20abi, plasmaWallet);
-    let currentBalance;
-    
-    const frames = ['🌕','🌖','🌗','🌘','🌑','🌒','🌓','🌔'];
-    let i = 0;
-    do {
-      i++;
-      await advanceBlocks(1, rootWallet);
-      await sleep(100);
-      currentBalance = await token.balanceOf(addr);
-      process.stdout.write(
-        `\r${msg} `+ 
-        `${currentBalance.toString() !== String(prevBalance) ? '✅' : frames[i % 8]} `
-      );
-    } while(currentBalance.toString() === String(prevBalance))
-    return currentBalance;
   }
 
   getRpcUrl() {

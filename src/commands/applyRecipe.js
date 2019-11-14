@@ -1,8 +1,8 @@
-const getEnv = require('../getEnv');
+const startOrConnectToNetwork = require('../run');
 
 async function run(name) {
   console.log('Applying recipe: ', name);
-  const { contracts, nodes, accounts, wallet, plasmaWallet } = await getEnv();
+  const { contracts, nodes, accounts, wallet, plasmaWallet } = await startOrConnectToNetwork();
 
   await require(`../../tests/recipies/${name}`)(contracts, nodes, accounts, wallet, plasmaWallet);
   process.exit(0);
@@ -16,4 +16,4 @@ function onException (e) {
 process.on('uncaughtException', onException);
 process.on('unhandledRejection', onException);
 
-run(process.argv[2]);
+run(process.argv.filter(a => !a.startsWith('--'))[2]);

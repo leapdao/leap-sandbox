@@ -83,7 +83,7 @@ module.exports = async function(contracts, [node], accounts, wallet, plasmaWalle
   const co2Amount = ethers.utils.parseEther('1000').toString();
   await mintAndDeposit(
     accounts[0], co2Amount, minter, 
-    co2Token, co2Color, contracts.exitHandler, node, wallet, plasmaWallet
+    co2Token, co2Color, contracts.exitHandler, wallet, plasmaWallet
   );
 
   await advanceBlocks(6, wallet);
@@ -91,7 +91,7 @@ module.exports = async function(contracts, [node], accounts, wallet, plasmaWalle
   const goellarsAmount = ethers.utils.parseEther('200').toString();
   await mintAndDeposit(
     accounts[0], goellarsAmount, minter, 
-    goellarsToken, goellarsColor, contracts.exitHandler, node, wallet, plasmaWallet
+    goellarsToken, goellarsColor, contracts.exitHandler, wallet, plasmaWallet
   );
 
   airCode = replaceAll(airCode, "1231111111111111111111111111111111111123", co2Token.address);

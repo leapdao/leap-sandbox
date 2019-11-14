@@ -1,9 +1,13 @@
+const fs = require('fs');
 const ethers = require('ethers');
 const LeapProvider = require('leap-provider');
 
 const Node = require('./nodeClient');
 const erc20abi = require('./erc20abi');
 const mnemonic = require('./mnemonic');
+
+module.exports.generatedConfigPath = generatedConfigPath = 
+  `${process.cwd()}/build/contracts/build/nodeFiles/generatedConfig.json`;
 
 const getAccount = (mnemonic, id, provider) => {
   const wallet = ethers.Wallet
@@ -44,7 +48,7 @@ const readAbi = () => {
   return { adminableProxyAbi, minGovAbi, exitHandlerAbi, bridgeAbi, operatorAbi };
 };
 
-const getContracts = async (nodeConfig, wallet) => {
+module.exports.getContracts = getContracts = async (nodeConfig, wallet) => {
   const abi = readAbi();
 
   const exitHandler = new ethers.Contract(nodeConfig.exitHandlerAddr, abi.exitHandlerAbi, wallet);
@@ -68,27 +72,27 @@ const getContracts = async (nodeConfig, wallet) => {
   };
 };
 
-module.exports = async () => {
-  
+const readJSON = (filename) => 
+  JSON.parse(fs.readFileSync(filename, { flag: 'a+' }).toString() || '{}');
 
-  const networkProcess = require('../process.json');
-  const nodes = networkProcess.nodes.map(n => new Node(n.hostname, n.port))
-
-  const nodeConfig = await nodes[0].getConfig();
-
-  const rootProvider = new ethers.providers.JsonRpcProvider(networkProcess.ganache);
+module.exports.getRootEnv = async () => {
+  const { ganache } = readJSON('./process.json');
+  const rootProvider = new ethers.providers.JsonRpcProvider(ganache);
+  await rootProvider.ready;
   const wallet = ethers.Wallet.fromMnemonic(mnemonic).connect(rootProvider);
+  const accounts = getAccounts(mnemonic, 10, rootProvider);
 
+  const contracts = await getContracts(require(generatedConfigPath), wallet);
+
+  return { wallet, accounts, contracts, ganache };
+};
+
+module.exports.getPlasmaEnv = getPlasmaEnv = async () => {
+  const config = readJSON('./process.json');
+  const nodes = config.nodes.map(n => new Node(n.hostname, n.port));
+  const networkConfig = await nodes[0].getConfig();
   const plasmaProvider = new LeapProvider(nodes[0].getRpcUrl());
   const plasmaWallet = ethers.Wallet.fromMnemonic(mnemonic).connect(plasmaProvider);
 
-  const accounts = getAccounts(mnemonic, 10, rootProvider);
-
-  return {
-    contracts: await getContracts(nodeConfig, wallet),
-    accounts,
-    nodes,
-    wallet,
-    plasmaWallet
-  };
+  return { nodes, plasmaWallet, networkConfig };
 };
