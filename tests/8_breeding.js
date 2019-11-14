@@ -180,27 +180,7 @@ module.exports = async function(env) {
   const rsp = await node.send('eth_getTransactionReceipt', [condTx.hash()]);
   assert(rsp.logs && rsp.logs.length > 0, 'no events emitted');
 
-  unspents = (await node.getUnspent(minter, nstColor));
   log('-----------------unspents--------------');
-  log(unspents);
-  log('what a bullshit, circumventing proof bug with youngestInputIndex > 0');
-  transferTx = Tx.transfer(
-    [
-      new Input({
-        prevout: new Outpoint(unspents[0].outpoint.hash, unspents[0].outpoint.index),
-      }),
-    ],
-    [
-      new Output(
-        unspents[0].output.value,
-        minter,
-        unspents[0].output.color,
-        unspents[0].output.data,
-      ),
-    ],
-  );
-  transferTx.signAll(minterPriv);
-  await node.sendTx(transferTx);
   await minePeriod(env);
 
   unspents = (await node.getUnspent(minter, nstColor));
