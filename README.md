@@ -5,14 +5,14 @@
 A set of scripts to set up a local Leap network or/and run integration tests against it.
 
 * [Setup](#setup)
-    * [Install dependencies](#install-dependencies)
-    * [Fetch relevant Leap subprojects](#fetch-relevant-leap-subprojects)
+  * [Install dependencies](#install-dependencies)
+  * [Fetch relevant Leap subprojects](#fetch-relevant-leap-subprojects)
 * [Usage](#usage)
-    * [Start local environment (for development or testing)](#start-local-environment-for-development-or-testing)
-      * [Start flavoured Leap Network (Recipies)](#start-flavoured-leap-network-recipies)
-      * [Using with Docker](#using-with-docker)
-    * [Run integration tests](#run-integration-tests)
-    * [Writing your own tests](#writing-your-own-tests)
+  * [Start local environment (for development or testing)](#start-local-environment-for-development-or-testing)
+    * [Start flavoured Leap Network (Recipies)](#start-flavoured-leap-network-recipies)
+    * [Using with Docker](#using-with-docker)
+  * [Run integration tests](#run-integration-tests)
+  * [Writing your own tests](#writing-your-own-tests)
 
 ## Setup
 
@@ -49,8 +49,8 @@ This will generate a build folder in the project and fetch the repos and build t
 
 Local environment consist of the following parts:
 
-- Ganache as a root chain with Leap contracts deployed
-- one or multiple leap-node instances with JSON RPC
+* Ganache as a root chain with Leap contracts deployed
+* one or multiple leap-node instances with JSON RPC
 
 To start local env use the following command:
 
@@ -60,12 +60,12 @@ yarn start [--onlyRoot] [<recipe>]
 
 Optional arguments:
 
-- `--onlyRoot` — start only the root chain with plasma contracts. To start leap-node later on use `yarn start` in another terminal.
-- `<recipe>` — apply one of the recipies to the network. See below.
+* `--onlyRoot` — start only the root chain with plasma contracts. To start leap-node later on use `yarn start` in another terminal.
+* `<recipe>` — apply one of the recipies to the network. See below.
 
 Ganache setup logs and leap-node's logs are in the `out/` folder.
 
-#### Start flavoured Leap Network (Recipies)
+#### Start flavoured Leap Network (recipes)
 
 In `tests/recipies` you can see possible recipies to run against the local network. Each recipe prepares the environment for a particular purpose — sets up required tokens, makes deposits etc.
 
@@ -103,12 +103,12 @@ yarn test [<testName>]
 
 Optional arguments:
 
-- `<testName>` — name of the test to run (e.g. `8_breeding`). If not specified, all the tests will be executed.
+* `<testName>` — name of the test to run (e.g. `8_breeding`). If not specified, all the tests will be executed.
 
 This command
 
-- starts a local leap network or connects to the existing one
-- runs the tests from the `tests` directory
+* starts a local leap network or connects to the existing one
+* runs the tests from the `tests` directory
 
 The tests will write logs to a folder ./out/.
 
