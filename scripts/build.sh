@@ -15,7 +15,12 @@ build_contracts() {
   fi
   cd build/contracts
   echo "Running yarn in contracts..."
-  yarn &> ../logs/contracts_yarn.out
+  if [ -z ${TRAVIS+x} ]
+  then
+    yarn &> ../logs/contracts_yarn.out
+  else
+    yarn
+  fi
   cd - > /dev/null
 }
 
@@ -29,7 +34,12 @@ build_node() {
   fi
   cd build/node
   echo "Running yarn in node..."
-  yarn &> $CURRENT_DIR/build/logs/node_yarn.out
+  if [ -z ${TRAVIS+x} ]
+  then
+    yarn &> $CURRENT_DIR/build/logs/node_yarn.out
+  else
+    yarn
+  fi
   cd - > /dev/null
 }
 
