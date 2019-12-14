@@ -205,8 +205,8 @@ module.exports = async () => {
 
   plasmaEnv.nodes && console.log('\nLocal Leap network is ready. ✨');
 
-  const { nodes, plasmaWallet } = plasmaEnv;
+  const { nodes, plasmaWallet, networkConfig } = plasmaEnv;
 
-  return { contracts, nodes, accounts, wallet, plasmaWallet };
+  return { contracts, nodes, accounts, wallet, plasmaWallet, networkConfig };
 };
 
