@@ -1718,10 +1718,10 @@ leap-core@^0.37.0:
     jsbi-utils "^1.0.0"
     node-fetch "^2.3.0"
 
-leap-guardian@^1.4.1-beta.0:
-  version "1.4.1-beta.0"
-  resolved "https://registry.yarnpkg.com/leap-guardian/-/leap-guardian-1.4.1-beta.0.tgz#19a1323f0da56908ffaecbd3fdc1457b329abd3c"
-  integrity sha512-+WmdC+/ddAHIex8tQIwRnX+9fgPuXs3fROLOUtvtYyMCvaZdjS+Jri5zw/FWKcNGgfY1kIE4DiEZtBvok3j7xw==
+leap-guardian@^1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/leap-guardian/-/leap-guardian-1.4.1.tgz#7ac9f0391f14f266a5cce9a9ae15dd59a77ab0e2"
+  integrity sha512-WBAxNU+ZWULNqcZz737MJOXlXXBn3yfRdNwcrUl/J9PUG57KZQqqh3B7Ignl5W6ceqKEibZxkLMfBGbCVvcgVw==
   dependencies:
     commander "^2.20.0"
     csv-parser "^2.2.0"
