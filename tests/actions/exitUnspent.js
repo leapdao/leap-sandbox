@@ -84,7 +84,6 @@ module.exports = async function(env, addr, color) {
     log("------Period from the contract by merkle root------");
     log(await contracts.bridge.periods(proof[0]));
     log(await contracts.bridge.tipHash());
-    assert.equal(await contracts.bridge.tipHash(), proof[0], 'proof should contain tip hash');
     log("------Balance before exit------");
     const balanceBefore = await contracts.token.balanceOf(addr);
     const plasmaBalanceBefore = await node.getBalance(addr);
