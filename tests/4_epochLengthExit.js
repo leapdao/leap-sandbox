@@ -41,7 +41,7 @@ module.exports = async function(env) {
         txAmount, 
         node);
 
-    (await node.getState()).epochLength.should.be.equal(2);
+    (await node.getState()).currentState.epoch.epochLength.should.be.equal(2);
     (await contracts.operator.epochLength()).toNumber().should.be.equal(2);
 
     console.log("Changing epochLength 2 → 3...");
@@ -51,7 +51,7 @@ module.exports = async function(env) {
     await mine(gov.finalize({ gasLimit: 2000000 }));
 
     await waitForChange(
-        async () => (await node.getState()).epochLength,
+        async () => (await node.getState()).currentState.epoch.epochLength,
         3,
         12000,
     );
@@ -64,7 +64,7 @@ module.exports = async function(env) {
     await mine(gov.finalize({ gasLimit: 2000000 }));
 
     await waitForChange(
-        async () => (await node.getState()).epochLength,
+        async () => (await node.getState()).currentState.epoch.epochLength,
         2,
         12000,
     );
