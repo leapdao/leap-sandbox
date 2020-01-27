@@ -30,7 +30,7 @@ module.exports = async function(env) {
     console.log("║4. Exit Bob                               ║");
     console.log("╚══════════════════════════════════════════╝");
     
-    await mintAndDeposit(accounts[7], amount, minter, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
+    await mintAndDeposit(accounts[7], amount, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
     
     log("------Transfer from Alice to Bob------");
     let txAmount = Math.round(amount/(2000))+ Math.round(100 * Math.random());

@@ -29,7 +29,7 @@ module.exports = async function(env) {
     console.log("║3. Try to transfer exited utxo            ║");
     console.log("╚══════════════════════════════════════════╝");
     
-    await mintAndDeposit(accounts[6], amount, minter, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
+    await mintAndDeposit(accounts[6], amount, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
     
     await minePeriod(env);
     
