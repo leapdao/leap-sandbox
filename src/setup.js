@@ -44,11 +44,6 @@ module.exports.setupValidators = async (
   process.stdout.write(`${msg} finalize`);
   await mine(contracts.governance.finalize({ gasLimit: 2000000 }));
   process.stdout.write(`${msg} done\n`);
-  
-  await mintAndDeposit(
-    accounts[0], '200000000000000000000', accounts[0].addr, 
-    contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet
-  );
 };
 
 module.exports.setupPlasma = async ({ contracts, accounts }) => {

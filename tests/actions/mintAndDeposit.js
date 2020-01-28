@@ -2,18 +2,12 @@ const ethers = require('ethers');
 const { bi, add, greaterThan } = require('jsbi-utils');
 const { assert } = require('chai');
 
-const { mine, sleep, advanceUntilTokenBalanceChange } = require('../../src/helpers');
+const { mine, advanceUntilTokenBalanceChange } = require('../../src/helpers');
 const erc20abi = require('../../src/erc20abi');
 
-module.exports = async function(to, amount, minter, token, color, exitHandler, wallet, plasmaWallet) {
-  const plasmaToken = new ethers.Contract(token.address, erc20abi, plasmaWallet);
+module.exports = async function(to, amount, token, color, exitHandler, wallet, plasmaWallet) {
   const alice = to.addr;
   const aliceWallet = to.wallet;
-  const oldPlasmaBalance = await plasmaToken.balanceOf(alice);
-
-  if (greaterThan(bi(oldPlasmaBalance), bi(0))) {
-    return;
-  }
 
   const msg = `\rMinting and depositing ${await token.symbol()}...`;
   process.stdout.write(`${msg} minting`);
@@ -24,24 +18,34 @@ module.exports = async function(to, amount, minter, token, color, exitHandler, w
   await mine(token.connect(aliceWallet).approve(exitHandler.address, amount));
   
   process.stdout.write(`${msg} depositing`);
-  await sleep(1000);
   await mine(exitHandler.connect(aliceWallet).depositBySender(amount, color, { gasLimit: 2000000 }));
   
-  const balanceFinal = Number(await token.balanceOf(alice));
-  const currentPlasmaBalance = await advanceUntilTokenBalanceChange(
-    alice, token.address, oldPlasmaBalance, wallet, plasmaWallet, 
-    `${msg} waiting for deposit to be caught`
-  );
-  assert.equal(
-    bi(currentPlasmaBalance).toString(),
-    add(bi(oldPlasmaBalance), bi(amount)).toString()
-  );
-  
-  assert.equal(
-    bi(balanceMint).toString(),
-    add(bi(balanceOrig), bi(amount)).toString()
-  );
+  if (plasmaWallet) {
+    const plasmaToken = new ethers.Contract(token.address, erc20abi, plasmaWallet);
+    const oldPlasmaBalance = await plasmaToken.balanceOf(alice);
 
-  assert.equal(balanceFinal, balanceOrig);
+    if (greaterThan(bi(oldPlasmaBalance), bi(0))) {
+      return;
+    }
+
+    const currentPlasmaBalance = await advanceUntilTokenBalanceChange(
+      alice, token.address, oldPlasmaBalance, wallet, plasmaWallet, 
+      `${msg} waiting for deposit to be caught`
+    );  
+
+    assert.equal(
+      bi(currentPlasmaBalance).toString(),
+      add(bi(oldPlasmaBalance), bi(amount)).toString()
+    );  
+
+    assert.equal(
+      bi(balanceMint).toString(),
+      add(bi(balanceOrig), bi(amount)).toString()
+    );
+  
+    const balanceFinal = Number(await token.balanceOf(alice));
+    assert.equal(balanceFinal, balanceOrig);  
+  }
+  
   process.stdout.write(`${msg} ✅${' '.repeat(50)}\n`);
 }

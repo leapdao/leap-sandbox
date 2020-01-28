@@ -82,7 +82,7 @@ module.exports = async function(contracts, [node], accounts, wallet, plasmaWalle
   // minting and depositing tokens
   const co2Amount = ethers.utils.parseEther('1000').toString();
   await mintAndDeposit(
-    accounts[0], co2Amount, minter, 
+    accounts[0], co2Amount, 
     co2Token, co2Color, contracts.exitHandler, wallet, plasmaWallet
   );
 
@@ -90,7 +90,7 @@ module.exports = async function(contracts, [node], accounts, wallet, plasmaWalle
   
   const goellarsAmount = ethers.utils.parseEther('200').toString();
   await mintAndDeposit(
-    accounts[0], goellarsAmount, minter, 
+    accounts[0], goellarsAmount,
     goellarsToken, goellarsColor, contracts.exitHandler, wallet, plasmaWallet
   );
 

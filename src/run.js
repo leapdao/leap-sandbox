@@ -186,16 +186,15 @@ module.exports = async () => {
   const { accounts, wallet, contracts, ganache } = await connectOrStartRootNetwork();;
 
   if (!onlyRootChain) {
-    plasmaEnv = await connectOrStartPlasmaNetwork({ contracts, accounts, wallet });
-
-    const mintAndDeposit = require('../tests/actions/mintAndDeposit');
-
-    await mintAndDeposit(
-      accounts[0], '200000000000000000000', accounts[0].addr, 
-      contracts.token, 0, contracts.exitHandler, wallet, plasmaEnv.plasmaWallet
-    );
-  
+    plasmaEnv = await connectOrStartPlasmaNetwork({ contracts, accounts, wallet });  
   }
+
+  const mintAndDeposit = require('../tests/actions/mintAndDeposit');
+
+  await mintAndDeposit(
+    accounts[0], '200000000000000000000',
+    contracts.token, 0, contracts.exitHandler, wallet, plasmaEnv.plasmaWallet
+  );
 
   console.log(`\n Root chain RPC (ganache): ${ganache}`);
   plasmaEnv.nodes 
