@@ -57,7 +57,7 @@ module.exports.setupPlasma = async ({ contracts, accounts, wallet }) => {
     await mine(contracts.governance.finalize());
 
     const config = require(generatedConfigPath);
-    config.heartbeat = { color: heartbeatColor };
+    config.heartbeat = { color: heartbeatColor, filter: false };
     fs.writeFileSync(generatedConfigPath, JSON.stringify(config, null, 2));
   }
 
