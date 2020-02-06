@@ -1708,15 +1708,16 @@ leap-core@0.35.0:
     jsbi-utils "^1.0.0"
     node-fetch "^2.3.0"
 
-leap-core@^0.37.0:
-  version "0.37.0"
-  resolved "https://registry.yarnpkg.com/leap-core/-/leap-core-0.37.0.tgz#1f17957d33bccca130c8e167af2c756a8700d0f6"
-  integrity sha512-9Lj2ibtoDLe9D6++R9CclWMCv/Nf+jiidRRRqgukOOW5b5NdlodSJQMpHa1nw1EL50sl3UImb2GUiYQZJCmFMw==
+leap-core@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/leap-core/-/leap-core-2.0.0.tgz#e0ce5000bf77afd72f5a72236d6b80e82e8d3f19"
+  integrity sha512-DqbWSrYNz+ZGIROXfT7SBUC0FHon6rrv6I7RCrxbzqjDsHHh6lmpMW6v+kkJtYYRe6TkalxPZMz0HRgo+ndtbw==
   dependencies:
     "@types/web3" "^1.0.18"
     ethereumjs-util "6.0.0"
     jsbi-utils "^1.0.0"
     node-fetch "^2.3.0"
+    web3-core-promievent "^1.2.4"
 
 leap-guardian@^1.4.1:
   version "1.4.1"
@@ -3045,6 +3046,14 @@ web3-core-promievent@1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/web3-core-promievent/-/web3-core-promievent-1.2.1.tgz#003e8a3eb82fb27b6164a6d5b9cad04acf733838"
   integrity sha512-IVUqgpIKoeOYblwpex4Hye6npM0aMR+kU49VP06secPeN0rHMyhGF0ZGveWBrGvf8WDPI7jhqPBFIC6Jf3Q3zw==
+  dependencies:
+    any-promise "1.3.0"
+    eventemitter3 "3.1.2"
+
+web3-core-promievent@^1.2.4:
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/web3-core-promievent/-/web3-core-promievent-1.2.5.tgz#8ca3791afe0f6ea86da3f0644743dcf3dfa9883a"
+  integrity sha512-IlrmWl3piOCPJC9IiP1Z1BC9Be4GiNTKw9MfgWL1ZnyQ+GSFHwW2TjDlZbV4IaoCr4K/RvHpxUxd/txrPLI8QQ==
   dependencies:
     any-promise "1.3.0"
     eventemitter3 "3.1.2"

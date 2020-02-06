@@ -66,7 +66,11 @@ module.exports = async function(env, addr, color) {
     log("------Transaction data------");
     log(txData);
     log("------Proof------");
-    const proof = await helpers.getProof(plasmaWallet.provider, txData);
+    const proof = await helpers.getProof(
+      plasmaWallet.provider,
+      txData,
+      { excludePrevHashFromProof: true }
+    );
     log(proof);
     log("------Youngest Input------");
     updateLine(`${msg} getting input proof`);
@@ -75,7 +79,11 @@ module.exports = async function(env, addr, color) {
     let youngestInputProof;
     if (youngestInput.tx) {
         log("------Youngest Input Proof------");
-        youngestInputProof = await helpers.getProof(plasmaWallet.provider, youngestInput.tx);
+        youngestInputProof = await helpers.getProof(
+          plasmaWallet.provider,
+          youngestInput.tx,
+          { excludePrevHashFromProof: true }
+        );
         log(youngestInputProof);
     } else {
         log("No youngest input found. Will try to exit deposit");
