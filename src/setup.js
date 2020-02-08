@@ -6,8 +6,6 @@ const { generatedConfigPath } = require('./getEnv');
 
 const setValidator = require('leap-guardian/scripts/setValidator')
 
-const heartbeatToken = require('../build/contracts/build/contracts/HeartbeatToken');
-
 module.exports.setupValidators = async (
   { contracts, nodes, wallet, accounts, plasmaWallet, networkConfig }
 ) => {
@@ -45,6 +43,7 @@ module.exports.setupPlasma = async ({ contracts, accounts, wallet }) => {
   if (!noHeartbeat) {
     process.stdout.write(`${msg} mint heartbeat token`);
     const heartbeatColor = 32769;
+    const heartbeatToken = require('../build/contracts/build/contracts/HeartbeatToken');
     const { abi, bytecode } = heartbeatToken;
     const hbtFactory = new ethers.ContractFactory(abi, bytecode, wallet);
     const { contractAddress } = await hbtFactory.deploy().then(({ deployTransaction }) => deployTransaction.wait());
