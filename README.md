@@ -55,12 +55,13 @@ Local environment consist of the following parts:
 To start local env use the following command:
 
 ```sh
-yarn start [--onlyRoot] [<recipe>]
+yarn start [--onlyRoot] [--noHeartbeat] [<recipe>]
 ```
 
 Optional arguments:
 
 * `--onlyRoot` — start only the root chain with plasma contracts. To start leap-node later on use `yarn start` in another terminal.
+* `--noHeartbeat` — do not deploy and mint validator heartbeat tokens. Default: false
 * `<recipe>` — apply one of the recipies to the network. See below.
 
 Ganache setup logs and leap-node's logs are in the `out/` folder.
