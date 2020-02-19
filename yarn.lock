@@ -1719,10 +1719,10 @@ leap-core@^2.0.0:
     node-fetch "^2.3.0"
     web3-core-promievent "^1.2.4"
 
-leap-guardian@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/leap-guardian/-/leap-guardian-1.5.0.tgz#66abb110744d8a02138f157f322c66be811076fe"
-  integrity sha512-tPPP+LckJZDaVz8gCN0G2zuYWj9WDICtG9xw4OCcK+yYDg0iOxvsf0CdxhBzQj6usWxM7BDyEMv3I/qrRsvl9A==
+leap-guardian@^1.5.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/leap-guardian/-/leap-guardian-1.5.1.tgz#fa5adfec7879c3045ade80448d733274bccdaead"
+  integrity sha512-wvcp/pHcqmqHT2LTt/koiqeljc1+dBCgPtcOwo0p0JbnQhFx2A59dQPxk4o+LGidkEigWVeDXLSwcM/1fA2knA==
   dependencies:
     commander "^2.20.0"
     csv-parser "^2.2.0"
