@@ -43,7 +43,7 @@ console.log('Making a few transfers..');
     log("------Exit Bob------");
     await exitUnspent(env, bob);
 
-console.log('Challenging Bob's exit')
+console.log("Challenging Bob's exit")
 
 
 
