@@ -27,12 +27,16 @@ module.exports = async function(env) {
     console.log("║2. Trasfer from Alice to Bob              ║");
     console.log("║3. Exit Alice                    ║");
     console.log("║4. Challenge Alice exit                             ║");
-    console.log(typeof(contracts.exitHandler.challengeExit()));
+    //console.log(typeof(contracts.exitHandler.challengeExit()));
     console.log("╚══════════════════════════════════════════╝");
    
   await mintAndDeposit(accounts[2], amount, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
    
+   await minePeriod(env);
    
+   const utxo = await exitUnspent(env, alice);
+   
+   console.log('utxo', utxo);
 
 console.log('Making a few transfers..');
     for (let i = 0; i < 2; i++) {
