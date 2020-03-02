@@ -81,13 +81,6 @@ module.exports = async function(env, addr, color) {
     
     console.log("Challenging Alice's exit");
      contracts.exitHandler.challengeExit([], proof, 0, 0, alice)
-     
-       
-    }
-    
-    
-    
-
 
     
 
