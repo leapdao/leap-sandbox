@@ -43,7 +43,33 @@ console.log('Making a few transfers..');
     
     const unspents = await node.getUnspent(addr, color);
     
-    console.log(unspents);
+    const getIndex = async (unspents, lastBlock) => { 
+    for(let i=0; i<unspents.length; i++) { 
+    txHash = unspents[i].outpoint.hash;
+        txData = await node.getTransaction(bufferToHex(txHash));
+        console.log("Unspent", i, "blocknumber:", txData.blockNumber);
+         console.log("Is submitted?", txData.blockNumber < lastBlock); 
+         if (txData.blockNumber < lastBlock) return i;
+          }
+      return -1; 
+     };
+     
+    const unspentIndex = await getIndex(unspents, latestSubmittedBlock);
+    
+    if (unspentIndex === -1) { 
+    throw new Error("Can't exit, no unspents are in submitted periods found");
+     };
+    
+    
+    const unspent = unspents[unspentIndex]; 
+     txData = await node.getTransaction(bufferToHex(txHash));
+    
+    const proof = await helpers.getProof( 
+    plasmaWallet.provider, 
+    txData, 
+    {excludePrevHashFromProof: true } ); 
+    console.log(proof);
+
     log("------Exit Alice------");
     await exitUnspent(env, alice);
     log("------Exit Bob------");
