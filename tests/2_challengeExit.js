@@ -11,7 +11,7 @@ require('chai').should();
 
 const log = debug('challengeExit');
 
-module.exports = async function(env) {
+module.exports = async function(env, addr, color) {
     const { contracts, nodes, accounts, wallet, plasmaWallet } = env;
     const node = nodes[0];
     const minter = accounts[0].addr;
@@ -20,6 +20,8 @@ module.exports = async function(env) {
     const bob = accounts[6].addr;
     const amount = 10000000;
     
+   let txHash;
+   let txData;
     console.log("╔══════════════════════════════════════════╗");
     console.log("║   Test: Challenge exit after Transfer    ║");
     console.log("║Steps:                                    ║");
@@ -32,17 +34,16 @@ module.exports = async function(env) {
    
   await mintAndDeposit(accounts[2], amount, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
    
-   await minePeriod(env);
-   
-   const utxo = await exitUnspent(env, alice);
-   
-   console.log('utxo', utxo);
 
 console.log('Making a few transfers..');
     for (let i = 0; i < 2; i++) {
         await transfer(alice, alicePriv, bob, '1000', node);
     }
     await minePeriod(env);
+    
+    const unspents = await node.getUnspent(addr, color);
+    
+    console.log(unspents);
     log("------Exit Alice------");
     await exitUnspent(env, alice);
     log("------Exit Bob------");
