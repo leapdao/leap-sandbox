@@ -8,10 +8,6 @@ const exitHandler = require('../build/contracts/build/contracts/ExitHandler');
 require('chai').should();
 
 //let challengeExit = exitHandler.challengeExit();
-let index = exitHandler.abi.length - 2
-
-
-console.log(exitHandler.abi[index]);
 
 const log = debug('challengeExit');
 
@@ -31,6 +27,7 @@ module.exports = async function(env) {
     console.log("║2. Trasfer from Alice to Bob              ║");
     console.log("║3. Exit Alice                    ║");
     console.log("║4. Challenge Alice exit                             ║");
+    console.log(typeof(contracts.exitHandler.challengeExit()));
     console.log("╚══════════════════════════════════════════╝");
    
   await mintAndDeposit(accounts[2], amount, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
