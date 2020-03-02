@@ -36,12 +36,15 @@ module.exports = async function(env, addr, color) {
    
   await mintAndDeposit(accounts[2], amount, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
    
-
-console.log('Making a few transfers..');
+   console.log('Making a few transfers..');
     for (let i = 0; i < 2; i++) {
         await transfer(alice, alicePriv, bob, '1000', node);
     }
+   
     await minePeriod(env);
+    
+    
+    
     
     const unspents = await node.getUnspent(addr, color);
     
@@ -75,13 +78,25 @@ console.log('Making a few transfers..');
     txData, 
     {excludePrevHashFromProof: true } ); 
     console.log(proof);
+    
+    console.log("Challenging Alice's exit");
+     contracts.exitHandler.challengeExit([], proof, 0, 0, alice)
+     
+       
+    }
+    
+    
+    
+
+
+    
 
     log("------Exit Alice------");
     await exitUnspent(env, alice);
     log("------Exit Bob------");
     await exitUnspent(env, bob);
 
-console.log("Challenging Bob's exit");
+
 
 }
 
