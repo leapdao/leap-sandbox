@@ -8,8 +8,10 @@ const exitHandler = require('../build/contracts/build/contracts/ExitHandler');
 require('chai').should();
 
 //let challengeExit = exitHandler.challengeExit();
+let index = exitHandler.abi.length - 2
 
-console.log(typeof(challengeExit))
+
+console.log(exitHandler.abi[index]);
 
 const log = debug('challengeExit');
 
