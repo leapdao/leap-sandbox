@@ -9,7 +9,7 @@ require('chai').should();
 
 //let challengeExit = exitHandler.challengeExit();
 
-console.log('exitHandler', exitHandler)
+console.log(typeof(challengeExit))
 
 const log = debug('challengeExit');
 
