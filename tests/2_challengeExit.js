@@ -71,7 +71,6 @@ module.exports = async function(env, addr, color) {
     
     
     const unspent = unspents[unspentIndex]; 
-     txData = await node.getTransaction(bufferToHex(txHash));
     
     const proof = await helpers.getProof( 
     plasmaWallet.provider, 
