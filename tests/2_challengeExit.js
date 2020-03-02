@@ -9,6 +9,8 @@ require('chai').should();
 
 //let challengeExit = exitHandler.challengeExit();
 
+console.log('exitHandler', exitHandler)
+
 const log = debug('challengeExit');
 
 module.exports = async function(env) {
