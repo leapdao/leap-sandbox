@@ -43,6 +43,10 @@ console.log('Making a few transfers..');
     
     const unspents = await node.getUnspent(addr, color);
     
+    const latestBlockNumber = (await node.getBlock('latest')).number;
+    
+    const latestSubmittedBlock = latestBlockNumber - latestBlockNumber % 32;
+    
     const getIndex = async (unspents, lastBlock) => { 
     for(let i=0; i<unspents.length; i++) { 
     txHash = unspents[i].outpoint.hash;
