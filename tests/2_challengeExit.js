@@ -3,6 +3,7 @@ const mintAndDeposit = require('./actions/mintAndDeposit');
 const { transfer } = require('./actions/transfer');
 const exitUnspent = require('./actions/exitUnspent');
 const minePeriod = require('./actions/minePeriod');
+const { helpers, Tx, Util } = require('leap-core');
 const { bufferToHex } = require('ethereumjs-util');
 const exitHandler = require('../build/contracts/build/contracts/ExitHandler');
 
