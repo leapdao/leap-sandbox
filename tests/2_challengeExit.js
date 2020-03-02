@@ -7,7 +7,7 @@ const exitHandler = require('../build/contracts/build/contracts/ExitHandler');
 
 require('chai').should();
 
-let challengeExit = exitHandler.challengeExit();
+//let challengeExit = exitHandler.challengeExit();
 
 const log = debug('challengeExit');
 
