@@ -93,8 +93,8 @@ module.exports = async function(env, addr, color) {
    console.log("Challenging Alice's exit");
    contracts.exitHandler.challengeExit([], proof, 0, 0, alice)
 
- let plasmaBalanceAfExit = await node.getBalance(alice);
+ let plasmaBalanceFinal = await node.getBalance(alice);
 }
-console.log("plasmaBalanceAfExit", plasmaBalanceAfExit)
+console.log("plasmaBalanceAfExit", plasmaBalanceFinal)
 
 
