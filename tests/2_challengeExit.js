@@ -78,17 +78,15 @@ module.exports = async function(env, addr, color) {
     txData, 
     {excludePrevHashFromProof: true } ); 
     console.log(proof);
-    
-    console.log("Challenging Alice's exit");
-     contracts.exitHandler.challengeExit([], proof, 0, 0, alice)
 
     
-
     log("------Exit Alice------");
     await exitUnspent(env, alice);
     log("------Exit Bob------");
     await exitUnspent(env, bob);
 
+   console.log("Challenging Alice's exit");
+     contracts.exitHandler.challengeExit([], proof, 0, 0, alice)
 
 
 }
