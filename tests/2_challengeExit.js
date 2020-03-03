@@ -36,11 +36,17 @@ module.exports = async function(env, addr, color) {
    
     await mintAndDeposit(accounts[2], amount, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
    
+    let plasmaBalanceBefore = await node.getBalance(alice);
+     
+     console.log("plasmaBalanceBefore", plasmaBalanceBefore);
+   
     console.log('Making a few transfers..');
     for (let i = 0; i < 2; i++) {
           await transfer(alice, alicePriv, bob, '1000', node);
        }
+   let plasmaBalanceAfTf = await node.getBalance(alice);
    
+   console.log("plasmaBalanceAfTf", plasmaBalanceAfTf);
     await minePeriod(env);
     
     
@@ -76,7 +82,7 @@ module.exports = async function(env, addr, color) {
                             plasmaWallet.provider, 
                             txData, 
                             {excludePrevHashFromProof: true } ); 
-    console.log(proof);
+   // console.log(proof);
 
     
     log("------Exit Alice------");
@@ -87,8 +93,8 @@ module.exports = async function(env, addr, color) {
    console.log("Challenging Alice's exit");
    contracts.exitHandler.challengeExit([], proof, 0, 0, alice)
 
-
+ let plasmaBalanceAfExit = await node.getBalance(alice);
 }
-
+console.log("plasmaBalanceAfExit", plasmaBalanceAfExit)
 
 
