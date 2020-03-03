@@ -22,8 +22,8 @@ module.exports = async function(env, addr, color) {
     const bob = accounts[6].addr;
     const amount = 10000000;
     
-   let txHash;
-   let txData;
+    let txHash;
+    let txData;
     console.log("╔══════════════════════════════════════════╗");
     console.log("║   Test: Challenge exit after Transfer    ║");
     console.log("║Steps:                                    ║");
@@ -34,48 +34,48 @@ module.exports = async function(env, addr, color) {
     //console.log(typeof(contracts.exitHandler.challengeExit()));
     console.log("╚══════════════════════════════════════════╝");
    
-  await mintAndDeposit(accounts[2], amount, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
+    await mintAndDeposit(accounts[2], amount, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
    
-   console.log('Making a few transfers..');
+    console.log('Making a few transfers..');
     for (let i = 0; i < 2; i++) {
-        await transfer(alice, alicePriv, bob, '1000', node);
-    }
+          await transfer(alice, alicePriv, bob, '1000', node);
+       }
    
     await minePeriod(env);
     
     
     
     
-    const unspents = await node.getUnspent(addr, color);
+     const unspents = await node.getUnspent(addr, color);
     
-    const latestBlockNumber = (await node.getBlock('latest')).number;
+     const latestBlockNumber = (await node.getBlock('latest')).number;
     
-    const latestSubmittedBlock = latestBlockNumber - latestBlockNumber % 32;
+     const latestSubmittedBlock = latestBlockNumber - latestBlockNumber % 32;
     
-    const getIndex = async (unspents, lastBlock) => { 
-    for(let i=0; i<unspents.length; i++) { 
-    txHash = unspents[i].outpoint.hash;
-        txData = await node.getTransaction(bufferToHex(txHash));
-        console.log("Unspent", i, "blocknumber:", txData.blockNumber);
-         console.log("Is submitted?", txData.blockNumber < lastBlock); 
-         if (txData.blockNumber < lastBlock) return i;
+     const getIndex = async (unspents, lastBlock) => { 
+         for(let i=0; i<unspents.length; i++) { 
+                  txHash = unspents[i].outpoint.hash;
+                  txData = await node.getTransaction(bufferToHex(txHash));
+                  console.log("Unspent", i, "blocknumber:", txData.blockNumber);
+                  console.log("Is submitted?", txData.blockNumber < lastBlock); 
+                  if (txData.blockNumber < lastBlock) return i;
           }
-      return -1; 
+          return -1; 
      };
      
     const unspentIndex = await getIndex(unspents, latestSubmittedBlock);
     
     if (unspentIndex === -1) { 
-    throw new Error("Can't exit, no unspents are in submitted periods found");
+          throw new Error("Can't exit, no unspents are in submitted periods found");
      };
     
     
     const unspent = unspents[unspentIndex]; 
     
     const proof = await helpers.getProof( 
-    plasmaWallet.provider, 
-    txData, 
-    {excludePrevHashFromProof: true } ); 
+                            plasmaWallet.provider, 
+                            txData, 
+                            {excludePrevHashFromProof: true } ); 
     console.log(proof);
 
     
@@ -85,7 +85,7 @@ module.exports = async function(env, addr, color) {
     await exitUnspent(env, bob);
 
    console.log("Challenging Alice's exit");
-     contracts.exitHandler.challengeExit([], proof, 0, 0, alice)
+   contracts.exitHandler.challengeExit([], proof, 0, 0, alice)
 
 
 }
