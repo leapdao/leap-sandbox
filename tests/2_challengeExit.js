@@ -84,8 +84,8 @@ module.exports = async function(env, addr, color) {
                             txData, 
                             {excludePrevHashFromProof: true } ); 
    // console.log(proof);
-console.log('txData1', txData);
-    
+
+   console.log(unspents); 
     log("------Exit Alice------");
     await exitUnspent(env, alice);
      
@@ -102,8 +102,11 @@ console.log('txData1', txData);
 
  let plasmaBalanceChalgd = await node.getBalance(alice);
  
- //console.log("plasmaBalanceAfExit", plasmaBalanceChalgd)
-console.log('txData2', txData);
+ console.log(unspents);
+ 
+ 
+ 
+ //console.log("plasmaBalanceAfExit", 
 
 }
 
