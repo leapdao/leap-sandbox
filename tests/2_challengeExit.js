@@ -38,15 +38,15 @@ module.exports = async function(env, addr, color) {
    
     let plasmaBalanceBefore = await node.getBalance(alice);
      
-     console.log("plasmaBalanceBefore", plasmaBalanceBefore);
+     //console.log("plasmaBalanceBefore", plasmaBalanceBefore);
    
     console.log('Making a few transfers..');
     for (let i = 0; i < 2; i++) {
-          await transfer(alice, alicePriv, bob, '1000', node);
+      let succesfulTx =   await transfer(alice, alicePriv, bob, '1000', node);
        }
    let plasmaBalanceAfTf = await node.getBalance(alice);
    
-   console.log("plasmaBalanceAfTf", plasmaBalanceAfTf);
+   console.log("Transaction payload", succesfulTx );
     await minePeriod(env);
     
     
