@@ -70,13 +70,12 @@ module.exports = async function(env, addr, color) {
           return -1; 
      };
      
-    console.log(txData);
+    
     const unspentIndex = await getIndex(unspents, latestSubmittedBlock);
     
     if (unspentIndex === -1) { 
           throw new Error("Can't exit, no unspents are in submitted periods found");
      };
-    
     
     const unspent = unspents[unspentIndex]; 
     
@@ -85,7 +84,7 @@ module.exports = async function(env, addr, color) {
                             txData, 
                             {excludePrevHashFromProof: true } ); 
    // console.log(proof);
-
+console.log('txData', txData);
     
     log("------Exit Alice------");
     await exitUnspent(env, alice);
@@ -103,7 +102,7 @@ module.exports = async function(env, addr, color) {
 
  let plasmaBalanceChalgd = await node.getBalance(alice);
  
- console.log("plasmaBalanceAfExit", plasmaBalanceChalgd)
+ //console.log("plasmaBalanceAfExit", plasmaBalanceChalgd)
 
 }
 
