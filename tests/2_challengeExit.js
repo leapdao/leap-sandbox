@@ -70,6 +70,7 @@ module.exports = async function(env, addr, color) {
           return -1; 
      };
      
+    console.log(txData);
     const unspentIndex = await getIndex(unspents, latestSubmittedBlock);
     
     if (unspentIndex === -1) { 
