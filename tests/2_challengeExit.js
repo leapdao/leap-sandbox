@@ -42,8 +42,8 @@ module.exports = async function(env, addr, color) {
    
     console.log('Making a few transfers..');
     for (let i = 0; i < 2; i++) {
-      let succesfulTx =   await transfer(alice, alicePriv, bob, '1000', node);
-      console.log("Transaction payload", succesfulTx );
+       await transfer(alice, alicePriv, bob, '1000', node);
+      
        }
    let plasmaBalanceAfTf = await node.getBalance(alice);
    
