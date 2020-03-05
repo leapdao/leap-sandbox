@@ -98,11 +98,12 @@ module.exports = async function(env, addr, color) {
     await exitUnspent(env, bob);
 
    console.log("Challenging Alice's exit");
-   contracts.exitHandler.challengeExit([], proof, 0, 0, alice)
+   contracts.exitHandler.challengeExit([], proof, 0, 0, bob)
 
- let plasmaBalanceChalgd = await node.getBalance(alice);
+console.log(exitMapping[utxoId]);
+ let plasmaBalanceChalgd = await node.getBalance(bob)
  
- console.log(unspents[unspents.length - 1]);
+ console.log('bob balance', plasmaBalanceChalgd)
  
  
  //console.log("plasmaBalanceAfExit", 
