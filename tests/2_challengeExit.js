@@ -25,8 +25,7 @@ module.exports = async function(env, addr, color) {
     console.log("║1. Deposit to Alice                       ║");
     console.log("║2. Trasfer from Alice to Bob              ║");
     console.log("║3. Exit Alice                    ║");
-    console.log("║4. Challenge Alice exit                             ║");
-    //console.log(typeof(contracts.exitHandler.challengeExit()));
+    console.log("║4. Challenge Alice exit                   ║");
     console.log("╚══════════════════════════════════════════╝");
    
     await mintAndDeposit(accounts[2], amount, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
@@ -42,8 +41,6 @@ module.exports = async function(env, addr, color) {
                             plasmaWallet.provider, 
                             transfer1, 
                             {excludePrevHashFromProof: true } ); 
-   console.log(proofOfTransfer1);
-   console.log(t1);
     
     
    /* 
