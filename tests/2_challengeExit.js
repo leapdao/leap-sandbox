@@ -101,9 +101,7 @@ module.exports = async function(env, addr, color) {
    contracts.exitHandler.challengeExit([], proof, 0, 0, bob)
 
 console.log(exitMapping[utxoId]);
- let plasmaBalanceChalgd = await node.getBalance(bob)
- 
- console.log('bob balance', plasmaBalanceChalgd)
+
  
  
  //console.log("plasmaBalanceAfExit", 
