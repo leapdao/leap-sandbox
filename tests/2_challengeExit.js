@@ -28,40 +28,30 @@ module.exports = async function(env, addr, color) {
     console.log("║4. Challenge Alice exit                   ║");
     console.log("╚══════════════════════════════════════════╝");
    
-    await mintAndDeposit(accounts[2], amount, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
-   
-    console.log('Alice makes a transfer to Bob');
-    
-    const t1 = await transfer(alice, alicePriv, bob, '1000', node);
-   
+        await mintAndDeposit(accounts[2], amount, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
+      
+    // Alice makes a transfer to Bob
+    const t1 = await transfer(alice, alicePriv, bob, '1000', node);   
     await minePeriod(env);
-    
+
+
     const transfer1 = await node.getTransaction(bufferToHex(t1.hash()));
     const proofOfTransfer1 = await helpers.getProof( 
-                            plasmaWallet.provider, 
-                            transfer1, 
-                            {excludePrevHashFromProof: true } ); 
+        plasmaWallet.provider, 
+        transfer1, 
+        {excludePrevHashFromProof: true }
+    );
+
+
+    // Now:
+    // 1. Bob spends the utxo he got from Alice in transfer1.
+    // 2. Bob starts an exit with the utxo he just sent to alice, using contract.exitHandler.startExit
+    // 3. But we know the unspent-transaction-output (utxo) he is trying to exit is NOT unspent (he sent it to Alice)
+    // 4. We use the proof that he spent the utxo in contract.exitHandler.challengeExit
+    // 5. In the end, we make sure the Exit struct in the exitHandler contract was deleted (this means the challenge was successful)
+
+
     
-    
-   /* 
-    
-
-   //console.log(unspents); 
-    log("------Exit Alice------");
-    await exitUnspent(env, alice);
-     
-    let plasmaBalanceFinal = await node.getBalance(alice);
- 
-    //console.log("plasmaBalanceAfExit", plasmaBalanceFinal)
-
-
-    log("------Exit Bob------");
-    await exitUnspent(env, bob);
-
-   console.log("Challenging Alice's exit");
-   contracts.exitHandler.challengeExit([], proof, 0, 0, bob)
-    */
-
 }
 
 
