@@ -54,7 +54,7 @@ module.exports = async function(env, addr, color) {
     // 5. In the end, we make sure the Exit struct in the exitHandler contract was deleted (this means the challenge was successful)
 
        const spendTx = Tx.transfer(
-          [new Input(new Outpoint(transferTx.hash(), 0))],
+          [new Input(new Outpoint(t1.hash(), 0))],
           [new Output(50, charlie)]
         ).sign([bobPriv]);
       
