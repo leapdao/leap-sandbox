@@ -17,6 +17,9 @@ module.exports = async function(env, addr, color) {
     const alice = accounts[2].addr;
     const alicePriv = accounts[2].privKey;
     const bob = accounts[6].addr;
+    const bobPriv = accounts[6].privKey;
+    const charlie = accounts[4].addr;
+    const charliePriv = accounts[6].privKey;
     const amount = 10000000;
     
     console.log("╔══════════════════════════════════════════╗");
@@ -50,8 +53,24 @@ module.exports = async function(env, addr, color) {
     // 4. We use the proof that he spent the utxo in contract.exitHandler.challengeExit
     // 5. In the end, we make sure the Exit struct in the exitHandler contract was deleted (this means the challenge was successful)
 
-
+       const spendTx = Tx.transfer(
+          [new Input(new Outpoint(transferTx.hash(), 0))],
+          [new Output(50, charlie)]
+        ).sign([bobPriv]);
+      
+       const spendProof = period.proof(spendTx);
+       
+       const event = await exitHandler.startExit(proofOfTransfer1, spendProof, 0, 0, { from: bob, value: exitStake })
+       
+       const utxoId = exitUtxoId(event);
+       assert.equal(utxoId, spendTx.inputs[0].prevout.getUtxoId());
     
+       assert.equal((await exitHandler.exits(utxoId))[2], bob);
+    
+       await exitHandler.challengeExit(proofOfTransfer1, spendProof, 0, 0, alice);
+       
+        // check exit was evicted from PriorityQueue
+        assert.equal((await exitHandler.tokens(0))[1], 0);
 }
 
 
