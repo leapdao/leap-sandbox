@@ -58,9 +58,12 @@ module.exports = async function(env, addr, color) {
           [new Output(50, charlie)]
         ).sign([bobPriv]);
     
-      const period = await submitNewPeriod([t1, spendTx]);
+    
+       const period = await minePeriod(env);
 
        const spendProof = period.proof(spendTx);
+     
+       console.log(spendProof);
        
        const event = await exitHandler.startExit(proofOfTransfer1, spendProof, 0, 0, { from: bob, value: exitStake })
        
