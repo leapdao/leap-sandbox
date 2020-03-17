@@ -63,18 +63,18 @@ module.exports = async function(env, addr, color) {
         {excludePrevHashFromProof: true }
      );
      
-       const event = await exitHandler.startExit(proofOfTransfer2, proofOfTransfer2, 0, 0)
+       const event = await contracts.exitHandler.startExit(proofOfTransfer2, proofOfTransfer2, 0, 0)
        
        const utxoId = exitUtxoId(event);
        console.log(utxoId);
        assert.equal(utxoId, spendTx.inputs[0].prevout.getUtxoId());
     
-       assert.equal((await exitHandler.exits(utxoId))[2], bob);
+       assert.equal((await contracts.exitHandler.exits(utxoId))[2], bob);
     
-       await exitHandler.challengeExit(proofOfTransfer1, spendProof, 0, 0, alice);
+       await contracts.exitHandler.challengeExit(proofOfTransfer1, proofOfTransfer1, 0, 0, alice);
        
         // check exit was evicted from PriorityQueue
-        assert.equal((await exitHandler.tokens(0))[1], 0);
+        assert.equal((await contracts.exitHandler.tokens(0))[1], 0);
 }
 
 
