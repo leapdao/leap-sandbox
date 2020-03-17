@@ -63,11 +63,11 @@ module.exports = async function(env, addr, color) {
         {excludePrevHashFromProof: true }
      );
      
-       const event = await contracts.exitHandler.startExit(proofOfTransfer1, proofOfTransfer1, 0, 0)
+       const event = await contracts.exitHandler.startExit(proofOfTransfer1, proofOfTransfer1,  1, 1)
        
        //const utxoId = exitUtxoId(event);
        console.log(event);
-       console.log('transfer 1', transfer1);
+       //console.log('transfer 1', transfer1);
        //assert.equal(utxoId, spendTx.inputs[0].prevout.getUtxoId());
     
        //assert.equal((await contracts.exitHandler.exits(utxoId))[2], bob);
