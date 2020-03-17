@@ -65,12 +65,12 @@ module.exports = async function(env, addr, color) {
      
        const event = await contracts.exitHandler.startExit(proofOfTransfer2, proofOfTransfer2, 0, 0)
        
-       const utxoId = exitUtxoId(event);
-       console.log(utxoId);
+       //const utxoId = exitUtxoId(event);
+       console.log(event);
        console.log('transfer 1', transfer1);
        //assert.equal(utxoId, spendTx.inputs[0].prevout.getUtxoId());
     
-       assert.equal((await contracts.exitHandler.exits(utxoId))[2], bob);
+       //assert.equal((await contracts.exitHandler.exits(utxoId))[2], bob);
     
        await contracts.exitHandler.challengeExit(proofOfTransfer1, proofOfTransfer1, 0, 0, alice);
        
