@@ -53,21 +53,20 @@ module.exports = async function(env, addr, color) {
     // 4. We use the proof that he spent the utxo in contract.exitHandler.challengeExit
     // 5. In the end, we make sure the Exit struct in the exitHandler contract was deleted (this means the challenge was successful)
 
-       const spendTx = Tx.transfer(
-          [new Input(new Outpoint(t1.hash(), 0))],
-          [new Output(50, charlie)]
-        ).sign([bobPriv]);
+      const t2 = await transfer(bob, bobPriv, charlie, '200', node);   
+      await minePeriod(env);
     
-    
-       const period = await minePeriod(env);
-
-       const spendProof = period.proof(spendTx);
+      const transfer2 = await node.getTransaction(bufferToHex(t2.hash()));
+       const proofOfTransfer2 = await helpers.getProof( 
+        plasmaWallet.provider, 
+        transfer2, 
+        {excludePrevHashFromProof: true }
+     );
      
-       console.log(spendProof);
-       
-       const event = await exitHandler.startExit(proofOfTransfer1, spendProof, 0, 0, { from: bob, value: exitStake })
+       const event = await exitHandler.startExit(proofOfTransfer2, proofOfTransfer2, 0, 0)
        
        const utxoId = exitUtxoId(event);
+       console.log(utxoId);
        assert.equal(utxoId, spendTx.inputs[0].prevout.getUtxoId());
     
        assert.equal((await exitHandler.exits(utxoId))[2], bob);
