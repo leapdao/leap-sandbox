@@ -63,7 +63,7 @@ module.exports = async function(env, addr, color) {
         {excludePrevHashFromProof: true }
      );
      
-       const event = await contracts.exitHandler.startExit(proofOfTransfer2, proofOfTransfer2, 0, 0)
+       const event = await contracts.exitHandler.startExit(proofOfTransfer1, proofOfTransfer1, 0, 0)
        
        //const utxoId = exitUtxoId(event);
        console.log(event);
