@@ -22,6 +22,8 @@ module.exports = async function(env, addr, color) {
     const charliePriv = accounts[6].privKey;
     const amount = 10000000;
     
+    await minePeriod(env);
+    
     const unspents = await node.getUnspent(addr, color);
     const latestBlockNumber = (await node.getBlock('latest')).number;
     log("Latest Block number: ", latestBlockNumber);
