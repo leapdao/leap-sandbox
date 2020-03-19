@@ -23,7 +23,21 @@ module.exports = async function(env, addr, color) {
     const amount = 10000000;
     
     const unspents = await node.getUnspent(addr, color);
-    //log(unspents);
+    const latestBlockNumber = (await node.getBlock('latest')).number;
+    log("Latest Block number: ", latestBlockNumber);
+    const latestSubmittedBlock = latestBlockNumber - latestBlockNumber % 32;
+    log("Latest submitted block number: ", latestSubmittedBlock);
+    if (latestSubmittedBlock === 0) {
+        throw new Error("Can't exit, no periods were submitted yet");
+    };
+    
+    const unspentIndex = await getIndex(unspents, latestSubmittedBlock);
+
+    if (unspentIndex === -1) {
+        throw new Error("Can't exit, no unspents are in submitted periods found");
+    };
+    
+    const unspent = unspents[unspentIndex];
 
     
     console.log("╔══════════════════════════════════════════╗");
