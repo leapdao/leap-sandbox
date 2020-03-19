@@ -22,6 +22,10 @@ module.exports = async function(env, addr, color) {
     const charliePriv = accounts[6].privKey;
     const amount = 10000000;
     
+    const unspents = await node.getUnspent(addr, color);
+    //log(unspents);
+
+    
     console.log("╔══════════════════════════════════════════╗");
     console.log("║   Test: Challenge exit after Transfer    ║");
     console.log("║Steps:                                    ║");
@@ -44,6 +48,8 @@ module.exports = async function(env, addr, color) {
         transfer1, 
         {excludePrevHashFromProof: true }
     );
+    
+    const youngestInput = await helpers.getYoungestInputTx(node, Tx.fromRaw(transfer1.raw));
 
 
     // Now:
@@ -67,8 +73,8 @@ module.exports = async function(env, addr, color) {
       await contracts.exitHandler.connect(wallet.provider.getSigner(addr)).startExit(
         proofOfTransfer1,
         proofOfTransfer2,
-        1,
-        2,
+        unspent.outpoint.index,
+        youngestInput.index,
         { value: ethers.utils.parseEther('1'), gasLimit: 2000000 }
     );
     console.log(await startExitResult.wait());
@@ -79,7 +85,7 @@ module.exports = async function(env, addr, color) {
     
        //assert.equal((await contracts.exitHandler.exits(utxoId))[2], bob);
     
-       await contracts.exitHandler.challengeExit(proofOfTransfer1, proofOfTransfer1, 0, 0, alice);
+      // await contracts.exitHandler.challengeExit(proofOfTransfer1, proofOfTransfer1, 0, 0, alice);
        
         // check exit was evicted from PriorityQueue
         assert.equal((await contracts.exitHandler.tokens(0))[1], 0);
