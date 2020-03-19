@@ -33,6 +33,19 @@ module.exports = async function(env, addr, color) {
         throw new Error("Can't exit, no periods were submitted yet");
     };
     
+      const getIndex = async (unspents, lastBlock) =>{
+        for(let i=0; i<unspents.length; i++) {
+            txHash = unspents[i].outpoint.hash;
+            txData = await node.getTransaction(bufferToHex(txHash));
+            log("Unspent", i, "blocknumber:", txData.blockNumber);
+            log("Is submitted?", txData.blockNumber < lastBlock);
+            if (txData.blockNumber < lastBlock) return i;
+        }
+    
+        return -1;
+    };
+
+    
     const unspentIndex = await getIndex(unspents, latestSubmittedBlock);
 
     if (unspentIndex === -1) {
