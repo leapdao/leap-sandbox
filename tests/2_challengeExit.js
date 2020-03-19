@@ -63,10 +63,17 @@ module.exports = async function(env, addr, color) {
         {excludePrevHashFromProof: true }
      );
      
-       const event = await contracts.exitHandler.startExit(proofOfTransfer1, proofOfTransfer1,  1, 1)
+    let startExitResult =
+      await contracts.exitHandler.connect(wallet.provider.getSigner(addr)).startExit(
+        proofOfTransfer1,
+        proofOfTransfer2,
+        1,
+        2,
+        { value: ethers.utils.parseEther('1'), gasLimit: 2000000 }
+    );
+    console.log(await startExitResult.wait());
        
        //const utxoId = exitUtxoId(event);
-       console.log(event);
        //console.log('transfer 1', transfer1);
        //assert.equal(utxoId, spendTx.inputs[0].prevout.getUtxoId());
     
