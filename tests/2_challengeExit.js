@@ -1,4 +1,5 @@
 const debug = require('debug');
+const ethers = require('ethers');
 const mintAndDeposit = require('./actions/mintAndDeposit');
 const { transfer } = require('./actions/transfer');
 const exitUnspent = require('./actions/exitUnspent');
