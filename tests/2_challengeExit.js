@@ -85,7 +85,7 @@ module.exports = async function(env, addr, color) {
         youngestInput, 
         {excludePrevHashFromProof: true }
     );
-    await minePeriod(env);
+   // await minePeriod(env);
     
    // console.log('youngest input', youngestInput);
    // console.log('transfer 1' , transfer1);
