@@ -111,7 +111,7 @@ module.exports = async function(env, addr, color) {
         {excludePrevHashFromProof: true }
      );
    
-   
+  /* 
     let startExitResult =
       await contracts.exitHandler.connect(wallet.provider.getSigner(addr)).startExit(
         youngestInputProof,
@@ -121,6 +121,7 @@ module.exports = async function(env, addr, color) {
         { value: ethers.utils.parseEther('1'), gasLimit: 2000000 }
     );
     console.log(await startExitResult.wait());
+    */
    
        //const utxoId = exitUtxoId(event);
        //console.log('transfer 1', transfer1);
