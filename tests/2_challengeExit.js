@@ -84,7 +84,7 @@ module.exports = async function(env, addr, color) {
     const youngestInputProof = await helpers.getProof( 
         plasmaWallet.provider, 
         youngestInput,  
-        {excludePrevHashFromProof: true }
+        {excludePrevHashFromProof: false }
     ); 
     
     await minePeriod(env);
