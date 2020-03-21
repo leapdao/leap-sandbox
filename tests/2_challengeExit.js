@@ -83,8 +83,8 @@ module.exports = async function(env, addr, color) {
      const youngestInput = await helpers.getYoungestInputTx(node, Tx.fromRaw(transfer1.raw));
     const youngestInputProof = await helpers.getProof( 
         plasmaWallet.provider, 
-        youngestInput,  
-        {excludePrevHashFromProof: false }
+        youngestInput.tx,  
+        {excludePrevHashFromProof: true }
     ); 
     
     await minePeriod(env);
