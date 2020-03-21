@@ -80,11 +80,16 @@ module.exports = async function(env, addr, color) {
     );
     
     const youngestInput = await helpers.getYoungestInputTx(node, Tx.fromRaw(transfer1.raw));
+    const youngestInputProof = await helpers.getProof( 
+        plasmaWallet.provider, 
+        youngestInput, 
+        {excludePrevHashFromProof: true }
+    );
     await minePeriod(env);
     
-    console.log('youngest input', youngestInput);
-    console.log('transfer 1' , transfer1);
-    console.log('proofOfTransfer1', proofOfTransfer1);
+   // console.log('youngest input', youngestInput);
+   // console.log('transfer 1' , transfer1);
+   // console.log('proofOfTransfer1', proofOfTransfer1);
 
     // Now:
     // 1. Bob spends the utxo he got from Alice in transfer1.
@@ -103,17 +108,17 @@ module.exports = async function(env, addr, color) {
         {excludePrevHashFromProof: true }
      );
    
-    /*
+   
     let startExitResult =
       await contracts.exitHandler.connect(wallet.provider.getSigner(addr)).startExit(
-        proofOfTransfer1,
+        youngestInputProof,
         proofOfTransfer2,
         unspent.outpoint.index,
         youngestInput.index,
         { value: ethers.utils.parseEther('1'), gasLimit: 2000000 }
     );
     console.log(await startExitResult.wait());
-      */ 
+   
        //const utxoId = exitUtxoId(event);
        //console.log('transfer 1', transfer1);
        //assert.equal(utxoId, spendTx.inputs[0].prevout.getUtxoId());
