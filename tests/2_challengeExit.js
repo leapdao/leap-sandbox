@@ -113,10 +113,8 @@ module.exports = async function(env, addr, color) {
         transfer2, 
         {excludePrevHashFromProof: true }
      );
-   
+     await minePeriod(env);
 
-    
-  /*
     let startExitResult =
       await contracts.exitHandler.connect(wallet.provider.getSigner(addr)).startExit(
         youngestInputProof,
@@ -127,7 +125,7 @@ module.exports = async function(env, addr, color) {
     );
     console.log(await startExitResult.wait());
    
-   */
+
        //const utxoId = exitUtxoId(event);
        //console.log('transfer 1', transfer1);
        //assert.equal(utxoId, spendTx.inputs[0].prevout.getUtxoId());
