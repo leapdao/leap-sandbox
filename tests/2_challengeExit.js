@@ -65,21 +65,13 @@ module.exports = async function(env, addr, color) {
     console.log("║4. Challenge Alice exit                   ║");
     console.log("╚══════════════════════════════════════════╝");
    
-       const firstInput = await mintAndDeposit(accounts[2], amount, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
+     await mintAndDeposit(accounts[2], amount, contracts.token, 0, contracts.exitHandler, wallet, plasmaWallet);
       
     // Alice makes a transfer to Bob
     const t1 = await transfer(alice, alicePriv, bob, '1000', node);   
     await minePeriod(env);
 
-    
-   const firstInputRaw = await node.getTransaction(bufferToHex(firstInput.hash()));
-    const proofofFirstInput = await helpers.getProof( 
-        plasmaWallet.provider, 
-        firstInputRaw, 
-        {excludePrevHashFromProof: true }
-    );
-    
-     await minePeriod(env);
+   
     
     const transfer1 = await node.getTransaction(bufferToHex(t1.hash()));
     const proofOfTransfer1 = await helpers.getProof( 
@@ -91,16 +83,9 @@ module.exports = async function(env, addr, color) {
     await minePeriod(env);
     
    
-    const youngestInput = await helpers.getYoungestInputTx(node, Tx.fromRaw(t1.raw));
-  /* 
-    const youngestInputProof = await helpers.getProof( 
-        plasmaWallet.provider, 
-        youngestInput,  
-        {excludePrevHashFromProof: true }
-    );
-  */  
+
     
-   // await minePeriod(env);
+   // 
     
    // console.log('youngest input', youngestInput);
    // console.log('transfer 1' , transfer1);
@@ -123,10 +108,19 @@ module.exports = async function(env, addr, color) {
         {excludePrevHashFromProof: true }
      );
    
- 
+    await minePeriod(env);
+    
+     const youngestInput = await helpers.getYoungestInputTx(node, Tx.fromRaw(t1.raw));
+    const youngestInputProof = await helpers.getProof( 
+        plasmaWallet.provider, 
+        youngestInput,  
+        {excludePrevHashFromProof: true }
+    ); 
+    
+  /*
     let startExitResult =
       await contracts.exitHandler.connect(wallet.provider.getSigner(addr)).startExit(
-        proofofFirstInput,
+        youngestInputProof,
         proofOfTransfer2,
         unspent.outpoint.index,
         youngestInput.index,
@@ -134,7 +128,7 @@ module.exports = async function(env, addr, color) {
     );
     console.log(await startExitResult.wait());
    
-   
+   */
        //const utxoId = exitUtxoId(event);
        //console.log('transfer 1', transfer1);
        //assert.equal(utxoId, spendTx.inputs[0].prevout.getUtxoId());
