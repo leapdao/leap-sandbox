@@ -80,9 +80,15 @@ module.exports = async function(env, addr, color) {
         {excludePrevHashFromProof: true }
     );
     
+     const youngestInput = await helpers.getYoungestInputTx(node, Tx.fromRaw(t1.raw));
+    const youngestInputProof = await helpers.getProof( 
+        plasmaWallet.provider, 
+        youngestInput,  
+        {excludePrevHashFromProof: true }
+    ); 
+    
     await minePeriod(env);
     
-   
 
     
    // 
@@ -108,14 +114,7 @@ module.exports = async function(env, addr, color) {
         {excludePrevHashFromProof: true }
      );
    
-    await minePeriod(env);
-    
-     const youngestInput = await helpers.getYoungestInputTx(node, Tx.fromRaw(t2.raw));
-    const youngestInputProof = await helpers.getProof( 
-        plasmaWallet.provider, 
-        youngestInput,  
-        {excludePrevHashFromProof: true }
-    ); 
+
     
   /*
     let startExitResult =
