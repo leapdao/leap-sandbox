@@ -79,16 +79,14 @@ module.exports = async function(env, addr, color) {
         {excludePrevHashFromProof: true }
     );
     
-    //await minePeriod(env);
     
     const youngestInput = await helpers.getYoungestInputTx(node, Tx.fromRaw(transfer1.raw));
-   /*
     const youngestInputProof = await helpers.getProof( 
         plasmaWallet.provider, 
         youngestInput,  
         {excludePrevHashFromProof: true }
     );
-    */
+    
     
    // await minePeriod(env);
     
@@ -104,7 +102,7 @@ module.exports = async function(env, addr, color) {
     // 5. In the end, we make sure the Exit struct in the exitHandler contract was deleted (this means the challenge was successful)
 
       const t2 = await transfer(bob, bobPriv, charlie, '200', node);   
-      //await minePeriod(env);
+      await minePeriod(env);
     
       const transfer2 = await node.getTransaction(bufferToHex(t2.hash()));
        const proofOfTransfer2 = await helpers.getProof( 
