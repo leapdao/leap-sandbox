@@ -80,7 +80,7 @@ module.exports = async function(env, addr, color) {
         {excludePrevHashFromProof: true }
     );
     
-     const youngestInput = await helpers.getYoungestInputTx(node, Tx.fromRaw(t1.raw));
+     const youngestInput = await helpers.getYoungestInputTx(node, Tx.fromRaw(transfer1.raw));
     const youngestInputProof = await helpers.getProof( 
         plasmaWallet.provider, 
         youngestInput,  
