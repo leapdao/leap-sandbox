@@ -25,7 +25,7 @@ module.exports = async function(env, addr, color) {
     
     await minePeriod(env);
     
-    const unspents = await node.getUnspent(addr, color);
+    const unspents = await node.getUnspent(bob, color);
     const latestBlockNumber = (await node.getBlock('latest')).number;
     log("Latest Block number: ", latestBlockNumber);
     const latestSubmittedBlock = latestBlockNumber - latestBlockNumber % 32;
