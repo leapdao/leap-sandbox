@@ -123,7 +123,7 @@ module.exports = async function(env, addr, color) {
         youngestInputProof,
         proofOfTransfer2,
         1,
-        2,
+        1,
         { value: ethers.utils.parseEther('1'), gasLimit: 2000000 }
     );
     console.log(await startExitResult.wait());
