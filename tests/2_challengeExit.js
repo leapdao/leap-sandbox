@@ -114,7 +114,9 @@ module.exports = async function(env, addr, color) {
         {excludePrevHashFromProof: true }
      );
      await minePeriod(env);
-
+     
+     console.log(unspent.outpoint.index)
+     console.log(youngestInput.index)
     let startExitResult =
       await contracts.exitHandler.connect(wallet.provider.getSigner(addr)).startExit(
         youngestInputProof,
