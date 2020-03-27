@@ -120,7 +120,7 @@ module.exports = async function(env, addr, color) {
 
     let startExitResult =
       await contracts.exitHandler.connect(wallet.provider.getSigner(addr)).startExit(
-        youngestInputProof,
+        [],
         proofOfTransfer1,
         unspent.outpoint.index,
         youngestInput.index,
