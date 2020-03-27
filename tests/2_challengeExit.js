@@ -121,9 +121,9 @@ module.exports = async function(env, addr, color) {
     let startExitResult =
       await contracts.exitHandler.connect(wallet.provider.getSigner(addr)).startExit(
         youngestInputProof,
-        proofOfTransfer2,
-        1,
-        1,
+        proofOfTransfer1,
+        unspent.outpoint.index,
+        youngestInput.index,
         { value: ethers.utils.parseEther('1'), gasLimit: 2000000 }
     );
     console.log(await startExitResult.wait());
